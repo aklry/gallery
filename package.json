@@ -1,0 +1,52 @@
+{
+    "name": "cloud-gallery",
+    "version": "1.0.0",
+    "description": "源空间",
+    "main": "index.js",
+    "scripts": {
+        "dev:client": "pnpm -C client dev",
+        "dev:server": "pnpm -C server start:dev",
+        "dev": "concurrently \"pnpm -C client dev\" \"pnpm -C server start:dev\"",
+        "prepare": "husky",
+        "format": "pnpm -C client format&&pnpm -C server format",
+        "lint": "pnpm -C client lint&&pnpm -C server lint",
+        "lint:lint-staged": "lint-staged",
+        "commit": "cz"
+    },
+    "keywords": [
+        "云图库",
+        "自定义图库",
+        "个人空间"
+    ],
+    "author": "aklry",
+    "config": {
+        "commitizen": {
+            "path": "cz-vinyl"
+        }
+    },
+    "lint-staged": {
+        "*.{ts,tsx}": [
+            "pnpm lint",
+            "pnpm format"
+        ]
+    },
+    "license": "ISC",
+    "devDependencies": {
+        "@commitlint/cli": "^19.6.0",
+        "@commitlint/config-conventional": "^19.6.0",
+        "@types/node": "^20.3.1",
+        "@typescript-eslint/eslint-plugin": "^8.0.0",
+        "@typescript-eslint/parser": "^8.0.0",
+        "commitizen": "^4.3.1",
+        "concurrently": "^9.1.0",
+        "cz-vinyl": "^2.5.4",
+        "eslint": "^8.0.0",
+        "eslint-config-prettier": "^9.0.0",
+        "eslint-plugin-prettier": "^5.0.0",
+        "eslint-plugin-vue": "^9.32.0",
+        "husky": "^9.1.7",
+        "inquirer": "^8.0.0",
+        "lint-staged": "^15.2.10",
+        "prettier": "^3.0.0"
+    }
+}
