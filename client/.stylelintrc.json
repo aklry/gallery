@@ -1,35 +1,17 @@
 {
-    "extends": [
-        "stylelint-config-standard",
-        "stylelint-config-prettier",
-        "stylelint-config-recommended-scss"
-    ],
-    "plugins": [
-        "stylelint-order"
-    ],
+    "extends": ["stylelint-config-standard", "stylelint-config-prettier", "stylelint-config-recommended-scss"],
+    "plugins": ["stylelint-order"],
     "overrides": [
         {
-            "files": [
-                "**/*.(scss|css)"
-            ],
+            "files": ["**/*.(scss|css)"],
             "customSyntax": "postcss-scss"
         },
         {
-            "files": [
-                "**/*.(vue)"
-            ],
+            "files": ["**/*.(vue)"],
             "customSyntax": "postcss-html"
         }
     ],
-    "ignoreFiles": [
-        "**/*.js",
-        "**/*.jsx",
-        "**/*.tsx",
-        "**/*.ts",
-        "**/*.json",
-        "**/*.md",
-        "**/*.yaml"
-    ],
+    "ignoreFiles": ["**/*.js", "**/*.jsx", "**/*.tsx", "**/*.ts", "**/*.json", "**/*.md", "**/*.yaml"],
     "rules": {
         "font-family-no-duplicate-names": null,
         "no-descending-specificity": null,
@@ -37,31 +19,20 @@
         "scss/at-rule-no-unknown": [
             true,
             {
-                "ignoreAtRules": [
-                    "tailwind",
-                    "apply",
-                    "layer",
-                    "config"
-                ]
+                "ignoreAtRules": ["tailwind", "apply", "layer", "config"]
             }
         ],
         "import-notation": "string",
         "selector-pseudo-class-no-unknown": [
             true,
             {
-                "ignorePseudoClasses": [
-                    "global",
-                    "deep"
-                ]
+                "ignorePseudoClasses": ["global", "deep"]
             }
         ],
         "selector-pseudo-element-no-unknown": [
             true,
             {
-                "ignorePseudoElements": [
-                    "global",
-                    "deep"
-                ]
+                "ignorePseudoElements": ["global", "deep"]
             }
         ]
     }
