@@ -12,6 +12,7 @@
         "format": "pnpm -C client format&&pnpm -C server format",
         "lint": "pnpm -C client lint&&pnpm -C server lint",
         "lint:lint-staged": "lint-staged",
+        "lint:style": "pnpm -C client lint:style",
         "commit": "cz"
     },
     "keywords": [
@@ -26,9 +27,12 @@
         }
     },
     "lint-staged": {
-        "*.{ts,tsx}": [
+        "*.{ts,vue,js}": [
             "pnpm lint",
             "pnpm format"
+        ],
+        "*.{css,scss,vue}": [
+            "pnpm lint:style"
         ]
     },
     "license": "ISC",

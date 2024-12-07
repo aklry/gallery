@@ -7,8 +7,9 @@
         "dev": "vite",
         "build": "vue-tsc -b && vite build",
         "preview": "vite preview",
-        "lint": "eslint . --ext .vue,.js,cjs,.mjs --fix --ignore-path .gitignore",
-        "format": "prettier --write \"./**/*.{html,vue,ts,js,json}\""
+        "lint": "eslint . --ext .vue,.js,cjs,.mjs --fix",
+        "format": "prettier --write \"./**/*.{html,vue,ts,js,json}\"",
+        "lint:style": "stylelint src/**/*.{css,scss,vue} --fix"
     },
     "dependencies": {
         "ant-design-vue": "4.x",
@@ -25,6 +26,13 @@
         "tailwindcss": "^3.4.16",
         "typescript": "~5.6.2",
         "vite": "^6.0.1",
-        "vue-tsc": "^2.1.10"
+        "vue-tsc": "^2.1.10",
+        "postcss-html": "^1.7.0",
+        "postcss-scss": "^4.0.9",
+        "stylelint": "^15.11.0",
+        "stylelint-config-prettier": "^9.0.5",
+        "stylelint-config-recommended-scss": "^14.1.0",
+        "stylelint-config-standard": "^34.0.0",
+        "stylelint-order": "^6.0.4"
     }
 }
