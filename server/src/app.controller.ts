@@ -1,8 +1,11 @@
 import { Controller, Get } from '@nestjs/common'
 import { AppService } from './app.service'
 import { ResponseService } from './response/response.service'
+import { version } from './config'
 
-@Controller()
+@Controller({
+    version
+})
 export class AppController {
     constructor(
         private readonly appService: AppService,

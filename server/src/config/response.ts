@@ -6,5 +6,6 @@ export const BusinessStatus = {
     MISSING_PARAMETER: { code: 3, message: '缺少参数' },
     UNAUTHORIZED: { code: 4, message: '未授权' },
     NOT_FOUND: { code: 5, message: '未找到' },
-    ACCOUNT_OR_PASSWORD_ERROR: { code: 6, message: '账号或密码错误' }
+    ACCOUNT_OR_PASSWORD_ERROR: { code: 6, message: '账号或密码错误' },
+    SYSTEM_ERROR: { code: 7, message: '系统错误' }
 }

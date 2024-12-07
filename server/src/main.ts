@@ -2,10 +2,11 @@ import { NestFactory } from '@nestjs/core'
 import { AppModule } from './app.module'
 import { SetHeadersInterceptor, SetResponseDataInterceptor } from './interceptors'
 import { VersioningType } from '@nestjs/common'
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger'
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule)
-    app.setGlobalPrefix(`api/${process.env.API_VERSION}`)
+    app.setGlobalPrefix('api')
     app.enableVersioning({
         type: VersioningType.URI
     })
@@ -14,6 +15,10 @@ async function bootstrap() {
     })
     // 注册全局响应拦截器
     app.useGlobalInterceptors(new SetHeadersInterceptor(), new SetResponseDataInterceptor())
+    // 注册swagger
+    const config = new DocumentBuilder().setTitle('接口文档').setVersion('1.0').setDescription('源空间').build()
+    const document = SwaggerModule.createDocument(app, config)
+    SwaggerModule.setup('docs', app, document)
     await app.listen(process.env.PORT ?? 3000)
 }
 bootstrap()
