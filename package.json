@@ -8,6 +8,7 @@
         "dev:server": "pnpm -C server start:dev",
         "dev": "concurrently \"pnpm -C client dev\" \"pnpm -C server start:dev\"",
         "prepare": "husky",
+        "in": "pnpm i -r",
         "format": "pnpm -C client format&&pnpm -C server format",
         "lint": "pnpm -C client lint&&pnpm -C server lint",
         "lint:lint-staged": "lint-staged",

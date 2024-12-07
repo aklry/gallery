@@ -1,8 +1,8 @@
 import RYRequest from './request'
-import { BASE_URL, TIME_OUT } from './config'
+import { URL, TIME_OUT } from './config'
 
 const ryRequest = new RYRequest({
-    baseURL: BASE_URL,
+    baseURL: URL,
     timeout: TIME_OUT,
     withCredentials: true,
     interceptors: {
