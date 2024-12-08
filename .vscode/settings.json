@@ -54,6 +54,7 @@
     "datasource",
     "nestjs",
     "pinia",
+    "resave",
     "tencentcdb",
     "umijs",
     "vite"

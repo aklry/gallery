@@ -1,12 +1,29 @@
-import { Module } from '@nestjs/common'
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common'
 import { AppController } from './app.controller'
 import { AppService } from './app.service'
 import { ResponseModule } from './response/response.module'
 import { PrismaModule } from './prisma/prisma.module'
+import * as session from 'express-session'
+import { SECRET_KEY } from './config'
 
 @Module({
     imports: [ResponseModule, PrismaModule],
     controllers: [AppController],
     providers: [AppService]
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+    configure(consumer: MiddlewareConsumer) {
+        consumer
+            .apply(
+                session({
+                    secret: SECRET_KEY,
+                    resave: false,
+                    saveUninitialized: false,
+                    cookie: {
+                        maxAge: 1000 * 60 * 60 * 24 // 24h
+                    }
+                })
+            )
+            .forRoutes('*')
+    }
+}
