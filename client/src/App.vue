@@ -1,16 +1,15 @@
 <script setup lang="ts">
-import { onMounted } from 'vue'
-import { test } from './api/index'
-onMounted(async () => {
-    const res = await test()
-    console.log(res)
-})
+import BasicLayout from '@/layouts/basic-layout/index.vue'
 </script>
 
 <template>
-    <router-link to="/">主页</router-link>
-    <router-link to="/about">关于我们</router-link>
-    <router-view />
+    <div class="app">
+        <basic-layout />
+    </div>
 </template>
 
-<style scoped></style>
+<style>
+.app {
+    height: 100vh;
+}
+</style>
