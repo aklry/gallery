@@ -55,6 +55,7 @@
     "nestjs",
     "pinia",
     "tencentcdb",
+    "umijs",
     "vite"
   ]
 }

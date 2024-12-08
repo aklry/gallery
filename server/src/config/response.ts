@@ -1,11 +1,11 @@
 //业务配置
 export const BusinessStatus = {
     SUCCESS: { code: 1, message: '操作成功' },
-    ERROR: { code: 0, message: '操作失败' },
-    FORBIDDEN: { code: 2, message: '禁止访问' },
-    MISSING_PARAMETER: { code: 3, message: '缺少参数' },
-    UNAUTHORIZED: { code: 4, message: '未授权' },
-    NOT_FOUND: { code: 5, message: '未找到' },
-    ACCOUNT_OR_PASSWORD_ERROR: { code: 6, message: '账号或密码错误' },
-    SYSTEM_ERROR: { code: 7, message: '系统错误' }
+    PARAMS_ERROR: { code: 40000, message: '请求参数错误' },
+    NOT_LOGIN_ERROR: { code: 40100, message: '未登录' },
+    NOT_AUTH_ERROR: { code: 40101, message: '无权限' },
+    NOT_FOUND_ERROR: { code: 40400, message: '请求数据不存在' },
+    FORBIDDEN_ERROR: { code: 40300, message: '禁止访问' },
+    SYSTEM_ERROR: { code: 50000, message: '系统错误' },
+    OPERATION_ERROR: { code: 50001, message: '操作失败' }
 }

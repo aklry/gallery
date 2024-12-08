@@ -4,13 +4,11 @@
             <a-layout-header>
                 <global-header />
             </a-layout-header>
-            <a-layout-content>
+            <a-layout-content class="content">
                 <router-view />
             </a-layout-content>
             <a-layout-footer>
-                <div class="h-full w-full text-center leading-[64px]">
-                    <a href="http://docs.aklry.com" target="_blank">Copyright &copy; aklry 2024</a>
-                </div>
+                <global-footer />
             </a-layout-footer>
         </a-layout>
     </div>
@@ -18,14 +16,22 @@
 
 <script setup lang="ts">
 import GlobalHeader from './global-header/index.vue'
+import GlobalFooter from './global-footer/index.vue'
 </script>
 
 <style lang="scss" scoped>
 .ant-layout-header {
     @apply bg-white;
+
+    padding-inline: 20px;
 }
 
 .ant-layout-footer {
     @apply bg-white p-0 h-[64px];
+}
+
+.content {
+    background: linear-gradient(to bottom, #fefefe, #fff);
+    @apply p-[20px];
 }
 </style>

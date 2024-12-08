@@ -11,11 +11,11 @@ export class ResponseService {
         }
     }
 
-    error(data = null, message: string, code: number = BusinessStatus.ERROR.code) {
+    error(data = null, message: string, code: number) {
         return {
             data,
             code,
-            message: message || BusinessStatus.ERROR.message
+            message
         }
     }
 }

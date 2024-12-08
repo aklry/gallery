@@ -4,6 +4,14 @@
     </div>
 </template>
 
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { appControllerTestV1 } from '@/api/app'
+import { onMounted } from 'vue'
+
+onMounted(async () => {
+    const res = await appControllerTestV1()
+    console.log(res)
+})
+</script>
 
 <style scoped></style>
