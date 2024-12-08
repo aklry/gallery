@@ -28,7 +28,6 @@ export class SetResponseDataInterceptor {
                     path: request.url,
                     message: data.message || '请求成功',
                     code: data.code || 200,
-                    success: true,
                     data: transformBigInt(data.data) || null
                 }
             })

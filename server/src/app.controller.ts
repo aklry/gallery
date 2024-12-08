@@ -1,8 +1,8 @@
 import { Controller, Get } from '@nestjs/common'
-import { AppService } from './app.service'
 import { ResponseService } from './response/response.service'
 import { version } from './config'
 import { ApiOperation, ApiProperty, ApiResponse, ApiTags } from '@nestjs/swagger'
+import { PrismaService } from './prisma/prisma.service'
 class ResponseData {
     @ApiProperty({ description: 'id' })
     id: number
@@ -15,13 +15,18 @@ class ResponseData {
 })
 export class AppController {
     constructor(
-        private readonly appService: AppService,
-        private readonly responseService: ResponseService
+        private readonly responseService: ResponseService,
+        private readonly prismaService: PrismaService
     ) {}
 
     @Get()
-    getHello(): string {
-        return this.appService.getHello()
+    async getUser() {
+        const user = await this.prismaService.user.findMany({
+            where: {
+                isDelete: 0
+            }
+        })
+        return this.responseService.success(user)
     }
 
     @Get('/test')
@@ -30,7 +35,7 @@ export class AppController {
         description: '测试成功',
         type: ResponseData
     })
-    test(): API.ResponseData<{ id: number; name: string }> {
+    test(): API.ResponseData<{ id: number; name: string }[]> {
         return this.responseService.success([
             {
                 id: 1,
