@@ -53,6 +53,7 @@
     "autoincrement",
     "commitlint",
     "datasource",
+    "metatype",
     "nestjs",
     "pinia",
     "resave",
