@@ -65,6 +65,14 @@ class RYRequest {
     post<T = any>(url: string, config: RYRequestConfig<T>) {
         return this.request(url, { ...config, method: 'POST' })
     }
+
+    patch<T = any>(url: string, config: RYRequestConfig<T>) {
+        return this.request(url, { ...config, method: 'PATCH' })
+    }
+
+    delete<T = any>(url: string, config: RYRequestConfig<T>) {
+        return this.request(url, { ...config, method: 'DELETE' })
+    }
 }
 
 export default RYRequest
