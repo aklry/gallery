@@ -6,6 +6,7 @@ declare module 'express-session' {
             id: string
             userName: string
             userPassword: string
+            userRole: string
         }
     }
 }

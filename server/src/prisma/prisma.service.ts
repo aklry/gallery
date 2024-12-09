@@ -1,6 +1,8 @@
 import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common'
 import { PrismaClient } from '@prisma/client'
 import * as log4js from 'log4js'
+import { BusinessStatus } from '../config'
+import { DaoErrorException } from '../custom-exception'
 
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
@@ -53,7 +55,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
             })
 
             this.$on('error' as never, (e: any) => {
-                console.error('Error: ', e)
+                throw new DaoErrorException(BusinessStatus.SYSTEM_ERROR.message, BusinessStatus.SYSTEM_ERROR.code)
             })
         }
     }

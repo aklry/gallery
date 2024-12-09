@@ -1,5 +1,5 @@
 import { ArgumentsHost, Catch, ExceptionFilter, HttpException } from '@nestjs/common'
-import { NotLoginException } from '../custom-exception'
+import { DaoErrorException, NoAuthException, NotLoginException } from '../custom-exception'
 @Catch(HttpException)
 export class HttpExceptionFilter implements ExceptionFilter {
     catch(exception: HttpException, host: ArgumentsHost) {
@@ -22,6 +22,36 @@ export class NotLoginExceptionFilter implements ExceptionFilter {
         const response = ctx.getResponse()
         const request = ctx.getRequest()
         response.status(401).json({
+            timestamp: new Date().toISOString(),
+            path: request.url,
+            message: exception.message,
+            code: exception.getStatus()
+        })
+    }
+}
+
+@Catch(NoAuthException)
+export class NoAuthExceptionFilter implements ExceptionFilter {
+    catch(exception: NoAuthException, host: ArgumentsHost) {
+        const ctx = host.switchToHttp()
+        const response = ctx.getResponse()
+        const request = ctx.getRequest()
+        response.status(403).json({
+            timestamp: new Date().toISOString(),
+            path: request.url,
+            message: exception.message,
+            code: exception.getStatus()
+        })
+    }
+}
+
+@Catch(DaoErrorException)
+export class DaoErrorExceptionFilter implements ExceptionFilter {
+    catch(exception: DaoErrorException, host: ArgumentsHost) {
+        const ctx = host.switchToHttp()
+        const response = ctx.getResponse()
+        const request = ctx.getRequest()
+        response.status(500).json({
             timestamp: new Date().toISOString(),
             path: request.url,
             message: exception.message,
