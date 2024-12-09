@@ -3,6 +3,7 @@ import { AppModule } from './app.module'
 import { SetHeadersInterceptor, SetResponseDataInterceptor } from './interceptors'
 import { VersioningType } from '@nestjs/common'
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger'
+import { ForbiddenExceptionFilter, HttpExceptionFilter } from './filters'
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule)
@@ -15,6 +16,8 @@ async function bootstrap() {
     })
     // 注册全局响应拦截器
     app.useGlobalInterceptors(new SetHeadersInterceptor(), new SetResponseDataInterceptor())
+    // 注册全局异常过滤器
+    app.useGlobalFilters(new HttpExceptionFilter(), new ForbiddenExceptionFilter())
     // 注册swagger
     const config = new DocumentBuilder().setTitle('接口文档').setVersion('1.0').setDescription('源空间').build()
     const document = SwaggerModule.createDocument(app, config)
