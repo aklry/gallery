@@ -25,5 +25,12 @@
             "@/*": ["./src/*"]
         }
     },
-    "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue", "./tailwind.config.js", "./postcss.config.js", "./src/api/typings.d.ts"]
+    "include": [
+        "src/**/*.ts",
+        "src/**/*.tsx",
+        "src/**/*.vue",
+        "./tailwind.config.js",
+        "./postcss.config.js",
+        "./src/api/typings.d.ts"
+    ]
 }
