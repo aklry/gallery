@@ -1,5 +1,5 @@
 <template>
-    <div class="flex justify-center items-center bg-gray-50 login-container">
+    <div class="flex justify-center items-center bg-gray-50 h-full">
         <a-card class="w-full max-w-md mx-4 shadow-lg rounded-lg" title="源空间-用户登录" :bordered="false">
             <a-form :model="loginForm" name="login" autocomplete="off" @finish="handleSubmit">
                 <a-form-item name="userAccount" :rules="[{ required: true, message: '请输入用户账号!' }]">
@@ -17,6 +17,11 @@
                         </template>
                     </a-input-password>
                 </a-form-item>
+                <div class="text-right mb-2">
+                    <router-link to="/user/register" class="text-blue-500 hover:text-blue-700"
+                        >没有账户？去注册
+                    </router-link>
+                </div>
 
                 <a-form-item>
                     <a-button type="primary" html-type="submit" size="large" :loading="loading" block> 登录 </a-button>
@@ -33,6 +38,7 @@ import { message } from 'ant-design-vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/store/modules/user'
 import { userControllerUserLoginV1 } from '@/api/user'
+import { MD5 } from 'crypto-js'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -46,11 +52,16 @@ const loginForm = reactive<API.UserLoginDto>({
 const handleSubmit = async (values: API.UserLoginDto) => {
     try {
         loading.value = true
-        const res = await userControllerUserLoginV1(values)
+        const res = await userControllerUserLoginV1({
+            userAccount: values.userAccount,
+            userPassword: MD5(values.userPassword).toString()
+        })
         if (res.code === 1) {
             await userStore.setLoginUser(res.data)
             message.success('登录成功')
             router.push('/')
+        } else {
+            message.error(res.message)
         }
     } catch (error) {
         message.error('登录失败，请重试')
@@ -61,24 +72,21 @@ const handleSubmit = async (values: API.UserLoginDto) => {
 </script>
 
 <style lang="scss" scoped>
-.login-container {
-    height: calc(100vh - 64px - 64px);
-}
 // 自定义样式
 .ant-card {
     @apply bg-white;
+}
 
-    &-head {
-        @apply border-b border-gray-100;
+.ant-card-head {
+    @apply border-b border-gray-100;
+}
 
-        &-title {
-            @apply text-center text-2xl py-3 font-medium text-gray-800;
-        }
-    }
+:deep(.ant-card-head-title) {
+    @apply text-center text-2xl py-3 font-medium text-gray-800;
+}
 
-    &-body {
-        @apply p-6;
-    }
+.ant-card-body {
+    @apply p-6;
 }
 
 .ant-form-item {

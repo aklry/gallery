@@ -11,7 +11,19 @@
         </a-col>
         <a-col flex="150px">
             <template v-if="loginUser && loginUser.id">
-                <div class="text-[16px] text-center">{{ loginUser.userName ?? '佚名' }}</div>
+                <a-dropdown>
+                    <a class="ant-dropdown-link" @click.prevent>
+                        {{ loginUser.userName ?? '佚名' }}
+                        <DownOutlined />
+                    </a>
+                    <template #overlay>
+                        <a-menu>
+                            <a-menu-item>
+                                <div @click="handleLogout">退出登录</div>
+                            </a-menu-item>
+                        </a-menu>
+                    </template>
+                </a-dropdown>
             </template>
             <template v-else>
                 <a-button type="primary" @click="handleClickLogin">登录</a-button>
@@ -22,11 +34,12 @@
 
 <script setup lang="ts">
 import { ref, h } from 'vue'
-import type { MenuProps } from 'ant-design-vue'
-import { HomeOutlined } from '@ant-design/icons-vue'
+import { type MenuProps, message } from 'ant-design-vue'
+import { HomeOutlined, DownOutlined } from '@ant-design/icons-vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/store/modules/user'
 import { storeToRefs } from 'pinia'
+import { userControllerUserLogoutV1 } from '@/api/user'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -36,6 +49,13 @@ const handleClickLogin = () => {
     router.push({
         path: '/user/login'
     })
+}
+const handleLogout = async () => {
+    const res = await userControllerUserLogoutV1()
+    if (res.data) {
+        message.success('退出登录成功')
+        router.push('/user/login')
+    }
 }
 const changeRoute = ({ key }: { key: string }) => {
     router.push({

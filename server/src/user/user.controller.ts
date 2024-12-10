@@ -54,6 +54,9 @@ export class UserController {
     @ApiResponse({ type: UserLoginVo })
     async userLogin(@Req() req: Request, @Body(new ValidationPipe()) userLoginDto: UserLoginDto) {
         const data = await this.userService.userLogin(userLoginDto)
+        if ('code' in data) {
+            return this.responseService.error(null, data.message, data.code)
+        }
         req.session.user = data
         return this.responseService.success(data)
     }
@@ -61,9 +64,9 @@ export class UserController {
     @Post('/logout')
     @UseGuards(AuthGuard)
     @ApiResponse({ type: UserLogoutVo })
-    userLogout(@Req() req: Request) {
-        this.userService.userLogout(req)
-        return this.responseService.success(null)
+    async userLogout(@Req() req: Request) {
+        const flag = await this.userService.userLogout(req)
+        return this.responseService.success(flag)
     }
 
     @Post('/list/page/vo')
