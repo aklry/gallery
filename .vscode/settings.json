@@ -52,6 +52,7 @@
     "appenders",
     "autoincrement",
     "commitlint",
+    "cuid",
     "datasource",
     "metatype",
     "nestjs",

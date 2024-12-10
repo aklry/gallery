@@ -1,12 +1,8 @@
 import 'express-session'
+import { LoginVoModel } from './user'
 
 declare module 'express-session' {
     interface Session {
-        user?: {
-            id: string
-            userName: string
-            userPassword: string
-            userRole: string
-        }
+        user?: LoginVoModel
     }
 }

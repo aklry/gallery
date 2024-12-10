@@ -8,90 +8,18 @@ datasource db {
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
-model app {
-  id              BigInt    @id @default(autoincrement())
-  appName         String    @db.VarChar(128)
-  appDesc         String?   @db.VarChar(2048)
-  appIcon         String?   @db.VarChar(1024)
-  appType         Int       @default(0) @db.TinyInt
-  scoringStrategy Int       @default(0) @db.TinyInt
-  reviewStatus    Int       @default(0)
-  reviewMessage   String?   @db.VarChar(512)
-  reviewerId      BigInt?
-  reviewTime      DateTime? @db.DateTime(0)
-  userId          BigInt
-  createTime      DateTime  @default(now()) @db.DateTime(0)
-  updateTime      DateTime  @default(now()) @db.DateTime(0)
-  isDelete        Int       @default(0) @db.TinyInt
-
-  @@index([appName], map: "idx_appName")
-}
-
-/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
-model question {
-  id              BigInt   @id @default(autoincrement())
-  questionContent String?  @db.Text
-  appId           BigInt
-  userId          BigInt
-  createTime      DateTime @default(now()) @db.DateTime(0)
-  updateTime      DateTime @default(now()) @db.DateTime(0)
-  isDelete        Int      @default(0) @db.TinyInt
-
-  @@index([appId], map: "idx_appId")
-}
-
-/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
-model scoring_result {
-  id               BigInt   @id @default(autoincrement())
-  resultName       String   @db.VarChar(128)
-  resultDesc       String?  @db.Text
-  resultPicture    String?  @db.VarChar(1024)
-  resultProp       String?  @db.VarChar(128)
-  resultScoreRange Int?
-  appId            BigInt
-  userId           BigInt
-  createTime       DateTime @default(now()) @db.DateTime(0)
-  updateTime       DateTime @default(now()) @db.DateTime(0)
-  isDelete         Int      @default(0) @db.TinyInt
-
-  @@index([appId], map: "idx_appId")
-}
-
-/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model user {
-  id           BigInt   @id @default(autoincrement())
-  userAccount  String   @db.VarChar(256)
+  id           String   @id @default(cuid())
+  userAccount  String   @unique(map: "uk_userAccount") @db.VarChar(256)
   userPassword String   @db.VarChar(512)
-  unionId      String?  @db.VarChar(256)
-  mpOpenId     String?  @db.VarChar(256)
   userName     String?  @db.VarChar(256)
   userAvatar   String?  @db.VarChar(1024)
   userProfile  String?  @db.VarChar(512)
   userRole     String   @default("user") @db.VarChar(256)
+  editTime     DateTime @default(now()) @db.DateTime(0)
   createTime   DateTime @default(now()) @db.DateTime(0)
   updateTime   DateTime @default(now()) @db.DateTime(0)
   isDelete     Int      @default(0) @db.TinyInt
 
-  @@index([unionId], map: "idx_unionId")
-}
-
-/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
-model user_answer {
-  id              BigInt   @id @default(autoincrement())
-  appId           BigInt
-  appType         Int      @default(0) @db.TinyInt
-  scoringStrategy Int      @default(0) @db.TinyInt
-  choices         String?  @db.Text
-  resultId        BigInt?
-  resultName      String?  @db.VarChar(128)
-  resultDesc      String?  @db.Text
-  resultPicture   String?  @db.VarChar(1024)
-  resultScore     Int?
-  userId          BigInt
-  createTime      DateTime @default(now()) @db.DateTime(0)
-  updateTime      DateTime @default(now()) @db.DateTime(0)
-  isDelete        Int      @default(0) @db.TinyInt
-
-  @@index([appId], map: "idx_appId")
-  @@index([userId], map: "idx_userId")
+  @@index([userName], map: "idx_userName")
 }

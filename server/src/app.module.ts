@@ -5,9 +5,10 @@ import { ResponseModule } from './response/response.module'
 import { PrismaModule } from './prisma/prisma.module'
 import * as session from 'express-session'
 import { SECRET_KEY } from './config'
+import { UserModule } from './user/user.module'
 
 @Module({
-    imports: [ResponseModule, PrismaModule],
+    imports: [ResponseModule, PrismaModule, UserModule],
     controllers: [AppController],
     providers: [AppService]
 })

@@ -46,6 +46,7 @@ module.exports = {
         '@typescript-eslint/no-namespace': 'off', // 禁止使用自定义 TypeScript 模块和命名空间。
         '@typescript-eslint/semi': 'off',
         '@typescript-eslint/no-ts-comment': 'off',
+        '@typescript-eslint/ban-ts-comment': 'off',
         '@typescript-eslint/prefer-ts-expect-error': 'off',
 
         // eslint-plugin-vue (https://eslint.vuejs.org/rules/)
