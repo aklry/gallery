@@ -14,7 +14,7 @@
                 <div class="text-[16px] text-center">{{ loginUser.userName ?? '佚名' }}</div>
             </template>
             <template v-else>
-                <a-button type="primary" href="/user/login">登录</a-button>
+                <a-button type="primary" @click="handleClickLogin">登录</a-button>
             </template>
         </a-col>
     </a-row>
@@ -32,6 +32,11 @@ const router = useRouter()
 const userStore = useUserStore()
 const { loginUser } = storeToRefs(userStore)
 const current = ref<string[]>(['home'])
+const handleClickLogin = () => {
+    router.push({
+        path: '/user/login'
+    })
+}
 const changeRoute = ({ key }: { key: string }) => {
     router.push({
         path: key

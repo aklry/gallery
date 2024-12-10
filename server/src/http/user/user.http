@@ -15,14 +15,14 @@
 #     "userPassword": "123456"
 # }
 
-# GET http://localhost:3000/api/v1/user/get/login
+GET http://localhost:3000/api/v1/user/get/login
 # Cookie: connect.sid=s%3AsmxySLX07MQ5s7ANJhlh3Mker3oWgzBj.6k32085CAFdzHjheNt8MhTdvgA9rJOZ2UGnTKlo3NjQ
 
-POST http://localhost:3000/api/v1/user/list/page/vo
-Content-Type: application/json
-Cookie: connect.sid=s%3AvBf2KcXTKx3z8I2Lq7E1X2ajDcyxmq72.PND2Jxo98QZDEOhmoFiAu86IFPCcTNaVzraeoUmilfs
+# POST http://localhost:3000/api/v1/user/list/page/vo
+# Content-Type: application/json
+# Cookie: connect.sid=s%3AvBf2KcXTKx3z8I2Lq7E1X2ajDcyxmq72.PND2Jxo98QZDEOhmoFiAu86IFPCcTNaVzraeoUmilfs
 
-{
-    "current": "1",
-    "pageSize": "10"
-}
+# {
+#     "current": "1",
+#     "pageSize": "10"
+# }

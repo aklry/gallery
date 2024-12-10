@@ -21,7 +21,7 @@ export class NotLoginExceptionFilter implements ExceptionFilter {
         const ctx = host.switchToHttp()
         const response = ctx.getResponse()
         const request = ctx.getRequest()
-        response.status(401).json({
+        response.status(200).json({
             timestamp: new Date().toISOString(),
             path: request.url,
             message: exception.message,
@@ -36,7 +36,7 @@ export class NoAuthExceptionFilter implements ExceptionFilter {
         const ctx = host.switchToHttp()
         const response = ctx.getResponse()
         const request = ctx.getRequest()
-        response.status(403).json({
+        response.status(200).json({
             timestamp: new Date().toISOString(),
             path: request.url,
             message: exception.message,
@@ -51,7 +51,7 @@ export class DaoErrorExceptionFilter implements ExceptionFilter {
         const ctx = host.switchToHttp()
         const response = ctx.getResponse()
         const request = ctx.getRequest()
-        response.status(500).json({
+        response.status(200).json({
             timestamp: new Date().toISOString(),
             path: request.url,
             message: exception.message,

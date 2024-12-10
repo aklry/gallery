@@ -1,14 +1,23 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
+import { userControllerGetLoginUserV1 } from '@/api/user'
 
 export const useUserStore = defineStore('user', () => {
-    const loginUser = ref<any>({
+    const loginUser = ref<API.LoginVoModel>({
+        id: '',
+        userAccount: '',
+        userAvatar: '',
+        userProfile: '',
+        userRole: '',
         userName: ''
     })
     const fetchLoginUser = async () => {
-        // todo 获取登录用户信息
+        const data = await userControllerGetLoginUserV1()
+        if (data.code !== 40100) {
+            loginUser.value = data.data
+        }
     }
-    const setLoginUser = async (user: any) => {
+    const setLoginUser = async (user: API.LoginVoModel) => {
         loginUser.value = user
     }
     return {

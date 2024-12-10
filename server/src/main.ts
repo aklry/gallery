@@ -1,6 +1,6 @@
 import { NestFactory } from '@nestjs/core'
 import { AppModule } from './app.module'
-import { SetHeadersInterceptor, SetResponseDataInterceptor } from './interceptors'
+import { SetResponseDataInterceptor } from './interceptors'
 import { VersioningType } from '@nestjs/common'
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger'
 import { NotLoginExceptionFilter, HttpExceptionFilter, NoAuthExceptionFilter, DaoErrorExceptionFilter } from './filters'
@@ -12,10 +12,11 @@ async function bootstrap() {
         type: VersioningType.URI
     })
     app.enableCors({
-        origin: 'http://localhost:5173'
+        origin: 'http://localhost:5173',
+        credentials: true
     })
     // 注册全局响应拦截器
-    app.useGlobalInterceptors(new SetHeadersInterceptor(), new SetResponseDataInterceptor())
+    app.useGlobalInterceptors(new SetResponseDataInterceptor())
     // 注册全局异常过滤器
     app.useGlobalFilters(
         new HttpExceptionFilter(),
