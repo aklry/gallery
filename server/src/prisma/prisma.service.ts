@@ -58,5 +58,35 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
                 throw new DaoErrorException(BusinessStatus.SYSTEM_ERROR.message, BusinessStatus.SYSTEM_ERROR.code)
             })
         }
+        // 添加中间件处理软删除
+        this.$use(async (params, next) => {
+            // 查询操作添加 isDelete = 0 条件
+            if (params.action === 'findUnique' || params.action === 'findFirst') {
+                // 改为 findFirst 操作
+                params.action = 'findFirst'
+                // 添加 isDelete 条件
+                params.args.where = { ...params.args.where, isDelete: 0 }
+            }
+
+            if (params.action === 'findMany') {
+                // 添加 isDelete 条件
+                params.args.where = { ...params.args.where, isDelete: 0 }
+            }
+
+            // 删除操作改为更新 isDelete = 1
+            if (params.action === 'delete') {
+                // 转换为 update 操作
+                params.action = 'update'
+                params.args['data'] = { isDelete: 1 }
+            }
+
+            if (params.action === 'deleteMany') {
+                // 转换为 updateMany 操作
+                params.action = 'updateMany'
+                params.args['data'] = { isDelete: 1 }
+            }
+
+            return next(params)
+        })
     }
 }
