@@ -5,22 +5,22 @@ import { PageRequest } from '../../common/page.dto'
 export class FindUserDto extends PageRequest {
     @IsString()
     @IsOptional()
-    @ApiProperty({ description: '用户id' })
+    @ApiProperty({ description: '用户id', required: false })
     id?: string
     @IsString()
     @IsOptional()
-    @ApiProperty({ description: '用户昵称' })
+    @ApiProperty({ description: '用户昵称', required: false })
     userName?: string
     @IsString()
     @IsOptional()
-    @ApiProperty({ description: '用户账号' })
+    @ApiProperty({ description: '用户账号', required: false })
     userAccount?: string
     @IsString()
     @IsOptional()
-    @ApiProperty({ description: '用户角色' })
+    @ApiProperty({ description: '用户角色', required: false })
     userRole?: string
     @IsString()
     @IsOptional()
-    @ApiProperty({ description: '用户简介' })
+    @ApiProperty({ description: '用户简介', required: false })
     userProfile?: string
 }

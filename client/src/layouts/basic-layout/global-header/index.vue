@@ -19,7 +19,14 @@
                     <template #overlay>
                         <a-menu>
                             <a-menu-item>
-                                <div @click="handleLogout">退出登录</div>
+                                <a-menu-item>
+                                    <UserOutlined class="mr-[10px]" />
+                                    <span>个人中心</span>
+                                </a-menu-item>
+                                <a-menu-item @click="handleLogout">
+                                    <LogoutOutlined class="mr-[10px]" />
+                                    <span>退出登录</span>
+                                </a-menu-item>
                             </a-menu-item>
                         </a-menu>
                     </template>
@@ -33,48 +40,32 @@
 </template>
 
 <script setup lang="ts">
-import { ref, h } from 'vue'
-import { type MenuProps, message } from 'ant-design-vue'
-import { HomeOutlined, DownOutlined } from '@ant-design/icons-vue'
+import { ref } from 'vue'
+import { DownOutlined, UserOutlined, LogoutOutlined } from '@ant-design/icons-vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/store/modules/user'
 import { storeToRefs } from 'pinia'
-import { userControllerUserLogoutV1 } from '@/api/user'
+import { useMenus } from '../hooks'
 
 const router = useRouter()
 const userStore = useUserStore()
 const { loginUser } = storeToRefs(userStore)
 const current = ref<string[]>(['home'])
+const { items } = useMenus()
 const handleClickLogin = () => {
     router.push({
         path: '/user/login'
     })
 }
 const handleLogout = async () => {
-    const res = await userControllerUserLogoutV1()
-    if (res.data) {
-        message.success('退出登录成功')
-        router.push('/user/login')
-    }
+    await userStore.userLogout()
+    router.push('/user/login')
 }
 const changeRoute = ({ key }: { key: string }) => {
     router.push({
         path: key
     })
 }
-const items = ref<MenuProps['items']>([
-    {
-        key: '/',
-        label: '主页',
-        title: '主页',
-        icon: () => h(HomeOutlined)
-    },
-    {
-        key: '/about',
-        label: '关于',
-        title: '关于'
-    }
-])
 router.afterEach(to => {
     current.value = [to.path]
 })

@@ -59,7 +59,8 @@ const handleSubmit = async (values: API.UserLoginDto) => {
         if (res.code === 1) {
             await userStore.setLoginUser(res.data)
             message.success('登录成功')
-            router.push('/')
+            const redirect = router.currentRoute.value.query.redirect as string
+            router.push(redirect || '/')
         } else {
             message.error(res.message)
         }

@@ -1,9 +1,5 @@
 <script setup lang="ts">
 import BasicLayout from '@/layouts/basic-layout/index.vue'
-import { useUserStore } from '@/store/modules/user'
-
-const userStore = useUserStore()
-userStore.fetchLoginUser()
 </script>
 
 <template>

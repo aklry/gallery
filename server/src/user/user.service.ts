@@ -131,15 +131,17 @@ export class UserService {
             }),
             this.prismaService.user.count({ where })
         ])
-        const result: UserVoModel[] = data.map(item => ({
-            id: item.id,
-            userAccount: item.userAccount,
-            userName: item.userName,
-            userAvatar: item.userAvatar,
-            userProfile: item.userProfile,
-            userRole: item.userRole,
-            createTime: item.createTime
-        }))
+        const result: UserVoModel[] = data.map(item => {
+            return {
+                id: item.id,
+                userAccount: item.userAccount,
+                userName: item.userName,
+                userAvatar: item.userAvatar,
+                userProfile: item.userProfile,
+                userRole: item.userRole,
+                createTime: item.createTime.toISOString()
+            } as UserVoModel
+        })
         return {
             result,
             total

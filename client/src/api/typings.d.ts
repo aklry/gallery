@@ -27,15 +27,15 @@ declare namespace API {
         /** 排序方式 */
         sortOrder?: string
         /** 用户id */
-        id: string
+        id?: string
         /** 用户昵称 */
-        userName: string
+        userName?: string
         /** 用户账号 */
-        userAccount: string
+        userAccount?: string
         /** 用户角色 */
-        userRole: string
+        userRole?: string
         /** 用户简介 */
-        userProfile: string
+        userProfile?: string
     }
 
     type LoginVoModel = {
@@ -217,6 +217,10 @@ declare namespace API {
         userProfile: string
         /** 用户角色 */
         userRole: string
+        /** 创建时间 */
+        createTime: string
+        /** 用户账户 */
+        userAccount: string
     }
 
     type UserVoType = {
