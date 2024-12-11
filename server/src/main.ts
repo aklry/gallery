@@ -3,7 +3,13 @@ import { AppModule } from './app.module'
 import { SetResponseDataInterceptor } from './interceptors'
 import { VersioningType } from '@nestjs/common'
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger'
-import { NotLoginExceptionFilter, HttpExceptionFilter, NoAuthExceptionFilter, DaoErrorExceptionFilter } from './filters'
+import {
+    NotLoginExceptionFilter,
+    HttpExceptionFilter,
+    NoAuthExceptionFilter,
+    DaoErrorExceptionFilter,
+    UploadErrorExceptionFilter
+} from './filters'
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule)
@@ -22,7 +28,8 @@ async function bootstrap() {
         new HttpExceptionFilter(),
         new NotLoginExceptionFilter(),
         new NoAuthExceptionFilter(),
-        new DaoErrorExceptionFilter()
+        new DaoErrorExceptionFilter(),
+        new UploadErrorExceptionFilter()
     )
     // 注册swagger
     const config = new DocumentBuilder().setTitle('接口文档').setVersion('1.0').setDescription('源空间').build()
