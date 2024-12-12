@@ -16,7 +16,8 @@
         "commit": "cz",
         "generate:api": "pnpm -C client generate:api",
         "generate:db": "pnpm -C server generate:db",
-        "pull:db": "pnpm -C server pull:db"
+        "pull:db": "pnpm -C server pull:db",
+        "clear": "rimraf --glob node_modules client/node_modules server/node_modules"
     },
     "keywords": [
         "云图库",
