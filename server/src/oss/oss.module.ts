@@ -5,6 +5,7 @@ import { UserModule } from '../user/user.module'
 @Global()
 @Module({
     providers: [OssService],
-    imports: [UserModule]
+    imports: [UserModule],
+    exports: [OssService]
 })
 export class OssModule {}

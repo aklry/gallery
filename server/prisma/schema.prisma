@@ -23,3 +23,28 @@ model user {
 
   @@index([userName], map: "idx_userName")
 }
+
+model picture {
+    id String @id @default(cuid())
+    url String @db.VarChar(512)
+    name String @db.VarChar(128)
+    introduction String @db.VarChar(256)
+    category String @db.VarChar(64)
+    tags String @db.VarChar(512)
+    picSize BigInt @db.BigInt
+    picWidth Int @db.Int
+    picHeight Int @db.Int
+    picScale Float @db.Double
+    picFormat String @db.VarChar(32)
+    userId String @db.VarChar(256)
+    createTime DateTime @default(now()) @db.DateTime(0)
+    editTime DateTime @default(now()) @db.DateTime(0)
+    updateTime DateTime @default(now()) @db.DateTime(0)
+    isDelete Int @default(0) @db.TinyInt
+
+    @@index([name], map: "idx_name")
+    @@index([introduction], map: "idx_introduction")
+    @@index([category], map: "idx_category")
+    @@index([tags], map: "idx_tags")
+    @@index([userId], map: "idx_userId")
+}

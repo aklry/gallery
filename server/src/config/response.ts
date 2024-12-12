@@ -8,5 +8,6 @@ export const BusinessStatus = {
     NOT_FOUND_ERROR: { code: 40400, message: '请求数据不存在' },
     FORBIDDEN_ERROR: { code: 40300, message: '禁止访问' },
     SYSTEM_ERROR: { code: 50000, message: '系统错误' },
-    OPERATION_ERROR: { code: 50001, message: '操作失败' }
+    OPERATION_ERROR: { code: 50001, message: '操作失败' },
+    IMAGE_TYPE_ERROR: { code: 50002, message: '图片格式错误' }
 }

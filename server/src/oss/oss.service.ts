@@ -1,16 +1,28 @@
 import { Injectable } from '@nestjs/common'
-import { UserService } from '../user/user.service'
 import * as OSS from 'ali-oss'
 import { getOssConfig } from '../utils'
 import { extname } from 'node:path'
-import { OSS_PUBLIC_PICTURE_PATH, BusinessStatus } from '../config'
-import type { Request } from 'express'
-import { NotLoginException, UploadFailedException } from '../custom-exception'
-
+import { OSS_PUBLIC_PICTURE_PATH, BusinessStatus, OSS_PICTURE_PATH } from '../config'
+import { UploadFailedException } from '../custom-exception'
+import { UploadPictureVo, UploadPictureVoModel } from '../picture/vo/upload-picture.vo'
+interface ImageInfo {
+    ImageWidth: {
+        value: number
+    }
+    ImageHeight: {
+        value: number
+    }
+    Format: {
+        value: string
+    }
+    FileSize: {
+        value: string
+    }
+}
 @Injectable()
 export class OssService {
     private ossClient: OSS
-    constructor(private readonly userService: UserService) {
+    constructor() {
         const config = getOssConfig()
         this.ossClient = new OSS({
             region: config.region,
@@ -19,16 +31,25 @@ export class OssService {
             bucket: config.bucket
         })
     }
-    async uploadFile(filename: string, fileBuffer: Buffer, req: Request) {
+    async uploadFile(filename: string, fileBuffer: Buffer) {
         try {
             const ext = extname(filename)
-            const uploadFileName = `${OSS_PUBLIC_PICTURE_PATH}/${Date.now()}-${Math.random() * 1e19}${ext}`
-            const loginUser = await this.userService.getLoginUser(req)
-            if (!loginUser) {
-                throw new NotLoginException(BusinessStatus.NOT_LOGIN_ERROR.message, BusinessStatus.NOT_LOGIN_ERROR.code)
-            }
+            const uploadFileName = `${OSS_PICTURE_PATH}/${OSS_PUBLIC_PICTURE_PATH}/${Date.now()}-${Math.random() * 1e19}${ext}`
             const result = await this.ossClient.put(uploadFileName, fileBuffer)
-            return result.url
+            const imageInfo = await this.ossClient.get(uploadFileName, {
+                process: 'image/info'
+            })
+            const info = JSON.parse(imageInfo.content.toString()) as ImageInfo
+            const picScale = Number((info.ImageWidth.value / info.ImageHeight.value).toFixed(2))
+            return {
+                url: result.url,
+                picScale,
+                format: info.Format.value,
+                fileSize: BigInt(info.FileSize.value),
+                width: info.ImageWidth.value,
+                height: info.ImageHeight.value,
+                filename: filename
+            } as UploadPictureVoModel
         } catch (error) {
             throw new UploadFailedException(BusinessStatus.OPERATION_ERROR.message, BusinessStatus.OPERATION_ERROR.code)
         }

@@ -7,9 +7,10 @@ import * as session from 'express-session'
 import { SECRET_KEY } from './config'
 import { UserModule } from './user/user.module'
 import { OssModule } from './oss/oss.module'
+import { PictureModule } from './picture/picture.module'
 
 @Module({
-    imports: [ResponseModule, PrismaModule, UserModule, OssModule],
+    imports: [ResponseModule, PrismaModule, UserModule, OssModule, PictureModule],
     controllers: [AppController],
     providers: [AppService]
 })
