@@ -2,9 +2,9 @@
     <a-row>
         <a-col flex="150px" class="mr-[20px]">
             <a href="http://docs.aklry.com" target="_blank">
-                <img src="http://quiz.aklry.com/logo.png" alt="源空间" class="w-[50px]" />
+                <img src="../../../assets/images/logo.png" alt="画云间" class="w-[50px]" />
             </a>
-            <div class="text-[24px] font-bold ml-[10px]">源空间</div>
+            <div class="text-[24px] font-bold ml-[10px]">画云间</div>
         </a-col>
         <a-col flex="auto">
             <a-menu v-model:selectedKeys="current" mode="horizontal" :items="items" @click="changeRoute" />
@@ -13,6 +13,7 @@
             <template v-if="loginUser && loginUser.id">
                 <a-dropdown>
                     <a class="ant-dropdown-link" @click.prevent>
+                        <a-avatar :src="loginUser.userAvatar" v-if="loginUser.userAvatar" alt="个人头像" />
                         {{ loginUser.userName ?? '佚名' }}
                         <DownOutlined />
                     </a>
