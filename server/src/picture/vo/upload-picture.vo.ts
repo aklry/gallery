@@ -18,12 +18,7 @@ export class UploadPictureVoModel {
     filename: string
 }
 
-export class UploadPictureVoType {
+export class UploadPictureVo extends ResponseVo<UploadPictureVoModel> {
     @ApiProperty({ description: '图片信息', type: UploadPictureVoModel })
     data: UploadPictureVoModel
-}
-
-export class UploadPictureVo extends ResponseVo<UploadPictureVoType> {
-    @ApiProperty({ description: '图片信息', type: UploadPictureVoType })
-    data: UploadPictureVoType
 }

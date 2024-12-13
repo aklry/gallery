@@ -4,7 +4,7 @@ import { CreatePictureDto } from './dto/create-picture.dto'
 import type { Request } from 'express'
 import { FileInterceptor } from '@nestjs/platform-express'
 import { UploadPictureDto } from './dto/upload-picture.dto'
-import { ApiConsumes, ApiProperty, ApiResponse } from '@nestjs/swagger'
+import { ApiBody, ApiConsumes, ApiResponse } from '@nestjs/swagger'
 import { UploadPictureVo } from './vo/upload-picture.vo'
 import { ResponseService } from '../response/response.service'
 import { version } from '../config'
@@ -81,6 +81,18 @@ export class PictureController {
     @UseInterceptors(FileInterceptor('file'))
     @ApiConsumes('multipart/form-data')
     @ApiResponse({ type: UploadPictureVo })
+    @UseGuards(RoleGuard)
+    @Roles([UserRole.ADMIN])
+    @ApiBody({
+        description: '上传图片',
+        schema: {
+            type: 'object',
+            properties: {
+                file: { type: 'file', format: 'binary' },
+                id: { type: 'string' }
+            }
+        }
+    })
     @UseGuards(RoleGuard)
     @Roles([UserRole.ADMIN])
     async uploadFile(

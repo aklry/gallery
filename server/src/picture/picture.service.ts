@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { CreatePictureDto } from './dto/create-picture.dto'
 import { UpdatePictureDto } from './dto/update-picture.dto'
 import { extname } from 'node:path'
-import { DaoErrorException, NotLoginException, UploadFailedException } from 'src/custom-exception'
+import { DaoErrorException, NotLoginException, UploadFailedException } from '../custom-exception'
 import { BusinessStatus } from '../config'
 import { UploadPictureDto } from './dto/upload-picture.dto'
 import type { Request } from 'express'
@@ -233,35 +233,38 @@ export class PictureService {
         }
         // 上传图片
         const ossResult = await this.ossService.uploadFile(file.originalname, file.buffer)
-        const picture = await this.prismaService.picture.upsert({
-            where: {
-                id: pictureId
-            },
-            update: {
-                url: ossResult.url,
-                picScale: ossResult.picScale,
-                picSize: BigInt(ossResult.fileSize),
-                picFormat: ossResult.format,
-                picWidth: Number(ossResult.width),
-                picHeight: Number(ossResult.height),
-                name: ossResult.filename,
-                editTime: new Date(),
-                userId: user?.id || ''
-            },
-            create: {
-                url: ossResult.url,
-                picScale: ossResult.picScale,
-                picSize: BigInt(ossResult.fileSize),
-                picFormat: ossResult.format,
-                picWidth: Number(ossResult.width),
-                picHeight: Number(ossResult.height),
-                name: ossResult.filename,
-                userId: user?.id || '',
-                tags: '',
-                category: '',
-                introduction: ''
-            }
-        })
+        const picture = pictureId
+            ? await this.prismaService.picture.update({
+                  where: {
+                      id: pictureId
+                  },
+                  data: {
+                      url: ossResult.url,
+                      picScale: ossResult.picScale,
+                      picSize: BigInt(ossResult.fileSize),
+                      picFormat: ossResult.format,
+                      picWidth: Number(ossResult.width),
+                      picHeight: Number(ossResult.height),
+                      name: ossResult.filename,
+                      editTime: new Date(),
+                      userId: user?.id || ''
+                  }
+              })
+            : await this.prismaService.picture.create({
+                  data: {
+                      url: ossResult.url,
+                      picScale: ossResult.picScale,
+                      picSize: BigInt(ossResult.fileSize),
+                      picFormat: ossResult.format,
+                      picWidth: Number(ossResult.width),
+                      picHeight: Number(ossResult.height),
+                      name: ossResult.filename,
+                      userId: user?.id || '',
+                      tags: '',
+                      category: '',
+                      introduction: ''
+                  }
+              })
         if (!picture) {
             throw new UploadFailedException('图片上传失败', BusinessStatus.OPERATION_ERROR.code)
         }

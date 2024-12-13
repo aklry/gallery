@@ -39,5 +39,10 @@ export const routes: RouteRecordRaw[] = [
         path: '/no-auth',
         name: 'no-auth',
         component: () => import('@/views/no-auth/index.vue')
+    },
+    {
+        path: '/picture/add',
+        name: 'add-picture',
+        component: () => import('@/views/picture/add-picture/index.vue')
     }
 ]

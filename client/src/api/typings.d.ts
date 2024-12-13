@@ -1,4 +1,6 @@
 declare namespace API {
+    type CreatePictureDto = {}
+
     type CreateUserDto = {
         /** 用户昵称 */
         userName: string
@@ -53,6 +55,20 @@ declare namespace API {
         userRole: string
     }
 
+    type PictureControllerFindOneV1Params = {
+        id: string
+    }
+
+    type PictureControllerRemoveV1Params = {
+        id: string
+    }
+
+    type PictureControllerUpdateV1Params = {
+        id: string
+    }
+
+    type UpdatePictureDto = {}
+
     type UpdateUserDto = {
         /** 用户id */
         id: string
@@ -64,6 +80,36 @@ declare namespace API {
         userProfile: string
         /** 用户角色 */
         userRole: string
+    }
+
+    type UploadPictureVo = {
+        /** 状态码 */
+        code: number
+        /** 消息 */
+        message: string
+        /** 图片信息 */
+        data: UploadPictureVoModel
+        /** 时间戳 */
+        timestamp: string
+        /** 路径 */
+        path: string
+    }
+
+    type UploadPictureVoModel = {
+        /** 图片url */
+        url: string
+        /** 图片比例 */
+        picScale: number
+        /** 图片格式 */
+        format: string
+        /** 图片大小 */
+        fileSize: number
+        /** 图片宽度 */
+        width: number
+        /** 图片高度 */
+        height: number
+        /** 图片名称 */
+        filename: string
     }
 
     type User = {
