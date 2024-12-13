@@ -16,6 +16,11 @@ export const useMenus = () => {
             title: '关于'
         },
         {
+            key: '/picture/add',
+            label: '创建图片',
+            title: '创建图片'
+        },
+        {
             key: '/user/admin',
             label: '用户管理',
             title: '用户管理'

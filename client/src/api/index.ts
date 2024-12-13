@@ -4,7 +4,9 @@
 // API 唯一标识：
 import * as app from './app'
 import * as user from './user'
+import * as picture from './picture'
 export default {
     app,
-    user
+    user,
+    picture
 }
