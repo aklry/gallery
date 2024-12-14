@@ -7,7 +7,7 @@
             :showUploadList="false"
             :beforeUpload="handleBeforeUpload"
         >
-            <img v-if="imageUrl" :src="imageUrl" alt="avatar" />
+            <img v-if="picture?.url" :src="picture.url" alt="avatar" />
             <div v-else>
                 <loading-outlined v-if="loading" />
                 <plus-outlined class="text-3xl" v-else />
@@ -24,8 +24,8 @@ import { message, UploadProps } from 'ant-design-vue'
 import { pictureControllerUploadFileV1 } from '@/api/picture'
 const fileList = ref<any>([])
 const props = defineProps<{
-    onUploadSuccess: (url: string) => void
-    picture?: any
+    onUploadSuccess: (result: API.UploadPictureVoModel) => void
+    picture?: API.UploadPictureVoModel
 }>()
 const uploadCustomRequest = async () => {
     loading.value = true
@@ -33,7 +33,7 @@ const uploadCustomRequest = async () => {
         const params = props.picture ? { id: props.picture.id } : {}
         const res = await pictureControllerUploadFileV1(params, fileList.value[0].originFileObj)
         if (res.code === 1) {
-            props.onUploadSuccess(res.data.url)
+            props.onUploadSuccess(res.data)
         } else {
             message.error(res.message)
         }
@@ -55,7 +55,6 @@ const handleBeforeUpload = (file: UploadProps['fileList'][number]) => {
     }
     return isJpgOrPng && isLt2M
 }
-const imageUrl = defineModel<string>('imageUrl')
 const loading = ref<boolean>(false)
 </script>
 
@@ -73,7 +72,7 @@ const loading = ref<boolean>(false)
     }
 
     img {
-        @apply max-w-full max-h-[300px] object-cover;
+        @apply max-w-full max-h-[250px] object-cover;
     }
 
     .ant-upload-text {

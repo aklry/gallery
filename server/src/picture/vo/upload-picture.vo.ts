@@ -2,6 +2,8 @@ import { ApiProperty } from '@nestjs/swagger'
 import { ResponseVo } from '../../common/response.vo'
 
 export class UploadPictureVoModel {
+    @ApiProperty({ description: '图片id', required: true })
+    id: string
     @ApiProperty({ description: '图片url', required: true })
     url: string
     @ApiProperty({ description: '图片比例', required: true })

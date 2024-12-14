@@ -1,6 +1,5 @@
 import { Controller, Get, Post, Body, Param, Req, UseInterceptors, UploadedFile, UseGuards } from '@nestjs/common'
 import { PictureService } from './picture.service'
-import { CreatePictureDto } from './dto/create-picture.dto'
 import type { Request } from 'express'
 import { FileInterceptor } from '@nestjs/platform-express'
 import { UploadPictureDto } from './dto/upload-picture.dto'
@@ -19,6 +18,7 @@ import { GetPictureVo } from './vo/get-picture.vo'
 import { DeletePictureVo } from './vo/delete-picture.vo'
 import { UpdatePictureDto } from './dto/update-picture.dto'
 import { UpdatePictureVo } from './vo/update-picture.vo'
+import { TagCategoryListVo } from './vo/tag-category.vo'
 
 @Controller({
     path: 'picture',
@@ -29,11 +29,6 @@ export class PictureController {
         private readonly pictureService: PictureService,
         private readonly responseService: ResponseService
     ) {}
-
-    @Post()
-    create(@Body() createPictureDto: CreatePictureDto) {
-        return this.pictureService.create(createPictureDto)
-    }
 
     @Post('/list/page')
     @UseGuards(AuthGuard, RoleGuard)
@@ -111,5 +106,12 @@ export class PictureController {
     async updatePicture(@Body(new ValidationPipe()) updatePictureDto: UpdatePictureDto) {
         const data = await this.pictureService.update(updatePictureDto)
         return this.responseService.success(data)
+    }
+    @Get('/tag_category')
+    @ApiResponse({ type: TagCategoryListVo })
+    listPictureTagCategory() {
+        const tags = ['热门', '搞笑', '生活', '高清', '艺术', '校园', '背景', '简历', '创意']
+        const category = ['模板', '电商', '表情包', '素材', '海报']
+        return this.responseService.success({ tagList: tags, categoryList: category })
     }
 }

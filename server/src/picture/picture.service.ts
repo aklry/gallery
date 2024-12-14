@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common'
-import { CreatePictureDto } from './dto/create-picture.dto'
 import { UpdatePictureDto } from './dto/update-picture.dto'
 import { extname } from 'node:path'
 import { DaoErrorException, NotLoginException, UploadFailedException } from '../custom-exception'
@@ -21,9 +20,6 @@ export class PictureService {
         private readonly prismaService: PrismaService,
         private readonly ossService: OssService
     ) {}
-    create(createPictureDto: CreatePictureDto) {
-        return 'This action adds a new picture'
-    }
 
     async getPictureByPage(queryPictureDto: QueryPictureDto) {
         const { current, pageSize, searchText, ...filters } = queryPictureDto
@@ -137,7 +133,7 @@ export class PictureService {
             name: result.name,
             introduction: result.introduction,
             category: result.category,
-            tags: JSON.parse(result.tags) || [],
+            tags: result.tags === '' ? '' : JSON.parse(result.tags) || [],
             picSize: Number(result.picSize),
             picWidth: result.picWidth,
             picHeight: result.picHeight,
@@ -269,6 +265,7 @@ export class PictureService {
             throw new UploadFailedException('图片上传失败', BusinessStatus.OPERATION_ERROR.code)
         }
         return {
+            id: picture.id,
             url: picture.url,
             picScale: picture.picScale,
             format: picture.picFormat,

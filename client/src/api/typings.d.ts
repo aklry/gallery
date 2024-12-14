@@ -1,6 +1,4 @@
 declare namespace API {
-    type CreatePictureDto = {}
-
     type CreateUserDto = {
         /** 用户昵称 */
         userName: string
@@ -12,6 +10,24 @@ declare namespace API {
         userProfile: string
         /** 用户角色 */
         userRole: string
+    }
+
+    type DeletePictureDto = {
+        /** 图片id */
+        id: string
+    }
+
+    type DeletePictureVo = {
+        /** 状态码 */
+        code: number
+        /** 消息 */
+        message: string
+        /** 删除结果 */
+        data: Record<string, any>
+        /** 时间戳 */
+        timestamp: string
+        /** 路径 */
+        path: string
     }
 
     type DeleteRequest = {
@@ -40,6 +56,50 @@ declare namespace API {
         userProfile?: string
     }
 
+    type GetPictureVo = {
+        /** 状态码 */
+        code: number
+        /** 消息 */
+        message: string
+        /** 图片信息 */
+        data: GetPictureVoModel
+        /** 时间戳 */
+        timestamp: string
+        /** 路径 */
+        path: string
+    }
+
+    type GetPictureVoModel = {
+        /** 图片ID */
+        id: string
+        /** 图片URL */
+        url: string
+        /** 图片名称 */
+        name: string
+        /** 图片简介 */
+        introduction: string
+        /** 图片分类 */
+        category: string
+        /** 图片标签 */
+        tags: string[]
+        /** 图片尺寸 */
+        picSize: number
+        /** 图片宽度 */
+        picWidth: number
+        /** 图片高度 */
+        picHeight: number
+        /** 图片缩放比例 */
+        picScale: number
+        /** 图片格式 */
+        picFormat: string
+        /** 创建时间 */
+        createTime: string
+        /** 用户信息 */
+        user: LoginVoModel
+        /** 编辑时间 */
+        editTime: string
+    }
+
     type LoginVoModel = {
         /** 用户ID */
         id: string
@@ -55,19 +115,143 @@ declare namespace API {
         userRole: string
     }
 
-    type PictureControllerFindOneV1Params = {
+    type PictureControllerGetByIdV1Params = {
         id: string
     }
 
-    type PictureControllerRemoveV1Params = {
+    type PictureControllerGetByIdVoV1Params = {
         id: string
     }
 
-    type PictureControllerUpdateV1Params = {
-        id: string
+    type PictureVo = {
+        /** 状态码 */
+        code: number
+        /** 消息 */
+        message: string
+        /** 图片信息 */
+        data: PictureVoType
+        /** 时间戳 */
+        timestamp: string
+        /** 路径 */
+        path: string
     }
 
-    type UpdatePictureDto = {}
+    type PictureVoModel = {
+        /** 图片id */
+        id: string
+        /** 图片url */
+        url: string
+        /** 图片名称 */
+        name: string
+        /** 图片简介 */
+        introduction: string
+        /** 图片分类 */
+        category: string
+        /** 图片标签 */
+        tags: string[]
+        /** 图片尺寸 */
+        picSize: number
+        /** 图片宽度 */
+        picWidth: number
+        /** 图片高度 */
+        picHeight: number
+        /** 图片比例 */
+        picScale: number
+        /** 图片格式 */
+        picFormat: string
+        /** 创建时间 */
+        createTime: string
+        /** 用户id */
+        userId: string
+    }
+
+    type PictureVoType = {
+        /** 图片信息 */
+        list: PictureVoModel[]
+        /** 总数 */
+        total: number
+    }
+
+    type QueryPictureDto = {
+        /** 当前页 */
+        current: string
+        /** 每页条数 */
+        pageSize: string
+        /** 排序字段 */
+        sortField?: string
+        /** 排序方式 */
+        sortOrder?: string
+        /** 图片id */
+        id?: string
+        /** 图片名称 */
+        name?: string
+        /** 图片介绍 */
+        introduction?: string
+        /** 图片分类 */
+        category?: string
+        /** 图片标签 */
+        tags?: string[]
+        /** 文件体积 */
+        picSize?: number
+        /** 图片宽度 */
+        picWidth?: number
+        /** 图片高度 */
+        picHeight?: number
+        /** 图片比例 */
+        picScale?: number
+        /** 图片格式 */
+        picFormat?: string
+        /** 搜索词 */
+        searchText?: string
+        /** 用户id */
+        userId?: string
+    }
+
+    type TagCategoryList = {
+        /** 标签列表 */
+        tagList: string[]
+        /** 分类列表 */
+        categoryList: string[]
+    }
+
+    type TagCategoryListVo = {
+        /** 状态码 */
+        code: number
+        /** 消息 */
+        message: string
+        /** 标签分类列表 */
+        data: TagCategoryList
+        /** 时间戳 */
+        timestamp: string
+        /** 路径 */
+        path: string
+    }
+
+    type UpdatePictureDto = {
+        /** 图片id */
+        id: string
+        /** 图片名称 */
+        name: string
+        /** 图片介绍 */
+        introduction: string
+        /** 图片分类 */
+        category: string
+        /** 图片标签 */
+        tags: string[]
+    }
+
+    type UpdatePictureVo = {
+        /** 状态码 */
+        code: number
+        /** 消息 */
+        message: string
+        /** 更新结果 */
+        data: Record<string, any>
+        /** 时间戳 */
+        timestamp: string
+        /** 路径 */
+        path: string
+    }
 
     type UpdateUserDto = {
         /** 用户id */
@@ -96,6 +280,8 @@ declare namespace API {
     }
 
     type UploadPictureVoModel = {
+        /** 图片id */
+        id: string
         /** 图片url */
         url: string
         /** 图片比例 */
