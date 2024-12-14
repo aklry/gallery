@@ -13,6 +13,7 @@ import { PictureVoModel } from './vo/picture.vo'
 import { GetPictureVoModel } from './vo/get-picture.vo'
 import { LoginVoModel } from '../user/vo/user-login.vo'
 import { DeletePictureDto } from './dto/delete-picture.dto'
+import { Prisma } from '@prisma/client'
 
 @Injectable()
 export class PictureService {
@@ -29,18 +30,30 @@ export class PictureService {
             ...(searchText && {
                 OR: [{ name: { contains: searchText } }, { introduction: { contains: searchText } }]
             }),
-            ...Object.entries(filters).reduce((acc, [key, value]) => {
-                if (value !== undefined) {
-                    acc[key] = value
+            ...Object.entries(filters).reduce((acc: any, [key, value]) => {
+                if (value !== undefined && key !== 'sortField' && key !== 'sortOrder') {
+                    if (key === 'tags' && Array.isArray(value)) {
+                        acc[key] = {
+                            contains: value.map(tag => `"${tag}"`).join(',')
+                        }
+                    } else {
+                        acc[key] = value
+                    }
                 }
                 return acc
             }, {})
         }
+        const orderBy: any = filters.sortField
+            ? {
+                  [filters.sortField]: filters.sortOrder || 'desc'
+              }
+            : undefined
 
         // Get paginated results and total count in parallel
         const [data, total] = await Promise.all([
             this.prismaService.picture.findMany({
                 where,
+                orderBy,
                 skip: (Number(current) - 1) * Number(pageSize),
                 take: Number(pageSize)
             }),
@@ -52,7 +65,7 @@ export class PictureService {
             name: item.name,
             introduction: item.introduction,
             category: item.category,
-            tags: JSON.parse(item.tags) || [],
+            tags: item.tags === '' ? '' : JSON.parse(item.tags) || [],
             picSize: Number(item.picSize),
             picWidth: item.picWidth,
             picHeight: item.picHeight,
@@ -103,7 +116,7 @@ export class PictureService {
             name: item.name,
             introduction: item.introduction,
             category: item.category,
-            tags: JSON.parse(item.tags) || [],
+            tags: item.tags === '' ? '' : JSON.parse(item.tags) || [],
             format: item.picFormat,
             fileSize: item.picSize,
             width: item.picWidth,

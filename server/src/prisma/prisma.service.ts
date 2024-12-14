@@ -73,6 +73,10 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
                 params.args.where = { ...params.args.where, isDelete: 0 }
             }
 
+            if (params.action === 'count') {
+                params.args.where = { ...params.args.where, isDelete: 0 }
+            }
+
             // 删除操作改为更新 isDelete = 1
             if (params.action === 'delete') {
                 // 转换为 update 操作

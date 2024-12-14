@@ -46,9 +46,16 @@ export const routes: RouteRecordRaw[] = [
         component: () => import('@/views/picture/add-picture/index.vue')
     },
     {
-        path: '/picture/edit/:id',
-        name: 'edit-picture',
-        component: () => import('@/views/picture/edit-picture/index.vue'),
-        props: true
+        path: '/picture/:id',
+        name: 'picture-detail',
+        component: () => import('@/views/picture/picture-detail/index.vue')
+    },
+    {
+        path: '/picture/admin',
+        name: 'admin-picture',
+        component: () => import('@/views/picture/admin/index.vue'),
+        meta: {
+            access: AccessEnum.ADMIN
+        }
     }
 ]

@@ -24,6 +24,11 @@ export const useMenus = () => {
             key: '/user/admin',
             label: '用户管理',
             title: '用户管理'
+        },
+        {
+            key: '/picture/admin',
+            label: '图片管理',
+            title: '图片管理'
         }
     ]
 

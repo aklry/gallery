@@ -1,8 +1,8 @@
 <template>
     <div class="add-picture">
-        <h2 class="text-xl">创建图片</h2>
+        <h2 class="text-xl">{{ id ? '修改图片' : '创建图片' }}</h2>
         <picture-upload :picture="picture" :onUploadSuccess="handleUploadSuccess" />
-        <a-card title="图片信息">
+        <a-card title="图片信息" v-if="picture">
             <a-form ::model="pictureInfo">
                 <a-form-item label="图片名称" name="name">
                     <a-input v-model:value="pictureInfo.name" />
@@ -22,7 +22,7 @@
                     <a-select v-model:value="pictureInfo.tags" :options="tag_category?.tagList" mode="tags" />
                 </a-form-item>
                 <a-form-item>
-                    <a-button type="primary" block @click="handleUpdatePicture">创建</a-button>
+                    <a-button :loading="loading" type="primary" block @click="handleUpdatePicture">创建</a-button>
                 </a-form-item>
             </a-form>
         </a-card>
@@ -32,12 +32,18 @@
 <script setup lang="ts">
 import PictureUpload from '@/components/picture-upload/index.vue'
 import { ref, reactive, onMounted } from 'vue'
-import { pictureControllerListPictureTagCategoryV1, pictureControllerUpdatePictureV1 } from '@/api/picture'
+import {
+    pictureControllerListPictureTagCategoryV1,
+    pictureControllerUpdatePictureV1,
+    pictureControllerGetByIdV1
+} from '@/api/picture'
 import { message } from 'ant-design-vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 
-const picture = ref<API.UploadPictureVoModel>()
+const route = useRoute()
 const router = useRouter()
+const id = route.query?.id
+const picture = ref<API.UploadPictureVoModel>()
 const handleUploadSuccess = (result: API.UploadPictureVoModel) => {
     picture.value = result
     pictureInfo.name = result.filename
@@ -48,6 +54,7 @@ interface TagCategory {
     categoryList: { value: string }[]
 }
 const tag_category = ref<TagCategory>()
+const loading = ref<boolean>(false)
 const pictureInfo = reactive<API.UpdatePictureDto>({
     id: '',
     introduction: '',
@@ -57,17 +64,18 @@ const pictureInfo = reactive<API.UpdatePictureDto>({
 })
 const handleUpdatePicture = async () => {
     try {
+        loading.value = true
         const res = await pictureControllerUpdatePictureV1(pictureInfo)
         if (res.data) {
             message.success('创建成功')
-            router.push({
-                path: `/picture/edit/${pictureInfo.id}`
-            })
+            router.push(`/picture/${pictureInfo.id}`)
         } else {
             message.error(res.message)
         }
     } catch (error) {
         message.error('创建失败')
+    } finally {
+        loading.value = false
     }
 }
 onMounted(async () => {
@@ -78,6 +86,35 @@ onMounted(async () => {
     tag_category.value = {
         tagList,
         categoryList
+    }
+})
+
+onMounted(async () => {
+    if (id) {
+        try {
+            const res = await pictureControllerGetByIdV1({ id: id as string })
+            if (res.code === 1) {
+                Object.assign(pictureInfo, {
+                    id: res.data.id,
+                    name: res.data.name,
+                    introduction: res.data.introduction,
+                    category: res.data.category,
+                    tags: res.data.tags
+                })
+                picture.value = {
+                    id: res.data.id,
+                    url: res.data.url,
+                    filename: res.data.name,
+                    picScale: res.data.picScale,
+                    width: res.data.picWidth,
+                    height: res.data.picHeight,
+                    fileSize: res.data.picSize,
+                    format: res.data.picFormat
+                }
+            }
+        } catch (error) {
+            message.error('获取数据失败,请重试')
+        }
     }
 })
 </script>

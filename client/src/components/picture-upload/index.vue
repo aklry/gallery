@@ -6,6 +6,7 @@
             list-type="picture-card"
             :showUploadList="false"
             :beforeUpload="handleBeforeUpload"
+            :maxCount="1"
         >
             <img v-if="picture?.url" :src="picture.url" alt="avatar" />
             <div v-else>
