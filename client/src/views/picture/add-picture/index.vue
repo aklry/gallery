@@ -32,14 +32,13 @@
 <script setup lang="ts">
 import PictureUpload from '@/components/picture-upload/index.vue'
 import { ref, reactive, onMounted } from 'vue'
-import {
-    pictureControllerListPictureTagCategoryV1,
-    pictureControllerUpdatePictureV1,
-    pictureControllerGetByIdV1
-} from '@/api/picture'
+import { pictureControllerUpdatePictureV1, pictureControllerGetByIdV1 } from '@/api/picture'
 import { message } from 'ant-design-vue'
 import { useRoute, useRouter } from 'vue-router'
-
+import usePictureStore from '@/store/modules/picture'
+import { storeToRefs } from 'pinia'
+const pictureStore = usePictureStore()
+const { tag_category } = storeToRefs(pictureStore)
 const route = useRoute()
 const router = useRouter()
 const id = route.query?.id
@@ -49,11 +48,6 @@ const handleUploadSuccess = (result: API.UploadPictureVoModel) => {
     pictureInfo.name = result.filename
     pictureInfo.id = result.id
 }
-interface TagCategory {
-    tagList: { value: string }[]
-    categoryList: { value: string }[]
-}
-const tag_category = ref<TagCategory>()
 const loading = ref<boolean>(false)
 const pictureInfo = reactive<API.UpdatePictureDto>({
     id: '',
@@ -78,16 +72,6 @@ const handleUpdatePicture = async () => {
         loading.value = false
     }
 }
-onMounted(async () => {
-    const res = await pictureControllerListPictureTagCategoryV1()
-    const tagList = res.data.tagList.map(item => ({ value: item }))
-    const categoryList = res.data.categoryList.map(item => ({ value: item }))
-
-    tag_category.value = {
-        tagList,
-        categoryList
-    }
-})
 
 onMounted(async () => {
     if (id) {

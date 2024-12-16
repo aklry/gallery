@@ -13,7 +13,6 @@ import { PictureVoModel } from './vo/picture.vo'
 import { GetPictureVoModel } from './vo/get-picture.vo'
 import { LoginVoModel } from '../user/vo/user-login.vo'
 import { DeletePictureDto } from './dto/delete-picture.dto'
-import { Prisma } from '@prisma/client'
 
 @Injectable()
 export class PictureService {
@@ -83,7 +82,6 @@ export class PictureService {
 
     async getPictureByPageVo(queryPictureDto: QueryPictureDto) {
         const { current, pageSize, searchText, ...filters } = queryPictureDto
-
         if (Number(pageSize) > 20) {
             throw new DaoErrorException(BusinessStatus.OPERATION_ERROR.message, BusinessStatus.OPERATION_ERROR.code)
         }
@@ -93,18 +91,30 @@ export class PictureService {
             ...(searchText && {
                 OR: [{ name: { contains: searchText } }, { introduction: { contains: searchText } }]
             }),
-            ...Object.entries(filters).reduce((acc, [key, value]) => {
-                if (value !== undefined) {
-                    acc[key] = value
+            ...Object.entries(filters).reduce((acc: any, [key, value]) => {
+                if (value !== undefined && key !== 'sortField' && key !== 'sortOrder') {
+                    if (key === 'tags' && Array.isArray(value)) {
+                        acc[key] = {
+                            contains: value.map(tag => `"${tag}"`).join(',')
+                        }
+                    } else {
+                        acc[key] = value
+                    }
                 }
                 return acc
             }, {})
         }
+        const orderBy: any = filters.sortField
+            ? {
+                  [filters.sortField]: filters.sortOrder || 'desc'
+              }
+            : undefined
 
         // Get paginated results and total count in parallel
         const [data, total] = await Promise.all([
             this.prismaService.picture.findMany({
                 where,
+                orderBy,
                 skip: (Number(current) - 1) * Number(pageSize),
                 take: Number(pageSize)
             }),
