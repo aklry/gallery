@@ -14,6 +14,18 @@ export async function pictureControllerDeletePictureV1(body: API.DeletePictureDt
     })
 }
 
+/** 此处后端没有提供注释 POST /api/v1/picture/edit */
+export async function pictureControllerEditPictureV1(body: API.UpdatePictureDto, options?: { [key: string]: any }) {
+    return ryRequest.request<API.UpdatePictureVo>('/api/v1/picture/edit', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        data: body,
+        ...(options || {})
+    })
+}
+
 /** 此处后端没有提供注释 GET /api/v1/picture/get/${param0} */
 export async function pictureControllerGetByIdV1(
     // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
@@ -60,6 +72,18 @@ export async function pictureControllerGetPictureByPageVoV1(
     options?: { [key: string]: any }
 ) {
     return ryRequest.request<API.PictureVo>('/api/v1/picture/list/page/vo', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        data: body,
+        ...(options || {})
+    })
+}
+
+/** 此处后端没有提供注释 POST /api/v1/picture/review */
+export async function pictureControllerReviewPictureV1(body: API.ReviewPictureDto, options?: { [key: string]: any }) {
+    return ryRequest.request<any>('/api/v1/picture/review', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -122,6 +146,21 @@ export async function pictureControllerUploadFileV1(
     return ryRequest.request<API.UploadPictureVo>('/api/v1/picture/upload', {
         method: 'POST',
         data: formData,
+        ...(options || {})
+    })
+}
+
+/** 此处后端没有提供注释 POST /api/v1/picture/upload/batch */
+export async function pictureControllerUploadBatchV1(
+    body: API.UploadBatchPictureDto,
+    options?: { [key: string]: any }
+) {
+    return ryRequest.request<API.UploadBatchPictureVo>('/api/v1/picture/upload/batch', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        data: body,
         ...(options || {})
     })
 }

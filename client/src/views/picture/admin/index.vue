@@ -1,7 +1,8 @@
 <script setup lang="ts">
+import { ReviewStatus } from '@/constants'
 import usePictureHooks from './hooks'
 import { formatTime, formatSize } from '@/utils'
-const { columns, dataSource, searchParams, handleChange, total, handleSearch, handleEdit, handleDelete } =
+const { columns, dataSource, searchParams, handleChange, total, handleSearch, handleEdit, handleDelete, handleReview } =
     usePictureHooks()
 </script>
 
@@ -35,7 +36,7 @@ const { columns, dataSource, searchParams, handleChange, total, handleSearch, ha
                 pageSize: Number(searchParams.pageSize),
                 total
             }"
-            :scroll="{ x: 'max-content', y: 400 }"
+            :scroll="{ x: 'max-content', y: 300 }"
             @change="handleChange"
         >
             <template #bodyCell="{ column, record }">
@@ -49,8 +50,31 @@ const { columns, dataSource, searchParams, handleChange, total, handleSearch, ha
                     {{ formatTime(record.createTime) }}
                 </template>
                 <template v-if="column.key === 'action'">
-                    <a-button type="primary" class="mr-[10px]" @click="handleEdit(record.id)">编辑</a-button>
-                    <a-button type="primary" danger @click="handleDelete(record.id)">删除</a-button>
+                    <a-space>
+                        <a-button size="small" type="primary" @click="handleEdit(record.id)">编辑</a-button>
+                        <a-button size="small" type="primary" danger @click="handleDelete(record.id)">删除</a-button>
+                        <a-button
+                            size="small"
+                            type="primary"
+                            v-if="
+                                record.reviewStatus === ReviewStatus.REVIEWING ||
+                                record.reviewStatus === ReviewStatus.REJECT
+                            "
+                            @click="handleReview(record.id, ReviewStatus.PASS)"
+                            >通过</a-button
+                        >
+                        <a-button
+                            size="small"
+                            type="primary"
+                            danger
+                            v-if="
+                                record.reviewStatus === ReviewStatus.REVIEWING ||
+                                record.reviewStatus === ReviewStatus.PASS
+                            "
+                            @click="handleReview(record.id, ReviewStatus.REJECT)"
+                            >拒绝</a-button
+                        >
+                    </a-space>
                 </template>
             </template>
             <template #pictureInfo="{ record }">

@@ -1,8 +1,18 @@
-POST http://localhost:3000/api/v1/picture/upload/batch
+# POST http://localhost:3000/api/v1/picture/upload/batch
+# Content-Type: application/json
+# Cookie: connect.sid=s%3AzvXqIsUGpw8NWuWUiNMYOXFUMknmHb1P.K%2FLsVL1lOrfoycMZLAJStysjJ03H9mcWEZGRmxKMhS8
+
+# {
+#     "keywords": "高清壁纸",
+#     "count": 10
+# }
+
+POST http://localhost:3000/api/v1/picture/review
 Content-Type: application/json
-Cookie: connect.sid=s%3A3KNZ4UMFz2nKnO3uOPOxjZYKTtIlgNI8.8RfAup365xcl9RKA%2B68NLBY7xaWgSguR8HUsJYdsZm4
+Cookie: connect.sid=s%3AsXTpP-rGAMrniKV9qcUHQHP00n6MO-G9.0315M9Z4qDyzEWfTGYANsTPnwRu%2FMR%2BJs8HY16XBCoc
 
 {
-    "keywords": "美女",
-    "count": 10
+    "id": "cm4sh8ow9000asosgu7eslld1",
+    "reviewStatus": 1,
+    "reviewMessage": "审核通过"
 }

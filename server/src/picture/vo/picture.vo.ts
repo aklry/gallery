@@ -27,6 +27,12 @@ export class PictureVoModel {
     createTime: string
     @ApiProperty({ description: '用户id', required: true })
     userId: string
+    @ApiProperty({ description: '审核状态', required: true })
+    reviewStatus: number
+    @ApiProperty({ description: '审核时间', required: true })
+    reviewTime: string
+    @ApiProperty({ description: '审核信息', required: true })
+    reviewMessage: string
 }
 
 export class PictureVoType {

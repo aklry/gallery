@@ -36,7 +36,8 @@ export class OssService {
         try {
             const urlRegex = /^(?:http(s)?:\/\/)?\S+$/
             let ext = ''
-            if (urlRegex.test(filename)) {
+            const isUrl = urlRegex.test(filename)
+            if (isUrl) {
                 const response = await axios.get(filename, { responseType: 'arraybuffer' })
                 fileBuffer = Buffer.from(response.data, 'binary')
                 // Get content type from response headers
@@ -66,7 +67,7 @@ export class OssService {
                 fileSize: BigInt(info.FileSize.value),
                 width: info.ImageWidth.value,
                 height: info.ImageHeight.value,
-                filename: filename
+                filename: isUrl ? uploadFileName.split('/').pop().split('-').pop() : filename
             } as UploadPictureVoModel
         } catch (error) {
             throw new UploadFailedException(BusinessStatus.OPERATION_ERROR.message, BusinessStatus.OPERATION_ERROR.code)

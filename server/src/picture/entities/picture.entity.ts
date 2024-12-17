@@ -77,6 +77,26 @@ export class Picture {
     @ApiProperty({ description: '更新时间', required: true })
     updateTime: Date
     /**
+     * 审核状态
+     */
+    @ApiProperty({ description: '审核状态', required: true })
+    reviewStatus: number
+    /**
+     * 审核消息
+     */
+    @ApiProperty({ description: '审核消息', required: true })
+    reviewMessage: string
+    /**
+     * 审核人id
+     */
+    @ApiProperty({ description: '审核人id', required: true })
+    reviewerId: string
+    /**
+     * 审核时间
+     */
+    @ApiProperty({ description: '审核时间', required: true })
+    reviewTime: Date
+    /**
      * 是否删除
      */
     @ApiProperty({ description: '是否删除', required: true })

@@ -51,4 +51,16 @@ export class QueryPictureDto extends PageRequest {
     @IsOptional()
     @ApiProperty({ description: '用户id', required: false })
     userId?: string
+    @IsNumber()
+    @IsOptional()
+    @ApiProperty({ description: '审核状态', required: false })
+    reviewStatus?: number
+    @IsString()
+    @IsOptional()
+    @ApiProperty({ description: '审核人id', required: false })
+    reviewerId?: string
+    @IsString()
+    @IsOptional()
+    @ApiProperty({ description: '审核消息', required: false })
+    reviewMessage?: string
 }

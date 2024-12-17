@@ -15,6 +15,10 @@ import { GetPictureVoModel } from './vo/get-picture.vo'
 import { LoginVoModel } from '../user/vo/user-login.vo'
 import { DeletePictureDto } from './dto/delete-picture.dto'
 import { ExtractService } from '../extract/extract.service'
+import { ReviewPictureDto } from './dto/review-picture.dto'
+import { UserRole } from '../user/enum/user'
+import { Picture } from './entities/picture.entity'
+import { ReviewStatus } from './enum'
 
 @Injectable()
 export class PictureService {
@@ -29,11 +33,14 @@ export class PictureService {
 
         // Build where clause for search and filters
         const where: any = {
+            reviewStatus: {
+                not: ReviewStatus.REJECT // ReviewStatus.PASS
+            },
             ...(searchText && {
                 OR: [{ name: { contains: searchText } }, { introduction: { contains: searchText } }]
             }),
             ...Object.entries(filters).reduce((acc: any, [key, value]) => {
-                if (value !== undefined && key !== 'sortField' && key !== 'sortOrder') {
+                if (value !== undefined && key !== 'sortField' && key !== 'sortOrder' && key !== 'reviewStatus') {
                     if (key === 'tags' && Array.isArray(value)) {
                         acc[key] = {
                             contains: value.map(tag => `"${tag}"`).join(',')
@@ -75,7 +82,10 @@ export class PictureService {
             picFormat: item.picFormat,
             createTime: item.createTime.toISOString(),
             userId: item.userId,
-            editTime: item.editTime.toISOString()
+            editTime: item.editTime.toISOString(),
+            reviewStatus: item.reviewStatus,
+            reviewTime: item.reviewTime.toISOString(),
+            reviewMessage: item.reviewMessage
         }))
         return {
             list: result,
@@ -94,8 +104,9 @@ export class PictureService {
             ...(searchText && {
                 OR: [{ name: { contains: searchText } }, { introduction: { contains: searchText } }]
             }),
+            reviewStatus: 1,
             ...Object.entries(filters).reduce((acc: any, [key, value]) => {
-                if (value !== undefined && key !== 'sortField' && key !== 'sortOrder') {
+                if (value !== undefined && key !== 'sortField' && key !== 'sortOrder' && key !== 'reviewStatus') {
                     if (key === 'tags' && Array.isArray(value)) {
                         acc[key] = {
                             contains: value.map(tag => `"${tag}"`).join(',')
@@ -252,9 +263,14 @@ export class PictureService {
             if (!picture) {
                 throw new UploadFailedException('图片不存在', BusinessStatus.OPERATION_ERROR.code)
             }
+            if (picture.userId !== user.id && user.userRole !== UserRole.ADMIN) {
+                throw new DaoErrorException('仅限本人或管理员修改', BusinessStatus.OPERATION_ERROR.code)
+            }
         }
         // 上传图片
         const ossResult = await this.ossService.uploadFile(file.originalname, file.buffer)
+        const reviewStatus = user.userRole === UserRole.ADMIN ? 1 : 0
+        const reviewTime = user.userRole === UserRole.ADMIN ? new Date() : undefined
         const picture = pictureId
             ? await this.prismaService.picture.update({
                   where: {
@@ -269,7 +285,9 @@ export class PictureService {
                       picHeight: Number(ossResult.height),
                       name: ossResult.filename,
                       editTime: new Date(),
-                      userId: user?.id || ''
+                      userId: user?.id || '',
+                      reviewStatus,
+                      reviewTime
                   }
               })
             : await this.prismaService.picture.create({
@@ -316,18 +334,37 @@ export class PictureService {
         }
         return true
     }
-
+    // 修改图片信息(管理员使用)
     async update(updatePictureDto: UpdatePictureDto) {
         const { id, ...rest } = updatePictureDto
         const oldPicture = await this.getById(id)
-        if (!oldPicture) {
-            throw new DaoErrorException('图片不存在', BusinessStatus.OPERATION_ERROR.code)
-        }
+        this.validPicture(oldPicture)
         const result = await this.prismaService.picture.update({
             where: { id },
             data: {
                 ...rest,
-                tags: JSON.stringify(rest.tags)
+                tags: JSON.stringify(rest.tags),
+                reviewStatus: 1,
+                reviewTime: new Date()
+            }
+        })
+        if (!result) {
+            throw new DaoErrorException('图片更新失败', BusinessStatus.OPERATION_ERROR.code)
+        }
+        return true
+    }
+    // 修改图片信息(用户使用)
+    async edit(updatePictureDto: UpdatePictureDto) {
+        const { id, ...rest } = updatePictureDto
+        const oldPicture = await this.getById(id)
+        this.validPicture(oldPicture)
+        const result = await this.prismaService.picture.update({
+            where: { id },
+            data: {
+                ...rest,
+                tags: JSON.stringify(rest.tags),
+                reviewStatus: 0,
+                editTime: new Date()
             }
         })
         if (!result) {
@@ -363,6 +400,7 @@ export class PictureService {
     }
     async setPicture(picture: UploadPictureVoModel[], req: Request) {
         const user = req.session.user
+        console.log(picture)
         if (!user) {
             throw new NotLoginException('用户未登录', BusinessStatus.NOT_LOGIN_ERROR.code)
         }
@@ -375,11 +413,48 @@ export class PictureService {
                 category: '',
                 tags: '',
                 picSize: BigInt(item.fileSize),
-                picWidth: item.width,
-                picHeight: item.height,
+                picWidth: Number(item.width),
+                picHeight: Number(item.height),
                 picScale: item.picScale,
                 picFormat: item.format
             }))
         })
+    }
+    async reviewPicture(reviewPictureDto: ReviewPictureDto, req: Request) {
+        const user = req.session.user
+        const { id, reviewStatus, reviewMessage } = reviewPictureDto
+        const picture = await this.prismaService.picture.findUnique({
+            where: { id }
+        })
+        this.validPicture(picture)
+        if (picture.reviewStatus === reviewStatus) {
+            throw new DaoErrorException('请勿重复审核', BusinessStatus.OPERATION_ERROR.code)
+        }
+        const result = await this.prismaService.picture.update({
+            where: { id },
+            data: {
+                reviewStatus,
+                reviewMessage,
+                reviewTime: new Date(),
+                reviewerId: user.id
+            }
+        })
+        if (!result) {
+            throw new DaoErrorException('图片审核失败', BusinessStatus.OPERATION_ERROR.code)
+        }
+        return true
+    }
+    validPicture(picture: Picture | GetPictureVoModel) {
+        if (picture === null) {
+            throw new DaoErrorException('图片不存在', BusinessStatus.OPERATION_ERROR.code)
+        }
+        if (picture.id === null) {
+            throw new DaoErrorException('id不能为空', BusinessStatus.OPERATION_ERROR.code)
+        }
+        if (picture.url !== '') {
+            if (picture.url.length > 1024) {
+                throw new DaoErrorException('url过长', BusinessStatus.OPERATION_ERROR.code)
+            }
+        }
     }
 }

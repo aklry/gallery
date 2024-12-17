@@ -1,7 +1,12 @@
 import { ref, reactive, onMounted } from 'vue'
-import { pictureControllerDeletePictureV1, pictureControllerGetPictureByPageV1 } from '@/api/picture'
+import {
+    pictureControllerDeletePictureV1,
+    pictureControllerGetPictureByPageV1,
+    pictureControllerReviewPictureV1
+} from '@/api/picture'
 import { message, Modal, TableColumnProps } from 'ant-design-vue'
 import { useRouter } from 'vue-router'
+import { ReviewMessage, ReviewStatus } from '@/constants'
 const usePictureHooks = () => {
     const router = useRouter()
     const searchParams = reactive<API.QueryPictureDto>({
@@ -109,6 +114,19 @@ const usePictureHooks = () => {
             width: 200
         }
     ])
+    const handleReview = async (id: string, status: ReviewStatus, info?: string) => {
+        try {
+            await pictureControllerReviewPictureV1({
+                id,
+                reviewStatus: status,
+                reviewMessage: info ?? ReviewMessage[status]
+            })
+            message.success(status === ReviewStatus.PASS ? '审核通过' : '成功拒绝')
+            fetchData()
+        } catch (error) {
+            message.error('审核失败')
+        }
+    }
 
     onMounted(() => {
         fetchData()
@@ -121,7 +139,8 @@ const usePictureHooks = () => {
         handleSearch,
         searchParams,
         handleEdit,
-        handleDelete
+        handleDelete,
+        handleReview
     }
 }
 

@@ -176,6 +176,12 @@ declare namespace API {
         createTime: string
         /** 用户id */
         userId: string
+        /** 审核状态 */
+        reviewStatus: number
+        /** 审核时间 */
+        reviewTime: string
+        /** 审核信息 */
+        reviewMessage: string
     }
 
     type PictureVoType = {
@@ -218,6 +224,21 @@ declare namespace API {
         searchText?: string
         /** 用户id */
         userId?: string
+        /** 审核状态 */
+        reviewStatus?: number
+        /** 审核人id */
+        reviewerId?: string
+        /** 审核消息 */
+        reviewMessage?: string
+    }
+
+    type ReviewPictureDto = {
+        /** 图片id */
+        id: string
+        /** 审核状态 */
+        reviewStatus: number
+        /** 审核消息 */
+        reviewMessage?: string
     }
 
     type TagCategoryList = {
@@ -295,6 +316,21 @@ declare namespace API {
     type UploadAvatarVoModel = {
         /** 头像url */
         url: string
+    }
+
+    type UploadBatchPictureDto = {}
+
+    type UploadBatchPictureVo = {
+        /** 状态码 */
+        code: number
+        /** 消息 */
+        message: string
+        /** 上传数量 */
+        data: number
+        /** 时间戳 */
+        timestamp: string
+        /** 路径 */
+        path: string
     }
 
     type UploadPictureVo = {

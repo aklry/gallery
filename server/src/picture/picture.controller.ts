@@ -21,6 +21,7 @@ import { UpdatePictureVo } from './vo/update-picture.vo'
 import { TagCategoryListVo } from './vo/tag-category.vo'
 import { UploadBatchPictureDto } from './dto/uploadBatch-picture.dto'
 import { UploadBatchPictureVo } from './vo/uploadBatch-picture.vo'
+import { ReviewPictureDto } from './dto/review-picture.dto'
 
 @Controller({
     path: 'picture',
@@ -77,8 +78,6 @@ export class PictureController {
     @UseInterceptors(FileInterceptor('file'))
     @ApiConsumes('multipart/form-data')
     @ApiResponse({ type: UploadPictureVo })
-    @UseGuards(RoleGuard)
-    @Roles([UserRole.ADMIN])
     @ApiBody({
         description: '上传图片',
         schema: {
@@ -89,8 +88,6 @@ export class PictureController {
             }
         }
     })
-    @UseGuards(RoleGuard)
-    @Roles([UserRole.ADMIN])
     async uploadFile(
         @UploadedFile() file: Express.Multer.File,
         @Req() req: Request,
@@ -108,6 +105,16 @@ export class PictureController {
         const data = await this.pictureService.update(updatePictureDto)
         return this.responseService.success(data)
     }
+
+    @Post('/edit')
+    @UseGuards(RoleGuard)
+    @Roles([UserRole.ADMIN])
+    @ApiResponse({ type: UpdatePictureVo })
+    async editPicture(@Body(new ValidationPipe()) updatePictureDto: UpdatePictureDto) {
+        const data = await this.pictureService.edit(updatePictureDto)
+        return this.responseService.success(data)
+    }
+
     @Get('/tag_category')
     @ApiResponse({ type: TagCategoryListVo })
     listPictureTagCategory() {
@@ -124,5 +131,13 @@ export class PictureController {
         const { count, list } = await this.pictureService.uploadBatch(uploadBatchPictureDto, req)
         await this.pictureService.setPicture(list, req)
         return this.responseService.success(count)
+    }
+
+    @Post('/review')
+    @UseGuards(RoleGuard)
+    @Roles([UserRole.ADMIN])
+    async reviewPicture(@Body() reviewPictureDto: ReviewPictureDto, @Req() req: Request) {
+        const data = await this.pictureService.reviewPicture(reviewPictureDto, req)
+        return this.responseService.success(data)
     }
 }
