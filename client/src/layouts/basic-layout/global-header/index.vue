@@ -20,7 +20,7 @@
                     <template #overlay>
                         <a-menu>
                             <a-menu-item>
-                                <a-menu-item>
+                                <a-menu-item @click="changeRoute({ key: '/user/center' })">
                                     <UserOutlined class="mr-[10px]" />
                                     <span>个人中心</span>
                                 </a-menu-item>

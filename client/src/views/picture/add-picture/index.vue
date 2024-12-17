@@ -3,7 +3,7 @@
         <h2 class="text-xl">{{ id ? '修改图片' : '创建图片' }}</h2>
         <picture-upload :picture="picture" :onUploadSuccess="handleUploadSuccess" />
         <a-card title="图片信息" v-if="picture">
-            <a-form ::model="pictureInfo">
+            <a-form :model="pictureInfo">
                 <a-form-item label="图片名称" name="name">
                     <a-input v-model:value="pictureInfo.name" />
                 </a-form-item>

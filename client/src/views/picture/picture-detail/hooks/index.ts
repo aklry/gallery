@@ -37,7 +37,7 @@ const usePictureDetail = (id: string) => {
                     await pictureControllerDeletePictureV1({ id })
                     message.success('删除图片成功')
                     setTimeout(() => {
-                        router.push('/picture')
+                        router.push('/')
                     }, 1000)
                 } catch (error) {
                     message.error('删除图片失败')

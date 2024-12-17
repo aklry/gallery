@@ -40,6 +40,10 @@ model picture {
     createTime DateTime @default(now()) @db.DateTime(0)
     editTime DateTime @default(now()) @db.DateTime(0)
     updateTime DateTime @default(now()) @db.DateTime(0)
+    reviewStatus Int @default(0) @db.TinyInt
+    reviewMessage String @db.VarChar(512) @default("")
+    reviewerId String @db.VarChar(256) @default("")
+    reviewTime DateTime @db.DateTime(0) @default(now())
     isDelete Int @default(0) @db.TinyInt
 
     @@index([name], map: "idx_name")
@@ -47,4 +51,5 @@ model picture {
     @@index([category], map: "idx_category")
     @@index([tags], map: "idx_tags")
     @@index([userId], map: "idx_userId")
+    @@index([reviewStatus], map: "idx_reviewStatus")
 }

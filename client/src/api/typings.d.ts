@@ -35,6 +35,19 @@ declare namespace API {
         id: string
     }
 
+    type EditUserDto = {
+        /** 用户id */
+        id: string
+        /** 用户昵称 */
+        userName: string
+        /** 用户头像 */
+        userAvatar: string
+        /** 用户简介 */
+        userProfile: string
+        /** 用户密码 */
+        userPassword: string
+    }
+
     type FindUserDto = {
         /** 当前页 */
         current: string
@@ -264,6 +277,24 @@ declare namespace API {
         userProfile: string
         /** 用户角色 */
         userRole: string
+    }
+
+    type UploadAvatarVo = {
+        /** 状态码 */
+        code: number
+        /** 消息 */
+        message: string
+        /** 头像信息 */
+        data: UploadAvatarVoModel
+        /** 时间戳 */
+        timestamp: string
+        /** 路径 */
+        path: string
+    }
+
+    type UploadAvatarVoModel = {
+        /** 头像url */
+        url: string
     }
 
     type UploadPictureVo = {

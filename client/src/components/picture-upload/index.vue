@@ -23,16 +23,26 @@ import { ref } from 'vue'
 import { LoadingOutlined, PlusOutlined } from '@ant-design/icons-vue'
 import { message, UploadProps } from 'ant-design-vue'
 import { pictureControllerUploadFileV1 } from '@/api/picture'
+import { userControllerUploadUserAvatarV1 } from '@/api/user'
 const fileList = ref<any>([])
 const props = defineProps<{
-    onUploadSuccess: (result: API.UploadPictureVoModel) => void
-    picture?: API.UploadPictureVoModel
+    onUploadSuccess: (result: API.UploadPictureVoModel | API.UploadAvatarVoModel) => void
+    picture?: API.UploadPictureVoModel | API.UploadAvatarVoModel
+    prefix?: string
 }>()
 const uploadCustomRequest = async () => {
     loading.value = true
     try {
-        const params = props.picture ? { id: props.picture.id } : {}
-        const res = await pictureControllerUploadFileV1(params, fileList.value[0].originFileObj)
+        let res: API.UploadAvatarVo | API.UploadPictureVo
+        let params: any = {}
+        if (props.picture && 'id' in props.picture) {
+            params = { id: props.picture.id }
+        }
+        if (props.prefix) {
+            res = await userControllerUploadUserAvatarV1({ prefix: props.prefix }, fileList.value[0].originFileObj)
+        } else {
+            res = await pictureControllerUploadFileV1(params, fileList.value[0].originFileObj)
+        }
         if (res.code === 1) {
             props.onUploadSuccess(res.data)
         } else {

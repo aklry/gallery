@@ -192,7 +192,7 @@ export class PictureService {
             name: result.name,
             introduction: result.introduction,
             category: result.category,
-            tags: JSON.parse(result.tags) || [],
+            tags: result.tags === '' ? '' : JSON.parse(result.tags) || [],
             picSize: Number(result.picSize),
             picWidth: result.picWidth,
             picHeight: result.picHeight,

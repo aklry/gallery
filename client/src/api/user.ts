@@ -40,6 +40,18 @@ export async function userControllerDeleteUserV1(body: API.DeleteRequest, option
     })
 }
 
+/** 此处后端没有提供注释 POST /api/v1/user/edit */
+export async function userControllerEditUserV1(body: API.EditUserDto, options?: { [key: string]: any }) {
+    return ryRequest.request<API.UserUpdateVo>('/api/v1/user/edit', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        data: body,
+        ...(options || {})
+    })
+}
+
 /** 此处后端没有提供注释 GET /api/v1/user/get/login */
 export async function userControllerGetLoginUserV1(options?: { [key: string]: any }) {
     return ryRequest.request<API.UserLoginVo>('/api/v1/user/get/login', {
@@ -115,6 +127,44 @@ export async function userControllerUpdateUserV1(body: API.UpdateUserDto, option
             'Content-Type': 'application/json'
         },
         data: body,
+        ...(options || {})
+    })
+}
+
+/** 此处后端没有提供注释 POST /api/v1/user/update/avatar */
+export async function userControllerUploadUserAvatarV1(
+    body: {
+        prefix?: string
+    },
+    file?: File,
+    options?: { [key: string]: any }
+) {
+    const formData = new FormData()
+
+    if (file) {
+        formData.append('file', file)
+    }
+
+    Object.keys(body).forEach(ele => {
+        const item = (body as any)[ele]
+
+        if (item !== undefined && item !== null) {
+            if (typeof item === 'object' && !(item instanceof File)) {
+                if (item instanceof Array) {
+                    item.forEach(f => formData.append(ele, f || ''))
+                } else {
+                    formData.append(ele, JSON.stringify(item))
+                }
+            } else {
+                formData.append(ele, item)
+            }
+        }
+    })
+
+    return ryRequest.request<API.UploadAvatarVo>('/api/v1/user/update/avatar', {
+        method: 'POST',
+        data: formData,
+        requestType: 'form',
         ...(options || {})
     })
 }

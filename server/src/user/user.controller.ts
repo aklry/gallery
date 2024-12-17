@@ -1,5 +1,16 @@
 import { CreateUserDto } from './dto/create-user.dto'
-import { Controller, Get, Post, Body, Param, Req, UseGuards, Query } from '@nestjs/common'
+import {
+    Controller,
+    Get,
+    Post,
+    Body,
+    Param,
+    Req,
+    UseGuards,
+    Query,
+    UseInterceptors,
+    UploadedFile
+} from '@nestjs/common'
 import { UserService } from './user.service'
 import { ValidationPipe } from '../pipe/validation.pipe'
 import { version } from '../config'
@@ -14,7 +25,7 @@ import {
     UserCreateVo,
     UserUpdateVo
 } from './vo'
-import { ApiResponse } from '@nestjs/swagger'
+import { ApiBody, ApiConsumes, ApiResponse } from '@nestjs/swagger'
 import { Request } from 'express'
 import { AuthGuard, RoleGuard } from '../auth/auth.guard'
 import { User } from './entities/user.entity'
@@ -25,6 +36,10 @@ import { UserRole } from './enum/user'
 import { FindUserDto } from './dto/find-user.dto'
 import { DeleteRequest } from '../common/delete.dto'
 import { UpdateUserDto } from './dto/update-user.dto'
+import { EditUserDto } from './dto/edit-user.dto'
+import { UploadAvatarDto } from './dto/upload-avatar.dto'
+import { FileInterceptor } from '@nestjs/platform-express'
+import { UploadAvatarVo } from './vo/upload-avatar.vo'
 @Controller({
     path: 'user',
     version
@@ -120,5 +135,38 @@ export class UserController {
     async updateUser(@Body(new ValidationPipe()) updateUserDto: UpdateUserDto) {
         const flag = await this.userService.updateUser(updateUserDto)
         return this.responseService.success(flag)
+    }
+
+    @Post('/edit')
+    @UseGuards(AuthGuard)
+    @ApiResponse({ type: UserUpdateVo })
+    async editUser(@Body(new ValidationPipe()) editUserDto: EditUserDto) {
+        const flag = await this.userService.editUser(editUserDto)
+        return this.responseService.success(flag)
+    }
+
+    @Post('/update/avatar')
+    @UseGuards(AuthGuard)
+    @UseInterceptors(FileInterceptor('file'))
+    @ApiConsumes('multipart/form-data')
+    @ApiBody({
+        description: '上传头像',
+        schema: {
+            type: 'object',
+            properties: {
+                file: { type: 'file', format: 'binary' },
+                prefix: { type: 'string' }
+            }
+        }
+    })
+    @ApiResponse({ type: UploadAvatarVo })
+    async uploadUserAvatar(
+        @UploadedFile() file: Express.Multer.File,
+        @Body(new ValidationPipe()) uploadAvatarDto: UploadAvatarDto
+    ) {
+        const picture = await this.userService.uploadUserAvatar(file, uploadAvatarDto)
+        return this.responseService.success({
+            url: picture.url
+        })
     }
 }

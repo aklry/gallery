@@ -12,12 +12,16 @@ import { UserLoginDto } from './dto/user-login.dto'
 import { FindUserDto } from './dto/find-user.dto'
 import { UserVoModel } from './vo/user.vo'
 import { CreateUserDto } from './dto/create-user.dto'
-import { DeleteRequest } from 'src/common/delete.dto'
+import { DeleteRequest } from '../common/delete.dto'
+import { EditUserDto } from './dto/edit-user.dto'
+import { OssService } from '../oss/oss.service'
+import { UploadAvatarDto } from './dto/upload-avatar.dto'
 @Injectable()
 export class UserService {
     constructor(
         private readonly prismaService: PrismaService,
-        private readonly responseService: ResponseService
+        private readonly responseService: ResponseService,
+        private readonly ossService: OssService
     ) {}
     async userRegister(userRegisterDto: UserRegisterDto) {
         const { userAccount, userPassword, checkedPassword } = userRegisterDto
@@ -219,5 +223,33 @@ export class UserService {
         const salt = await bcrypt.genSalt()
         const hashedPassword = await bcrypt.hash(password, salt)
         return hashedPassword
+    }
+
+    async editUser(editUserDto: EditUserDto) {
+        const { id, userName, userAvatar, userProfile, userPassword } = editUserDto
+        const data: any = {}
+        if (userName) {
+            data.userName = userName
+        }
+        if (userAvatar) {
+            data.userAvatar = userAvatar
+        }
+        if (userProfile) {
+            data.userProfile = userProfile
+        }
+        if (userPassword) {
+            const hashedPassword = await this.encryptPassword(userPassword)
+            data.userPassword = hashedPassword
+        }
+        await this.prismaService.user.update({
+            where: { id },
+            data
+        })
+        return true
+    }
+    async uploadUserAvatar(file: Express.Multer.File, uploadAvatarDto: UploadAvatarDto) {
+        const { prefix } = uploadAvatarDto
+        const fileBuffer = await this.ossService.uploadFile(file.originalname, file.buffer, prefix)
+        return fileBuffer
     }
 }

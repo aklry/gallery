@@ -31,10 +31,10 @@ export class OssService {
             bucket: config.bucket
         })
     }
-    async uploadFile(filename: string, fileBuffer: Buffer) {
+    async uploadFile(filename: string, fileBuffer: Buffer, prefix: string = OSS_PUBLIC_PICTURE_PATH) {
         try {
             const ext = extname(filename)
-            const uploadFileName = `${OSS_PICTURE_PATH}/${OSS_PUBLIC_PICTURE_PATH}/${Date.now()}-${Math.random() * 1e19}${ext}`
+            const uploadFileName = `${OSS_PICTURE_PATH}/${prefix}/${Date.now()}-${Math.random() * 1e19}${ext}`
             const result = await this.ossClient.put(uploadFileName, fileBuffer)
             const imageInfo = await this.ossClient.get(uploadFileName, {
                 process: 'image/info'
