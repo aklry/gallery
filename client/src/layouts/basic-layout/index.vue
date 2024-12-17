@@ -1,5 +1,5 @@
 <template>
-    <div class="layout h-[100vh]">
+    <div class="layout h-[100vh] overflow-hidden">
         <a-layout class="h-full">
             <a-layout-header>
                 <global-header />
@@ -32,6 +32,8 @@ import GlobalFooter from './global-footer/index.vue'
 
 .content {
     background: linear-gradient(to bottom, #fefefe, #fff);
-    @apply p-[20px];
+    @apply p-[20px] pb-[64px] overflow-auto;
+
+    height: calc(100vh - 64px - 64px);
 }
 </style>

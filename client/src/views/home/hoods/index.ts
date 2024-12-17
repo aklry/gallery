@@ -1,7 +1,9 @@
 import { ref, reactive, onMounted, watch } from 'vue'
 import { pictureControllerGetPictureByPageVoV1 } from '@/api/picture'
+import { useRouter } from 'vue-router'
 
 const useHomeHooks = () => {
+    const router = useRouter()
     const dataList = ref<API.PictureVoModel[]>()
     const total = ref<number>(0)
     const searchParams = reactive<API.QueryPictureDto>({
@@ -29,6 +31,11 @@ const useHomeHooks = () => {
             searchParams.tags = [tag]
         }
     }
+    const clickPicture = (id: string) => {
+        router.push({
+            path: `/picture/${id}`
+        })
+    }
     onMounted(() => {
         fetchData()
     })
@@ -40,7 +47,8 @@ const useHomeHooks = () => {
         total,
         searchParams,
         changeTabs,
-        changeTags
+        changeTags,
+        clickPicture
     }
 }
 export default useHomeHooks

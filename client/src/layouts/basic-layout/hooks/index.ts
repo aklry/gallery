@@ -11,11 +11,6 @@ export const useMenus = () => {
             icon: () => h(HomeOutlined)
         },
         {
-            key: '/about',
-            label: '关于',
-            title: '关于'
-        },
-        {
             key: '/picture/add',
             label: '创建图片',
             title: '创建图片'

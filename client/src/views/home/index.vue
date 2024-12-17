@@ -1,13 +1,13 @@
 <template>
-    <div class="home">
+    <div class="home h-full">
         <tabs :tag_category="tag_category" @changeTabs="changeTabs" />
         <tag-bars :tag_category="tag_category" @changeTags="changeTags" />
         <a-list :grid="{ gutter: 16, xs: 1, sm: 2, md: 3, lg: 4, xl: 5, xxl: 6 }" :data-source="dataList">
             <template #renderItem="{ item: picture }">
                 <a-list-item>
-                    <a-card>
+                    <a-card @click="clickPicture(picture.id)">
                         <template #cover>
-                            <img :src="picture.url" :alt="picture.name" style="height: 200px; object-fit: cover" />
+                            <img :src="picture.url" :alt="picture.name" style="height: 180px; object-fit: cover" />
                         </template>
                         <a-card-meta :title="picture.name">
                             <template #description>
@@ -32,7 +32,7 @@ import usePictureStore from '@/store/modules/picture'
 import TagBars from './components/tag-bars/index.vue'
 const pictureStore = usePictureStore()
 const { tag_category } = storeToRefs(pictureStore)
-const { dataList, changeTabs, changeTags } = useHomeHooks()
+const { dataList, changeTabs, changeTags, clickPicture } = useHomeHooks()
 </script>
 
 <style scoped></style>

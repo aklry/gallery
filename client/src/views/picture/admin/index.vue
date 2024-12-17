@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import dayjs from 'dayjs'
-
 import usePictureHooks from './hooks'
+import { formatTime, formatSize } from '@/utils'
 const { columns, dataSource, searchParams, handleChange, total, handleSearch, handleEdit, handleDelete } =
     usePictureHooks()
 </script>
@@ -36,18 +35,18 @@ const { columns, dataSource, searchParams, handleChange, total, handleSearch, ha
                 pageSize: Number(searchParams.pageSize),
                 total
             }"
-            :scroll="{ x: 'max-content', y: 540 }"
+            :scroll="{ x: 'max-content', y: 400 }"
             @change="handleChange"
         >
             <template #bodyCell="{ column, record }">
                 <template v-if="column.key === 'url'">
-                    <a-image :src="record.url" width="100px" />
+                    <a-image :src="record.url" width="100px" height="100px" style="object-fit: cover" />
                 </template>
                 <template v-if="column.key === 'tags'">
                     <a-tag v-for="item in record.tags" color="success" :key="item">{{ item }}</a-tag>
                 </template>
                 <template v-if="column.key === 'createTime'">
-                    {{ dayjs(record.createTime).format('YYYY-MM-DD HH:mm:ss') }}
+                    {{ formatTime(record.createTime) }}
                 </template>
                 <template v-if="column.key === 'action'">
                     <a-button type="primary" class="mr-[10px]" @click="handleEdit(record.id)">编辑</a-button>
@@ -59,7 +58,7 @@ const { columns, dataSource, searchParams, handleChange, total, handleSearch, ha
                 <div>宽度: {{ record.picWidth }}</div>
                 <div>高度: {{ record.picHeight }}</div>
                 <div>宽高比: {{ record.picScale }}</div>
-                <div>大小: {{ (record.picSize / 1024).toFixed(2) }} KB</div>
+                <div>大小: {{ formatSize(record.picSize) }}</div>
             </template>
         </a-table>
     </a-card>

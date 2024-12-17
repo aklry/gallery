@@ -8,11 +8,6 @@ export const routes: RouteRecordRaw[] = [
         component: () => import('@/views/home/index.vue')
     },
     {
-        path: '/about',
-        name: 'about',
-        component: () => import('@/views/about/index.vue')
-    },
-    {
         path: '/user/login',
         name: 'login',
         component: () => import('@/views/user/login/index.vue')
@@ -48,7 +43,8 @@ export const routes: RouteRecordRaw[] = [
     {
         path: '/picture/:id',
         name: 'picture-detail',
-        component: () => import('@/views/picture/picture-detail/index.vue')
+        component: () => import('@/views/picture/picture-detail/index.vue'),
+        props: true
     },
     {
         path: '/picture/admin',

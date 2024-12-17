@@ -40,8 +40,7 @@ export class PictureController {
     }
 
     @Post('/list/page/vo')
-    @UseGuards(AuthGuard, RoleGuard)
-    @Roles([UserRole.ADMIN])
+    @UseGuards(AuthGuard)
     @ApiResponse({ type: PictureVo })
     async getPictureByPageVo(@Body(new ValidationPipe()) queryPictureDto: QueryPictureDto) {
         const data = await this.pictureService.getPictureByPageVo(queryPictureDto)
