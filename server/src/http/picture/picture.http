@@ -1,2 +1,8 @@
-GET http://localhost:3000/api/v1/picture/get/cm4mvekgv0000sos4omp8fusj HTTP/1.1
-Cookie: connect.sid=s%3A38ldmoJtgNzwngHaA8DZQhwk60C0KnGc.62kfjJ6VCrSclLjrSyxnt0uIj%2BIFi6IbUdVCdeEQl5U
+POST http://localhost:3000/api/v1/picture/upload/batch
+Content-Type: application/json
+Cookie: connect.sid=s%3A3KNZ4UMFz2nKnO3uOPOxjZYKTtIlgNI8.8RfAup365xcl9RKA%2B68NLBY7xaWgSguR8HUsJYdsZm4
+
+{
+    "keywords": "美女",
+    "count": 10
+}

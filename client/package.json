@@ -15,7 +15,6 @@
     "dependencies": {
         "@ant-design/icons-vue": "^7.0.1",
         "ant-design-vue": "4.x",
-        "axios": "^1.7.9",
         "dayjs": "^1.11.13",
         "file-saver": "^2.0.5",
         "pinia": "^2.3.0",

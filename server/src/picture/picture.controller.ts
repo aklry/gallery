@@ -19,6 +19,8 @@ import { DeletePictureVo } from './vo/delete-picture.vo'
 import { UpdatePictureDto } from './dto/update-picture.dto'
 import { UpdatePictureVo } from './vo/update-picture.vo'
 import { TagCategoryListVo } from './vo/tag-category.vo'
+import { UploadBatchPictureDto } from './dto/uploadBatch-picture.dto'
+import { UploadBatchPictureVo } from './vo/uploadBatch-picture.vo'
 
 @Controller({
     path: 'picture',
@@ -112,5 +114,15 @@ export class PictureController {
         const tags = ['热门', '搞笑', '生活', '高清', '艺术', '校园', '背景', '简历', '创意']
         const category = ['模板', '电商', '表情包', '素材', '海报']
         return this.responseService.success({ tagList: tags, categoryList: category })
+    }
+
+    @Post('/upload/batch')
+    @UseGuards(RoleGuard)
+    @Roles([UserRole.ADMIN])
+    @ApiResponse({ type: UploadBatchPictureVo })
+    async uploadBatch(@Body() uploadBatchPictureDto: UploadBatchPictureDto, @Req() req: Request) {
+        const { count, list } = await this.pictureService.uploadBatch(uploadBatchPictureDto, req)
+        await this.pictureService.setPicture(list, req)
+        return this.responseService.success(count)
     }
 }

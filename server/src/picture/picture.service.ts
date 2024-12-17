@@ -1,3 +1,4 @@
+import { UploadBatchPictureDto } from './dto/uploadBatch-picture.dto'
 import { Injectable } from '@nestjs/common'
 import { UpdatePictureDto } from './dto/update-picture.dto'
 import { extname } from 'node:path'
@@ -13,12 +14,14 @@ import { PictureVoModel } from './vo/picture.vo'
 import { GetPictureVoModel } from './vo/get-picture.vo'
 import { LoginVoModel } from '../user/vo/user-login.vo'
 import { DeletePictureDto } from './dto/delete-picture.dto'
+import { ExtractService } from '../extract/extract.service'
 
 @Injectable()
 export class PictureService {
     constructor(
         private readonly prismaService: PrismaService,
-        private readonly ossService: OssService
+        private readonly ossService: OssService,
+        private readonly extractService: ExtractService
     ) {}
 
     async getPictureByPage(queryPictureDto: QueryPictureDto) {
@@ -331,5 +334,52 @@ export class PictureService {
             throw new DaoErrorException('图片更新失败', BusinessStatus.OPERATION_ERROR.code)
         }
         return true
+    }
+
+    async uploadBatch(uploadBatchPictureDto: UploadBatchPictureDto, req: Request) {
+        const { keywords, count } = uploadBatchPictureDto
+        const url = `https://cn.bing.com/images/async?q=${keywords}&mmasync=1`
+        const html = await this.extractService.fetchHtml(url)
+        const data = await this.extractService.extractImage(html, count)
+        if (data.length === 0) {
+            throw new UploadFailedException('图片链接不能为空', BusinessStatus.OPERATION_ERROR.code)
+        }
+        let uploadCount = 0
+        const fileResult: UploadPictureVoModel[] = []
+        for (const url of data) {
+            try {
+                const file = await this.ossService.uploadFile(url, null)
+                uploadCount++
+                fileResult.push(file)
+            } catch (error) {
+                console.log('图片上传失败')
+                continue
+            }
+        }
+        return {
+            count: uploadCount,
+            list: fileResult
+        }
+    }
+    async setPicture(picture: UploadPictureVoModel[], req: Request) {
+        const user = req.session.user
+        if (!user) {
+            throw new NotLoginException('用户未登录', BusinessStatus.NOT_LOGIN_ERROR.code)
+        }
+        await this.prismaService.picture.createMany({
+            data: picture.map(item => ({
+                url: item.url,
+                name: item.filename,
+                userId: user.id,
+                introduction: '',
+                category: '',
+                tags: '',
+                picSize: BigInt(item.fileSize),
+                picWidth: item.width,
+                picHeight: item.height,
+                picScale: item.picScale,
+                picFormat: item.format
+            }))
+        })
     }
 }

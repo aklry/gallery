@@ -5,6 +5,7 @@ import { extname } from 'node:path'
 import { OSS_PUBLIC_PICTURE_PATH, BusinessStatus, OSS_PICTURE_PATH } from '../config'
 import { UploadFailedException } from '../custom-exception'
 import { UploadPictureVo, UploadPictureVoModel } from '../picture/vo/upload-picture.vo'
+import axios from 'axios'
 interface ImageInfo {
     ImageWidth: {
         value: number
@@ -33,7 +34,24 @@ export class OssService {
     }
     async uploadFile(filename: string, fileBuffer: Buffer, prefix: string = OSS_PUBLIC_PICTURE_PATH) {
         try {
-            const ext = extname(filename)
+            const urlRegex = /^(?:http(s)?:\/\/)?\S+$/
+            let ext = ''
+            if (urlRegex.test(filename)) {
+                const response = await axios.get(filename, { responseType: 'arraybuffer' })
+                fileBuffer = Buffer.from(response.data, 'binary')
+                // Get content type from response headers
+                const contentType = response.headers['content-type']
+                if (contentType) {
+                    const extension = contentType.split('/')[1]
+                    if (['jpeg', 'jpg', 'png', 'webp'].includes(extension)) {
+                        ext = `.${extension}`
+                    } else {
+                        throw new UploadFailedException('不支持的图片格式', BusinessStatus.OPERATION_ERROR.code)
+                    }
+                }
+            } else {
+                ext = extname(filename)
+            }
             const uploadFileName = `${OSS_PICTURE_PATH}/${prefix}/${Date.now()}-${Math.random() * 1e19}${ext}`
             const result = await this.ossClient.put(uploadFileName, fileBuffer)
             const imageInfo = await this.ossClient.get(uploadFileName, {

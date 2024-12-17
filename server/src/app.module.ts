@@ -8,9 +8,10 @@ import { SECRET_KEY } from './config'
 import { UserModule } from './user/user.module'
 import { OssModule } from './oss/oss.module'
 import { PictureModule } from './picture/picture.module'
+import { ExtractModule } from './extract/extract.module'
 
 @Module({
-    imports: [ResponseModule, PrismaModule, UserModule, OssModule, PictureModule],
+    imports: [ResponseModule, PrismaModule, UserModule, OssModule, PictureModule, ExtractModule],
     controllers: [AppController],
     providers: [AppService]
 })
