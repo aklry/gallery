@@ -55,7 +55,7 @@ export class MessageService {
                 where: {
                     userId: user.id,
                     createTime: {
-                        lte: new Date()
+                        lte: new Date().toISOString()
                     }
                 }
             }),

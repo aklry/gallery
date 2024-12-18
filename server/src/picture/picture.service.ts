@@ -336,7 +336,8 @@ export class PictureService {
         return true
     }
     // 修改图片信息(管理员使用)
-    async update(updatePictureDto: UpdatePictureDto) {
+    async update(updatePictureDto: UpdatePictureDto, req: Request) {
+        const user = req.session.user
         const { id, ...rest } = updatePictureDto
         const oldPicture = await this.getById(id)
         this.validPicture(oldPicture)
@@ -346,7 +347,8 @@ export class PictureService {
                 ...rest,
                 tags: JSON.stringify(rest.tags),
                 reviewStatus: 1,
-                reviewTime: new Date()
+                reviewTime: new Date(),
+                reviewerId: user.id
             }
         })
         if (!result) {
@@ -417,7 +419,10 @@ export class PictureService {
                 picWidth: Number(item.width),
                 picHeight: Number(item.height),
                 picScale: item.picScale,
-                picFormat: item.format
+                picFormat: item.format,
+                reviewStatus: 1,
+                reviewTime: new Date(),
+                reviewerId: user.id
             }))
         })
     }

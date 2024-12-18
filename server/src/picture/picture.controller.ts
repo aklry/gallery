@@ -69,7 +69,7 @@ export class PictureController {
 
     @Post('/delete')
     @ApiResponse({ type: DeletePictureVo })
-    async deletePicture(@Body() deletePictureDto: DeletePictureDto, @Req() req: Request) {
+    async deletePicture(@Body(new ValidationPipe()) deletePictureDto: DeletePictureDto, @Req() req: Request) {
         const data = await this.pictureService.delete(deletePictureDto, req)
         return this.responseService.success(data)
     }
@@ -91,7 +91,7 @@ export class PictureController {
     async uploadFile(
         @UploadedFile() file: Express.Multer.File,
         @Req() req: Request,
-        @Body() uploadPictureDto?: UploadPictureDto
+        @Body(new ValidationPipe()) uploadPictureDto?: UploadPictureDto
     ) {
         const data = await this.pictureService.uploadFile(file, req, uploadPictureDto)
         return this.responseService.success(data)
@@ -101,8 +101,8 @@ export class PictureController {
     @UseGuards(RoleGuard)
     @Roles([UserRole.ADMIN])
     @ApiResponse({ type: UpdatePictureVo })
-    async updatePicture(@Body(new ValidationPipe()) updatePictureDto: UpdatePictureDto) {
-        const data = await this.pictureService.update(updatePictureDto)
+    async updatePicture(@Body(new ValidationPipe()) updatePictureDto: UpdatePictureDto, @Req() req: Request) {
+        const data = await this.pictureService.update(updatePictureDto, req)
         return this.responseService.success(data)
     }
 
@@ -125,7 +125,7 @@ export class PictureController {
     @UseGuards(RoleGuard)
     @Roles([UserRole.ADMIN])
     @ApiResponse({ type: UploadBatchPictureVo })
-    async uploadBatch(@Body() uploadBatchPictureDto: UploadBatchPictureDto, @Req() req: Request) {
+    async uploadBatch(@Body(new ValidationPipe()) uploadBatchPictureDto: UploadBatchPictureDto, @Req() req: Request) {
         const { count, list } = await this.pictureService.uploadBatch(uploadBatchPictureDto, req)
         await this.pictureService.setPicture(list, req)
         return this.responseService.success(count)
@@ -134,7 +134,7 @@ export class PictureController {
     @Post('/review')
     @UseGuards(RoleGuard)
     @Roles([UserRole.ADMIN])
-    async reviewPicture(@Body() reviewPictureDto: ReviewPictureDto, @Req() req: Request) {
+    async reviewPicture(@Body(new ValidationPipe()) reviewPictureDto: ReviewPictureDto, @Req() req: Request) {
         const data = await this.pictureService.reviewPicture(reviewPictureDto, req)
         return this.responseService.success(data)
     }

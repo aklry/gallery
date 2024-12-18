@@ -7,6 +7,7 @@ import { AuthGuard } from '../auth/auth.guard'
 import { ReadMessageDto } from './dto/read-message.dto'
 import { ReadMessageVo } from './vo/read-message.vo'
 import { Request } from 'express'
+import { ValidationPipe } from '../pipe/validation.pipe'
 @Controller('message')
 export class MessageController {
     constructor(
@@ -42,7 +43,7 @@ export class MessageController {
     @ApiOperation({ summary: '阅读消息' })
     @ApiResponse({ type: ReadMessageVo })
     @UseGuards(AuthGuard)
-    async readMessage(@Body() readMessageDto: ReadMessageDto) {
+    async readMessage(@Body(new ValidationPipe()) readMessageDto: ReadMessageDto) {
         const data = await this.messageService.readMessage(readMessageDto)
         return this.responseService.success(data)
     }
