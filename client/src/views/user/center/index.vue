@@ -2,7 +2,7 @@
     <div class="flex justify-center items-center h-full bg-gray-100">
         <a-card title="个人信息" class="w-[600px] shadow-lg rounded-lg">
             <template #extra>
-                <a-button type="primary" @click="open = true">编辑</a-button>
+                <a-button type="primary" @click="handleEdit">编辑</a-button>
             </template>
             <div class="flex justify-center mb-4">
                 <a-avatar :src="userInfo.userAvatar || image" :size="100" />
@@ -51,7 +51,7 @@ import useUserCenter from './hooks'
 import image from '@/assets/images/logo.png'
 import PictureUpload from '@/components/picture-upload/index.vue'
 
-const { userInfo, open, form, handleOk, handleUploadSuccess, picture } = useUserCenter()
+const { userInfo, open, form, handleOk, handleUploadSuccess, picture, handleEdit } = useUserCenter()
 </script>
 
 <style scoped lang="scss">

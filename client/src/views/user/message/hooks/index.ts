@@ -40,9 +40,12 @@ const useMessage = () => {
         }
     })
 
-    const handleMessageClick = async (id: string) => {
+    const handleMessageClick = async (item: API.MessageVoModel) => {
+        if (item.hasRead === MessageStatus.READ) {
+            return
+        }
         await messageControllerReadMessage({
-            id
+            id: item.id
         })
         if (currentKey.value === '1') {
             getNewMessageList()

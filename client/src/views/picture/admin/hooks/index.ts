@@ -56,10 +56,16 @@ const usePictureHooks = () => {
             okText: '确定',
             cancelText: '取消',
             onOk: async () => {
-                const res = await pictureControllerDeletePictureV1({ id })
-                if (res.code === 1) {
-                    message.success('删除成功')
-                    fetchData()
+                try {
+                    const res = await pictureControllerDeletePictureV1({ id })
+                    if (res.code === 1) {
+                        message.success('删除成功')
+                        fetchData()
+                    } else {
+                        message.error(res.message)
+                    }
+                } catch (error) {
+                    message.error('删除失败')
                 }
             }
         })

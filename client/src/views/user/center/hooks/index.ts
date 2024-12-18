@@ -31,13 +31,20 @@ const useUserCenter = () => {
         picture.value = result
         form.userAvatar = result.url
     }
+    const handleEdit = () => {
+        open.value = true
+        picture.value = {
+            url: userInfo.value.userAvatar
+        }
+    }
     return {
         userInfo,
         open,
         form,
         picture,
         handleOk,
-        handleUploadSuccess
+        handleUploadSuccess,
+        handleEdit
     }
 }
 

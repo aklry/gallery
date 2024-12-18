@@ -164,3 +164,18 @@ export async function pictureControllerUploadBatchV1(
         ...(options || {})
     })
 }
+
+/** 此处后端没有提供注释 POST /api/v1/picture/upload/url */
+export async function pictureControllerUploadFileByUrlV1(
+    body: API.UploadPictureUrlDto,
+    options?: { [key: string]: any }
+) {
+    return ryRequest.request<API.UploadPictureVo>('/api/v1/picture/upload/url', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        data: body,
+        ...(options || {})
+    })
+}

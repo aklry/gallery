@@ -164,7 +164,6 @@ export async function userControllerUploadUserAvatarV1(
     return ryRequest.request<API.UploadAvatarVo>('/api/v1/user/update/avatar', {
         method: 'POST',
         data: formData,
-        requestType: 'form',
         ...(options || {})
     })
 }

@@ -22,6 +22,7 @@ import { TagCategoryListVo } from './vo/tag-category.vo'
 import { UploadBatchPictureDto } from './dto/uploadBatch-picture.dto'
 import { UploadBatchPictureVo } from './vo/uploadBatch-picture.vo'
 import { ReviewPictureDto } from './dto/review-picture.dto'
+import { UploadPictureUrlDto } from './dto/upload-picture-url.dto'
 
 @Controller({
     path: 'picture',
@@ -94,6 +95,12 @@ export class PictureController {
         @Body(new ValidationPipe()) uploadPictureDto?: UploadPictureDto
     ) {
         const data = await this.pictureService.uploadFile(file, req, uploadPictureDto)
+        return this.responseService.success(data)
+    }
+    @Post('/upload/url')
+    @ApiResponse({ type: UploadPictureVo })
+    async uploadFileByUrl(@Req() req: Request, @Body(new ValidationPipe()) uploadPictureUrlDto?: UploadPictureUrlDto) {
+        const data = await this.pictureService.uploadFile(uploadPictureUrlDto.url, req, uploadPictureUrlDto)
         return this.responseService.success(data)
     }
 

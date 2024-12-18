@@ -1,7 +1,15 @@
 <template>
     <div class="add-picture">
         <h2 class="text-xl">{{ id ? '修改图片' : '创建图片' }}</h2>
-        <picture-upload :picture="picture" :onUploadPictureSuccess="handleUploadSuccess" />
+        <a-tabs>
+            <a-tab-pane key="1" tab="文件上传">
+                <picture-upload :picture="picture" :onUploadPictureSuccess="handleUploadSuccess" />
+            </a-tab-pane>
+            <a-tab-pane key="2" tab="URL上传">
+                <a-input v-model:value="url" placeholder="请输入图片链接" />
+                <a-button class="mt-2" :loading="uploadLoading" @click="handleUploadPictureByUrl">上传</a-button>
+            </a-tab-pane>
+        </a-tabs>
         <a-card title="图片信息" v-if="picture">
             <a-form :model="pictureInfo">
                 <a-form-item label="图片名称" name="name">
@@ -31,89 +39,24 @@
 
 <script setup lang="ts">
 import PictureUpload from '@/components/picture-upload/index.vue'
-import { ref, reactive, onMounted } from 'vue'
-import {
-    pictureControllerUpdatePictureV1,
-    pictureControllerGetByIdV1,
-    pictureControllerEditPictureV1
-} from '@/api/picture'
-import { message } from 'ant-design-vue'
-import { useRoute, useRouter } from 'vue-router'
-import usePictureStore from '@/store/modules/picture'
-import { useUserStore } from '@/store/modules/user'
-import { storeToRefs } from 'pinia'
-import { UserRole } from '@/constants'
-const pictureStore = usePictureStore()
-const { tag_category } = storeToRefs(pictureStore)
-const userStore = useUserStore()
-const { loginUser } = storeToRefs(userStore)
-const route = useRoute()
-const router = useRouter()
-const id = route.query?.id
-const picture = ref<API.UploadPictureVoModel>()
-const handleUploadSuccess = (result: API.UploadPictureVoModel) => {
-    picture.value = result
-    pictureInfo.name = result.filename
-    pictureInfo.id = result.id
-}
-const loading = ref<boolean>(false)
-const pictureInfo = reactive<API.UpdatePictureDto>({
-    id: '',
-    introduction: '',
-    name: '',
-    category: '',
-    tags: []
-})
-const handleUpdatePicture = async () => {
-    try {
-        loading.value = true
-        let res: API.UpdatePictureVo
-        if (loginUser.value?.userRole === UserRole.ADMIN) {
-            res = await pictureControllerUpdatePictureV1(pictureInfo)
-        } else {
-            res = await pictureControllerEditPictureV1(pictureInfo)
-        }
-        if (res.data) {
-            message.success('创建成功')
-            router.push(`/picture/${pictureInfo.id}`)
-        } else {
-            message.error(res.message)
-        }
-    } catch (error) {
-        message.error('创建失败')
-    } finally {
-        loading.value = false
-    }
-}
+import useAddPicture from './hooks'
 
-onMounted(async () => {
-    if (id) {
-        try {
-            const res = await pictureControllerGetByIdV1({ id: id as string })
-            if (res.code === 1) {
-                Object.assign(pictureInfo, {
-                    id: res.data.id,
-                    name: res.data.name,
-                    introduction: res.data.introduction,
-                    category: res.data.category,
-                    tags: res.data.tags
-                })
-                picture.value = {
-                    id: res.data.id,
-                    url: res.data.url,
-                    filename: res.data.name,
-                    picScale: res.data.picScale,
-                    width: res.data.picWidth,
-                    height: res.data.picHeight,
-                    fileSize: res.data.picSize,
-                    format: res.data.picFormat
-                }
-            }
-        } catch (error) {
-            message.error('获取数据失败,请重试')
-        }
-    }
-})
+const {
+    pictureInfo,
+    picture,
+    url,
+    handleUploadSuccess,
+    handleUpdatePicture,
+    loading,
+    tag_category,
+    id,
+    uploadLoading,
+    handleUploadPictureByUrl
+} = useAddPicture()
 </script>
 
-<style scoped></style>
+<style scoped lang="scss">
+.add-picture {
+    @apply max-w-[1000px] mx-auto;
+}
+</style>

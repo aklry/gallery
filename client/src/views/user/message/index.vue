@@ -12,7 +12,7 @@
             </template>
             <a-list :dataSource="currentMessageList">
                 <template #renderItem="{ item }: { item: API.MessageVoModel }">
-                    <a-list-item @click="handleMessageClick(item.id)">
+                    <a-list-item @click="handleMessageClick(item)" class="mt-2">
                         <a-list-item-meta :description="item.content">
                             <template #title>
                                 <a-badge :dot="item.hasRead === MessageStatus.UNREAD" :offset="[2, -2]">

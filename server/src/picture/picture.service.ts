@@ -20,6 +20,7 @@ import { UserRole } from '../user/enum/user'
 import { Picture } from './entities/picture.entity'
 import { ReviewStatus } from './enum'
 import { MessageStatus } from '@prisma/client'
+import { UploadPictureUrlDto } from './dto/upload-picture-url.dto'
 
 @Injectable()
 export class PictureService {
@@ -230,13 +231,16 @@ export class PictureService {
     async delete(deletePicture: DeletePictureDto, req: Request) {
         const { id } = deletePicture
         const user = req.session.user
+        if (!user) {
+            throw new NotLoginException('用户未登录', BusinessStatus.NOT_LOGIN_ERROR.code)
+        }
         const userId = user.id
         const oldPicture = await this.getById(id)
         if (!oldPicture) {
             throw new DaoErrorException('图片不存在', BusinessStatus.OPERATION_ERROR.code)
         }
-        if (oldPicture.user.id !== userId) {
-            throw new DaoErrorException('图片不属于当前用户', BusinessStatus.OPERATION_ERROR.code)
+        if (oldPicture.user.id !== userId && user.userRole !== UserRole.ADMIN) {
+            throw new DaoErrorException('仅自己或管理员可以删除', BusinessStatus.OPERATION_ERROR.code)
         }
         const result = await this.prismaService.picture.delete({
             where: { id }
@@ -246,8 +250,18 @@ export class PictureService {
         }
         return true
     }
-    async uploadFile(file: Express.Multer.File, req: Request, uploadPictureDto?: UploadPictureDto) {
-        this.validatePicture(file)
+    async uploadFile(
+        file: Express.Multer.File | string,
+        req: Request,
+        uploadPictureDto?: UploadPictureDto | UploadPictureUrlDto
+    ) {
+        if (typeof file === 'string') {
+            if (file.length > 1024) {
+                throw new DaoErrorException('图片链接过长', BusinessStatus.OPERATION_ERROR.code)
+            }
+        } else {
+            this.validatePicture(file)
+        }
         const user = req.session.user
         if (!user) {
             throw new NotLoginException('用户未登录', BusinessStatus.NOT_LOGIN_ERROR.code)
@@ -269,7 +283,9 @@ export class PictureService {
             }
         }
         // 上传图片
-        const ossResult = await this.ossService.uploadFile(file.originalname, file.buffer)
+        const name = typeof file === 'string' ? file : file.originalname
+        const buffer = typeof file === 'string' ? null : file.buffer
+        const ossResult = await this.ossService.uploadFile(name, buffer)
         const reviewStatus = user.userRole === UserRole.ADMIN ? 1 : 0
         const reviewTime = user.userRole === UserRole.ADMIN ? new Date() : undefined
         const picture = pictureId

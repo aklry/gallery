@@ -384,6 +384,13 @@ declare namespace API {
         path: string
     }
 
+    type UploadPictureUrlDto = {
+        /** 图片链接 */
+        url: string
+        /** 图片id */
+        id?: string
+    }
+
     type UploadPictureVo = {
         /** 状态码 */
         code: number
