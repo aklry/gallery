@@ -5,8 +5,10 @@
 import * as app from './app'
 import * as user from './user'
 import * as picture from './picture'
+import * as message from './message'
 export default {
     app,
     user,
-    picture
+    picture,
+    message
 }

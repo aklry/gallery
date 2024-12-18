@@ -107,8 +107,6 @@ export class PictureController {
     }
 
     @Post('/edit')
-    @UseGuards(RoleGuard)
-    @Roles([UserRole.ADMIN])
     @ApiResponse({ type: UpdatePictureVo })
     async editPicture(@Body(new ValidationPipe()) updatePictureDto: UpdatePictureDto) {
         const data = await this.pictureService.edit(updatePictureDto)

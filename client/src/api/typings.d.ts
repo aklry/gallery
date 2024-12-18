@@ -128,6 +128,39 @@ declare namespace API {
         userRole: string
     }
 
+    type MessageVo = {
+        /** 状态码 */
+        code: number
+        /** 消息 */
+        message: string
+        /** 消息信息 */
+        data: MessageVoType
+        /** 时间戳 */
+        timestamp: string
+        /** 路径 */
+        path: string
+    }
+
+    type MessageVoModel = {
+        /** 消息id */
+        id: string
+        /** 消息标题 */
+        title: string
+        /** 消息内容 */
+        content: string
+        /** 消息状态 */
+        hasRead: string
+        /** 所属用户 */
+        userId: string
+    }
+
+    type MessageVoType = {
+        /** 消息信息 */
+        list: MessageVoModel[]
+        /** 总数 */
+        total: number
+    }
+
     type PictureControllerGetByIdV1Params = {
         id: string
     }
@@ -230,6 +263,24 @@ declare namespace API {
         reviewerId?: string
         /** 审核消息 */
         reviewMessage?: string
+    }
+
+    type ReadMessageDto = {
+        /** 消息id */
+        id: string
+    }
+
+    type ReadMessageVo = {
+        /** 状态码 */
+        code: number
+        /** 消息 */
+        message: string
+        /** 更新结果 */
+        data: Record<string, any>
+        /** 时间戳 */
+        timestamp: string
+        /** 路径 */
+        path: string
     }
 
     type ReviewPictureDto = {

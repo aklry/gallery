@@ -9,3 +9,13 @@ export const ReviewMessage = {
     [ReviewStatus.PASS]: '审核通过',
     [ReviewStatus.REJECT]: '审核不通过'
 }
+
+export enum UserRole {
+    ADMIN = 'admin',
+    USER = 'user'
+}
+
+export enum MessageStatus {
+    UNREAD = 'UNREAD',
+    READ = 'READ'
+}

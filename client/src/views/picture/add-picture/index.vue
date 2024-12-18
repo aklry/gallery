@@ -1,7 +1,7 @@
 <template>
     <div class="add-picture">
         <h2 class="text-xl">{{ id ? '修改图片' : '创建图片' }}</h2>
-        <picture-upload :picture="picture" :onUploadSuccess="handleUploadSuccess" />
+        <picture-upload :picture="picture" :onUploadPictureSuccess="handleUploadSuccess" />
         <a-card title="图片信息" v-if="picture">
             <a-form :model="pictureInfo">
                 <a-form-item label="图片名称" name="name">
@@ -32,13 +32,21 @@
 <script setup lang="ts">
 import PictureUpload from '@/components/picture-upload/index.vue'
 import { ref, reactive, onMounted } from 'vue'
-import { pictureControllerUpdatePictureV1, pictureControllerGetByIdV1 } from '@/api/picture'
+import {
+    pictureControllerUpdatePictureV1,
+    pictureControllerGetByIdV1,
+    pictureControllerEditPictureV1
+} from '@/api/picture'
 import { message } from 'ant-design-vue'
 import { useRoute, useRouter } from 'vue-router'
 import usePictureStore from '@/store/modules/picture'
+import { useUserStore } from '@/store/modules/user'
 import { storeToRefs } from 'pinia'
+import { UserRole } from '@/constants'
 const pictureStore = usePictureStore()
 const { tag_category } = storeToRefs(pictureStore)
+const userStore = useUserStore()
+const { loginUser } = storeToRefs(userStore)
 const route = useRoute()
 const router = useRouter()
 const id = route.query?.id
@@ -59,7 +67,12 @@ const pictureInfo = reactive<API.UpdatePictureDto>({
 const handleUpdatePicture = async () => {
     try {
         loading.value = true
-        const res = await pictureControllerUpdatePictureV1(pictureInfo)
+        let res: API.UpdatePictureVo
+        if (loginUser.value?.userRole === UserRole.ADMIN) {
+            res = await pictureControllerUpdatePictureV1(pictureInfo)
+        } else {
+            res = await pictureControllerEditPictureV1(pictureInfo)
+        }
         if (res.data) {
             message.success('创建成功')
             router.push(`/picture/${pictureInfo.id}`)

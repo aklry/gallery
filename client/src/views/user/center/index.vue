@@ -36,7 +36,7 @@
                     <a-input v-model:value="form.userName" />
                 </a-form-item>
                 <a-form-item label="用户头像">
-                    <PictureUpload :picture="picture" prefix="avatar" :on-upload-success="handleUploadSuccess" />
+                    <PictureUpload :picture="picture" prefix="avatar" :onUploadAvatarSuccess="handleUploadSuccess" />
                 </a-form-item>
                 <a-form-item label="用户简介">
                     <a-textarea v-model:value="form.userProfile" />

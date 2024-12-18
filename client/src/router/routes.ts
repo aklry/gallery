@@ -31,6 +31,11 @@ export const routes: RouteRecordRaw[] = [
         component: () => import('@/views/user/center/index.vue')
     },
     {
+        path: '/user/message',
+        name: 'user-message',
+        component: () => import('@/views/user/message/index.vue')
+    },
+    {
         path: '/:pathMatch(.*)*',
         name: 'not-found',
         component: () => import('@/views/not-found/index.vue')

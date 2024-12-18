@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import * as OSS from 'ali-oss'
-import { getOssConfig } from '../utils'
+import { getOssConfig, isValidUrl } from '../utils'
 import { extname } from 'node:path'
 import { OSS_PUBLIC_PICTURE_PATH, BusinessStatus, OSS_PICTURE_PATH } from '../config'
 import { UploadFailedException } from '../custom-exception'
@@ -34,9 +34,8 @@ export class OssService {
     }
     async uploadFile(filename: string, fileBuffer: Buffer, prefix: string = OSS_PUBLIC_PICTURE_PATH) {
         try {
-            const urlRegex = /^(?:http(s)?:\/\/)?\S+$/
             let ext = ''
-            const isUrl = urlRegex.test(filename)
+            const isUrl = isValidUrl(filename)
             if (isUrl) {
                 const response = await axios.get(filename, { responseType: 'arraybuffer' })
                 fileBuffer = Buffer.from(response.data, 'binary')
@@ -53,7 +52,9 @@ export class OssService {
             } else {
                 ext = extname(filename)
             }
+            console.log(ext)
             const uploadFileName = `${OSS_PICTURE_PATH}/${prefix}/${Date.now()}-${Math.random() * 1e19}${ext}`
+            console.log(uploadFileName)
             const result = await this.ossClient.put(uploadFileName, fileBuffer)
             const imageInfo = await this.ossClient.get(uploadFileName, {
                 process: 'image/info'

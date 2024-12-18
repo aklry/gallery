@@ -9,9 +9,10 @@ import { UserModule } from './user/user.module'
 import { OssModule } from './oss/oss.module'
 import { PictureModule } from './picture/picture.module'
 import { ExtractModule } from './extract/extract.module'
+import { MessageModule } from './message/message.module'
 
 @Module({
-    imports: [ResponseModule, PrismaModule, UserModule, OssModule, PictureModule, ExtractModule],
+    imports: [ResponseModule, PrismaModule, UserModule, OssModule, PictureModule, ExtractModule, MessageModule],
     controllers: [AppController],
     providers: [AppService]
 })

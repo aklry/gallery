@@ -19,6 +19,7 @@ import { ReviewPictureDto } from './dto/review-picture.dto'
 import { UserRole } from '../user/enum/user'
 import { Picture } from './entities/picture.entity'
 import { ReviewStatus } from './enum'
+import { MessageStatus } from '@prisma/client'
 
 @Injectable()
 export class PictureService {
@@ -441,6 +442,15 @@ export class PictureService {
         })
         if (!result) {
             throw new DaoErrorException('图片审核失败', BusinessStatus.OPERATION_ERROR.code)
+        } else {
+            await this.prismaService.message.create({
+                data: {
+                    userId: picture.userId,
+                    content: reviewMessage,
+                    hasRead: MessageStatus.UNREAD,
+                    title: '图片审核结果'
+                }
+            })
         }
         return true
     }

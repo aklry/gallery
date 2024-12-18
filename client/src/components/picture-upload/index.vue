@@ -26,7 +26,8 @@ import { pictureControllerUploadFileV1 } from '@/api/picture'
 import { userControllerUploadUserAvatarV1 } from '@/api/user'
 const fileList = ref<any>([])
 const props = defineProps<{
-    onUploadSuccess: (result: API.UploadPictureVoModel | API.UploadAvatarVoModel) => void
+    onUploadPictureSuccess?: (result: API.UploadPictureVoModel) => void
+    onUploadAvatarSuccess?: (result: API.UploadAvatarVoModel) => void
     picture?: API.UploadPictureVoModel | API.UploadAvatarVoModel
     prefix?: string
 }>()
@@ -44,7 +45,11 @@ const uploadCustomRequest = async () => {
             res = await pictureControllerUploadFileV1(params, fileList.value[0].originFileObj)
         }
         if (res.code === 1) {
-            props.onUploadSuccess(res.data)
+            if (props.prefix) {
+                props?.onUploadAvatarSuccess?.(res.data)
+            } else {
+                props?.onUploadPictureSuccess?.(res.data as API.UploadPictureVoModel)
+            }
         } else {
             message.error(res.message)
         }

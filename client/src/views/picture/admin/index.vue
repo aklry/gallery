@@ -2,8 +2,20 @@
 import { ReviewStatus } from '@/constants'
 import usePictureHooks from './hooks'
 import { formatTime, formatSize } from '@/utils'
-const { columns, dataSource, searchParams, handleChange, total, handleSearch, handleEdit, handleDelete, handleReview } =
-    usePictureHooks()
+const {
+    columns,
+    dataSource,
+    searchParams,
+    handleChange,
+    total,
+    handleSearch,
+    handleEdit,
+    handleDelete,
+    handleReview,
+    openMessageModal,
+    messageContent,
+    handleMessageOk
+} = usePictureHooks()
 </script>
 
 <template>
@@ -85,6 +97,9 @@ const { columns, dataSource, searchParams, handleChange, total, handleSearch, ha
                 <div>大小: {{ formatSize(record.picSize) }}</div>
             </template>
         </a-table>
+        <a-modal v-model:open="openMessageModal" title="审核消息" okText="确认" cancelText="取消" @ok="handleMessageOk">
+            <a-textarea v-model:value="messageContent" placeholder="请输入您的理由" />
+        </a-modal>
     </a-card>
 </template>
 

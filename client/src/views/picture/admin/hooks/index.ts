@@ -17,6 +17,9 @@ const usePictureHooks = () => {
     })
     const dataSource = ref<API.PictureVoModel[]>([])
     const total = ref(0)
+    const pictureId = ref('')
+    const openMessageModal = ref(false)
+    const messageContent = ref('')
     const handleSearch = async () => {
         const res = await pictureControllerGetPictureByPageV1(searchParams)
         dataSource.value = res.data.list
@@ -115,6 +118,11 @@ const usePictureHooks = () => {
         }
     ])
     const handleReview = async (id: string, status: ReviewStatus, info?: string) => {
+        pictureId.value = id
+        if (status === ReviewStatus.REJECT) {
+            openMessageModal.value = true
+            return
+        }
         try {
             await pictureControllerReviewPictureV1({
                 id,
@@ -126,6 +134,22 @@ const usePictureHooks = () => {
         } catch (error) {
             message.error('审核失败')
         }
+    }
+
+    const handleReject = async () => {
+        await pictureControllerReviewPictureV1({
+            id: pictureId.value,
+            reviewStatus: ReviewStatus.REJECT,
+            reviewMessage: messageContent.value
+        })
+        message.success('拒绝成功')
+        fetchData()
+    }
+
+    const handleMessageOk = async () => {
+        await handleReject()
+        openMessageModal.value = false
+        messageContent.value = ''
     }
 
     onMounted(() => {
@@ -140,7 +164,10 @@ const usePictureHooks = () => {
         searchParams,
         handleEdit,
         handleDelete,
-        handleReview
+        handleReview,
+        openMessageModal,
+        messageContent,
+        handleMessageOk
     }
 }
 
