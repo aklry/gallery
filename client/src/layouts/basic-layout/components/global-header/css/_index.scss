@@ -1,0 +1,13 @@
+.ant-row {
+    @apply w-full h-full items-center;
+
+    .ant-col {
+        &:first-child {
+            @apply flex items-center h-[50px];
+        }
+    }
+}
+
+.ant-menu-horizontal {
+    @apply border-none;
+}

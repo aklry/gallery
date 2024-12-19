@@ -25,7 +25,7 @@ import {
     UserCreateVo,
     UserUpdateVo
 } from './vo'
-import { ApiBody, ApiConsumes, ApiResponse } from '@nestjs/swagger'
+import { ApiBody, ApiConsumes, ApiOperation, ApiResponse } from '@nestjs/swagger'
 import { Request } from 'express'
 import { AuthGuard, RoleGuard } from '../auth/auth.guard'
 import { User } from './entities/user.entity'
@@ -52,6 +52,7 @@ export class UserController {
 
     @Post('/register')
     @ApiResponse({ type: UserRegisterVo })
+    @ApiOperation({ summary: '用户注册' })
     async userRegister(@Body(new ValidationPipe()) userRegisterDto: UserRegisterDto) {
         const data = await this.userService.userRegister(userRegisterDto)
         return this.responseService.success(data)
@@ -60,6 +61,7 @@ export class UserController {
     @Get('/get/login')
     @UseGuards(AuthGuard)
     @ApiResponse({ type: UserLoginVo })
+    @ApiOperation({ summary: '获取登录用户' })
     async getLoginUser(@Req() req: Request) {
         const user = await this.userService.getLoginUser(req)
         return this.responseService.success(user)
@@ -67,6 +69,7 @@ export class UserController {
 
     @Post('/login')
     @ApiResponse({ type: UserLoginVo })
+    @ApiOperation({ summary: '用户登录' })
     async userLogin(@Req() req: Request, @Body(new ValidationPipe()) userLoginDto: UserLoginDto) {
         const data = await this.userService.userLogin(userLoginDto)
         if ('code' in data) {
@@ -79,6 +82,7 @@ export class UserController {
     @Post('/logout')
     @UseGuards(AuthGuard)
     @ApiResponse({ type: UserLogoutVo })
+    @ApiOperation({ summary: '退出登录' })
     async userLogout(@Req() req: Request) {
         const flag = await this.userService.userLogout(req)
         return this.responseService.success(flag)
@@ -88,6 +92,7 @@ export class UserController {
     @Roles([UserRole.ADMIN])
     @UseGuards(RoleGuard)
     @ApiResponse({ type: UserVo })
+    @ApiOperation({ summary: '获取用户列表(管理员)' })
     async getUserByPage(@Body(new ValidationPipe()) findUserDto: FindUserDto) {
         const { result, total } = await this.userService.getUserByPage(findUserDto)
         return this.responseService.success({ list: result, total })
@@ -97,6 +102,7 @@ export class UserController {
     @Roles([UserRole.ADMIN])
     @UseGuards(RoleGuard)
     @ApiResponse({ type: UserCreateVo })
+    @ApiOperation({ summary: '添加用户(管理员)' })
     async addUser(@Body(new ValidationPipe()) createUserDto: CreateUserDto) {
         const id = await this.userService.addUser(createUserDto)
         return this.responseService.success(id)
@@ -106,6 +112,7 @@ export class UserController {
     @Roles([UserRole.ADMIN])
     @UseGuards(AuthGuard, RoleGuard)
     @ApiResponse({ type: User })
+    @ApiOperation({ summary: '根据id获取用户信息(管理员)' })
     async getUserById(@Param('id') id: string) {
         const user = await this.userService.getUserById(id)
         return this.responseService.success(user)
@@ -114,6 +121,7 @@ export class UserController {
     @Get('/get/vo')
     @UseGuards(AuthGuard)
     @ApiResponse({ type: UserVoModel })
+    @ApiOperation({ summary: '根据id获取用户信息(非管理员)' })
     async getUserVoById(@Query('id') id: string) {
         const user = await this.userService.getUserVoById(id)
         return this.responseService.success(user)
@@ -123,6 +131,7 @@ export class UserController {
     @Roles([UserRole.ADMIN])
     @UseGuards(AuthGuard, RoleGuard)
     @ApiResponse({ type: UserDeleteVo })
+    @ApiOperation({ summary: '删除用户(管理员)' })
     async deleteUser(@Body(new ValidationPipe()) deleteRequest: DeleteRequest) {
         const id = await this.userService.deleteUser(deleteRequest)
         return this.responseService.success(id)
@@ -132,6 +141,7 @@ export class UserController {
     @Roles([UserRole.ADMIN])
     @UseGuards(AuthGuard, RoleGuard)
     @ApiResponse({ type: UserUpdateVo })
+    @ApiOperation({ summary: '更新用户(管理员)' })
     async updateUser(@Body(new ValidationPipe()) updateUserDto: UpdateUserDto) {
         const flag = await this.userService.updateUser(updateUserDto)
         return this.responseService.success(flag)
@@ -140,6 +150,7 @@ export class UserController {
     @Post('/edit')
     @UseGuards(AuthGuard)
     @ApiResponse({ type: UserUpdateVo })
+    @ApiOperation({ summary: '更新用户(非管理员)' })
     async editUser(@Body(new ValidationPipe()) editUserDto: EditUserDto) {
         const flag = await this.userService.editUser(editUserDto)
         return this.responseService.success(flag)
@@ -149,8 +160,8 @@ export class UserController {
     @UseGuards(AuthGuard)
     @UseInterceptors(FileInterceptor('file'))
     @ApiConsumes('multipart/form-data')
+    @ApiOperation({ summary: '上传头像' })
     @ApiBody({
-        description: '上传头像',
         schema: {
             type: 'object',
             properties: {

@@ -8,6 +8,7 @@ import { ReadMessageDto } from './dto/read-message.dto'
 import { ReadMessageVo } from './vo/read-message.vo'
 import { Request } from 'express'
 import { ValidationPipe } from '../pipe/validation.pipe'
+import { ReadAllMessageVo } from './vo/read-all-message.vo'
 @Controller('message')
 export class MessageController {
     constructor(
@@ -45,6 +46,15 @@ export class MessageController {
     @UseGuards(AuthGuard)
     async readMessage(@Body(new ValidationPipe()) readMessageDto: ReadMessageDto) {
         const data = await this.messageService.readMessage(readMessageDto)
+        return this.responseService.success(data)
+    }
+
+    @Post('/read/all/message')
+    @ApiOperation({ summary: '全部已读' })
+    @ApiResponse({ type: ReadAllMessageVo })
+    @UseGuards(AuthGuard)
+    async readAllMessage(@Req() req: Request) {
+        const data = await this.messageService.readAllMessage(req)
         return this.responseService.success(data)
     }
 }

@@ -1,1 +1,2 @@
-@import './base/reset';
+@use './base/reset' as reset;
+@use './mixins/index' as mixins;

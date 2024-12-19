@@ -68,10 +68,7 @@ const {
                         <a-button
                             size="small"
                             type="primary"
-                            v-if="
-                                record.reviewStatus === ReviewStatus.REVIEWING ||
-                                record.reviewStatus === ReviewStatus.REJECT
-                            "
+                            v-if="record.reviewStatus === ReviewStatus.REVIEWING"
                             @click="handleReview(record.id, ReviewStatus.PASS)"
                             >通过</a-button
                         >
@@ -79,10 +76,7 @@ const {
                             size="small"
                             type="primary"
                             danger
-                            v-if="
-                                record.reviewStatus === ReviewStatus.REVIEWING ||
-                                record.reviewStatus === ReviewStatus.PASS
-                            "
+                            v-if="record.reviewStatus === ReviewStatus.REVIEWING"
                             @click="handleReview(record.id, ReviewStatus.REJECT)"
                             >拒绝</a-button
                         >

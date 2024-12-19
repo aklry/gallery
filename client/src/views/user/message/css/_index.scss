@@ -1,0 +1,9 @@
+@use '@/assets/styles/mixins' as *;
+
+.user-message {
+    @include screen-center;
+
+    .ant-list-item {
+        @apply p-0;
+    }
+}

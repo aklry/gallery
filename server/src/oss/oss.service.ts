@@ -2,9 +2,15 @@ import { Injectable } from '@nestjs/common'
 import * as OSS from 'ali-oss'
 import { getOssConfig, isValidUrl } from '../utils'
 import { extname } from 'node:path'
-import { OSS_PUBLIC_PICTURE_PATH, BusinessStatus, OSS_PICTURE_PATH } from '../config'
+import {
+    OSS_PUBLIC_PICTURE_PATH,
+    BusinessStatus,
+    OSS_PICTURE_PATH,
+    OSS_IMAGE_DOMAIN,
+    OSS_PREVIOUS_IMAGE_DOMAIN
+} from '../config'
 import { UploadFailedException } from '../custom-exception'
-import { UploadPictureVo, UploadPictureVoModel } from '../picture/vo/upload-picture.vo'
+import { UploadPictureVoModel } from '../picture/vo/upload-picture.vo'
 import axios from 'axios'
 interface ImageInfo {
     ImageWidth: {
@@ -52,17 +58,16 @@ export class OssService {
             } else {
                 ext = extname(filename)
             }
-            console.log(ext)
             const uploadFileName = `${OSS_PICTURE_PATH}/${prefix}/${Date.now()}-${Math.random() * 1e19}${ext}`
-            console.log(uploadFileName)
             const result = await this.ossClient.put(uploadFileName, fileBuffer)
             const imageInfo = await this.ossClient.get(uploadFileName, {
                 process: 'image/info'
             })
             const info = JSON.parse(imageInfo.content.toString()) as ImageInfo
             const picScale = Number((info.ImageWidth.value / info.ImageHeight.value).toFixed(2))
+            const url = result.url.replace(OSS_PREVIOUS_IMAGE_DOMAIN, OSS_IMAGE_DOMAIN)
             return {
-                url: result.url,
+                url,
                 picScale,
                 format: info.Format.value,
                 fileSize: BigInt(info.FileSize.value),

@@ -18,6 +18,14 @@ export async function messageControllerFindAllNewMessage(options?: { [key: strin
     })
 }
 
+/** 全部已读 POST /api/message/read/all/message */
+export async function messageControllerReadAllMessage(options?: { [key: string]: any }) {
+    return ryRequest.request<API.ReadAllMessageVo>('/api/message/read/all/message', {
+        method: 'POST',
+        ...(options || {})
+    })
+}
+
 /** 阅读消息 POST /api/message/read/message */
 export async function messageControllerReadMessage(body: API.ReadMessageDto, options?: { [key: string]: any }) {
     return ryRequest.request<API.ReadMessageVo>('/api/message/read/message', {

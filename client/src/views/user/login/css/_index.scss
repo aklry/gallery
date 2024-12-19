@@ -1,0 +1,22 @@
+// 自定义样式
+.ant-card {
+    @apply bg-white;
+}
+
+.ant-card-head {
+    @apply border-b border-gray-100;
+}
+
+:deep(.ant-card-head-title) {
+    @apply text-center text-2xl py-3 font-medium text-gray-800;
+}
+
+.ant-card-body {
+    @apply p-6;
+}
+
+.ant-form-item {
+    &:last-child {
+        @apply mb-0;
+    }
+}

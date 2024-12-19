@@ -15,25 +15,10 @@
 </template>
 
 <script setup lang="ts">
-import GlobalHeader from './global-header/index.vue'
-import GlobalFooter from './global-footer/index.vue'
+import GlobalHeader from './components/global-header/index.vue'
+import GlobalFooter from './components/global-footer/index.vue'
 </script>
 
 <style lang="scss" scoped>
-.ant-layout-header {
-    @apply bg-white;
-
-    padding-inline: 20px;
-}
-
-.ant-layout-footer {
-    @apply bg-white p-0 h-[64px];
-}
-
-.content {
-    background: linear-gradient(to bottom, #fefefe, #fff);
-    @apply p-[20px] pb-[64px] overflow-auto;
-
-    height: calc(100vh - 64px - 64px);
-}
+@use './css/index' as *;
 </style>

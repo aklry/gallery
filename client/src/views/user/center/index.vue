@@ -55,7 +55,5 @@ const { userInfo, open, form, handleOk, handleUploadSuccess, picture, handleEdit
 </script>
 
 <style scoped lang="scss">
-.ant-avatar {
-    @apply block w-full text-center;
-}
+@use './css/index' as *;
 </style>

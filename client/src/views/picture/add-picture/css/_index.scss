@@ -1,0 +1,5 @@
+@use '@/assets/styles/mixins' as *;
+
+.add-picture {
+    @include screen-center;
+}

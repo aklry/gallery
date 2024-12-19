@@ -21,6 +21,7 @@ import { Picture } from './entities/picture.entity'
 import { ReviewStatus } from './enum'
 import { MessageStatus } from '@prisma/client'
 import { UploadPictureUrlDto } from './dto/upload-picture-url.dto'
+import { ShowPictureModelVo } from './vo/show-picture.vo'
 
 @Injectable()
 export class PictureService {
@@ -136,13 +137,12 @@ export class PictureService {
             }),
             this.prismaService.picture.count({ where })
         ])
-        const result: UploadPictureVoModel[] = data.map(item => ({
+        const result: ShowPictureModelVo[] = data.map(item => ({
             id: item.id,
             url: item.url,
-            name: item.name,
             introduction: item.introduction,
             category: item.category,
-            tags: item.tags === '' ? '' : JSON.parse(item.tags) || [],
+            tags: item.tags === '' ? [] : JSON.parse(item.tags) || [],
             format: item.picFormat,
             fileSize: item.picSize,
             width: item.picWidth,

@@ -17,5 +17,12 @@ export default defineConfig({
             '@/store': fileURLToPath(new URL('./src/store', import.meta.url)),
             '@/api': fileURLToPath(new URL('./src/api', import.meta.url))
         }
+    },
+    css: {
+        preprocessorOptions: {
+            scss: {
+                additionalData: `@use "@/assets/styles/mixins/index" as mixins;`
+            }
+        }
     }
 })

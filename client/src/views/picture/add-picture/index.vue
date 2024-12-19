@@ -56,7 +56,5 @@ const {
 </script>
 
 <style scoped lang="scss">
-.add-picture {
-    @apply max-w-[1000px] mx-auto;
-}
+@use './css/index' as *;
 </style>

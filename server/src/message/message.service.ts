@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { PrismaService } from '../prisma/prisma.service'
 import { MessageVoModel } from './vo/message.vo'
 import { ReadMessageDto } from './dto/read-message.dto'
-import { DaoErrorException } from '../custom-exception'
+import { DaoErrorException, NotLoginException } from '../custom-exception'
 import { BusinessStatus } from '../config'
 import { MessageStatus } from '@prisma/client'
 import { Request } from 'express'
@@ -99,6 +99,25 @@ export class MessageService {
         const result = await this.prisma.message.update({
             where: {
                 id
+            },
+            data: {
+                hasRead: MessageStatus.READ
+            }
+        })
+        if (!result) {
+            throw new DaoErrorException('消息已读失败', BusinessStatus.PARAMS_ERROR.code)
+        }
+        return true
+    }
+
+    async readAllMessage(req: Request) {
+        const user = req.session.user
+        if (!user) {
+            throw new NotLoginException(BusinessStatus.NOT_LOGIN_ERROR.message, BusinessStatus.NOT_LOGIN_ERROR.code)
+        }
+        const result = await this.prisma.message.updateMany({
+            where: {
+                userId: user.id
             },
             data: {
                 hasRead: MessageStatus.READ

@@ -3,13 +3,13 @@
         <tabs :tag_category="tag_category" @changeTabs="changeTabs" />
         <tag-bars :tag_category="tag_category" @changeTags="changeTags" />
         <a-list :grid="{ gutter: 16, xs: 1, sm: 2, md: 3, lg: 4, xl: 5, xxl: 6 }" :data-source="dataList">
-            <template #renderItem="{ item: picture }">
+            <template #renderItem="{ item: picture }: { item: API.ShowPictureModelVo }">
                 <a-list-item>
                     <a-card @click="clickPicture(picture.id)">
                         <template #cover>
-                            <img :src="picture.url" :alt="picture.name" style="height: 180px; object-fit: cover" />
+                            <img :src="picture.url" :alt="picture.filename" style="height: 180px; object-fit: cover" />
                         </template>
-                        <a-card-meta :title="picture.name">
+                        <a-card-meta :title="picture.filename">
                             <template #description>
                                 <a-flex>
                                     <a-tag color="success">{{ picture.category || '默认' }}</a-tag>
@@ -25,7 +25,7 @@
 </template>
 
 <script setup lang="ts">
-import useHomeHooks from './hoods'
+import useHomeHooks from './hooks'
 import Tabs from './components/tabs/index.vue'
 import { storeToRefs } from 'pinia'
 import usePictureStore from '@/store/modules/picture'
@@ -35,4 +35,4 @@ const { tag_category } = storeToRefs(pictureStore)
 const { dataList, changeTabs, changeTags, clickPicture } = useHomeHooks()
 </script>
 
-<style scoped></style>
+<style scoped lang="scss"></style>

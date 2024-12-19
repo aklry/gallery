@@ -2,9 +2,11 @@ import { computed, ref, watchEffect } from 'vue'
 import {
     messageControllerFindAllHistoryMessage,
     messageControllerFindAllNewMessage,
-    messageControllerReadMessage
+    messageControllerReadMessage,
+    messageControllerReadAllMessage
 } from '@/api/message'
 import { MessageStatus } from '@/constants'
+import { message } from 'ant-design-vue'
 const useMessage = () => {
     const newMessageList = ref<API.MessageVoModel[]>()
     const newMessageTotal = ref<number>(0)
@@ -54,6 +56,19 @@ const useMessage = () => {
         }
     }
 
+    const handleReadAllMessage = async () => {
+        try {
+            await messageControllerReadAllMessage()
+            if (currentKey.value === '1') {
+                getNewMessageList()
+            } else {
+                getHistoryMessageList()
+            }
+        } catch (error) {
+            message.error('全部已读失败')
+        }
+    }
+
     watchEffect(() => {
         if (currentKey.value === '1') {
             getNewMessageList()
@@ -70,7 +85,8 @@ const useMessage = () => {
         newHistoryMessageHasRead,
         currentKey,
         currentMessageList,
-        handleMessageClick
+        handleMessageClick,
+        handleReadAllMessage
     }
 }
 

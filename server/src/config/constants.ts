@@ -1,3 +1,5 @@
 export const SECRET_SALT = 'aklry'
 export const OSS_PUBLIC_PICTURE_PATH = 'public'
 export const OSS_PICTURE_PATH = 'gallery'
+export const OSS_IMAGE_DOMAIN = 'image.aklry.com'
+export const OSS_PREVIOUS_IMAGE_DOMAIN = 'aklry.oss-cn-guangzhou.aliyuncs.com'

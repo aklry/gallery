@@ -32,67 +32,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
 import { UserOutlined, LockOutlined } from '@ant-design/icons-vue'
-import { message } from 'ant-design-vue'
-import { useRouter } from 'vue-router'
-import { useUserStore } from '@/store/modules/user'
-import { userControllerUserLoginV1 } from '@/api/user'
-import { MD5 } from 'crypto-js'
+import useLogin from './hooks'
 
-const router = useRouter()
-const userStore = useUserStore()
-const loading = ref(false)
-
-const loginForm = reactive<API.UserLoginDto>({
-    userAccount: '',
-    userPassword: ''
-})
-
-const handleSubmit = async (values: API.UserLoginDto) => {
-    try {
-        loading.value = true
-        const res = await userControllerUserLoginV1({
-            userAccount: values.userAccount,
-            userPassword: MD5(values.userPassword).toString()
-        })
-        if (res.code === 1) {
-            await userStore.setLoginUser(res.data)
-            message.success('登录成功')
-            const redirect = router.currentRoute.value.query.redirect as string
-            router.push(redirect || '/')
-        } else {
-            message.error(res.message)
-        }
-    } catch (error) {
-        message.error('登录失败，请重试')
-    } finally {
-        loading.value = false
-    }
-}
+const { loginForm, handleSubmit, loading } = useLogin()
 </script>
 
 <style lang="scss" scoped>
-// 自定义样式
-.ant-card {
-    @apply bg-white;
-}
-
-.ant-card-head {
-    @apply border-b border-gray-100;
-}
-
-:deep(.ant-card-head-title) {
-    @apply text-center text-2xl py-3 font-medium text-gray-800;
-}
-
-.ant-card-body {
-    @apply p-6;
-}
-
-.ant-form-item {
-    &:last-child {
-        @apply mb-0;
-    }
-}
+@use './css/index' as *;
 </style>

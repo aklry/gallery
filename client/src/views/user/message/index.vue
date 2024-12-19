@@ -8,7 +8,7 @@
                 </a-tabs>
             </template>
             <template #extra>
-                <a-button>全部已读</a-button>
+                <a-button type="primary" @click="handleReadAllMessage">全部已读</a-button>
             </template>
             <a-list :dataSource="currentMessageList">
                 <template #renderItem="{ item }: { item: API.MessageVoModel }">
@@ -30,15 +30,9 @@
 <script setup lang="ts">
 import useMessage from './hooks'
 import { MessageStatus } from '@/constants'
-const { currentKey, currentMessageList, handleMessageClick } = useMessage()
+const { currentKey, currentMessageList, handleMessageClick, handleReadAllMessage } = useMessage()
 </script>
 
 <style scoped lang="scss">
-.user-message {
-    @apply max-w-[1000px] mx-auto;
-
-    .ant-list-item {
-        @apply p-0;
-    }
-}
+@use './css/index' as *;
 </style>

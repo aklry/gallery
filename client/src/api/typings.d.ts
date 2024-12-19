@@ -265,6 +265,19 @@ declare namespace API {
         reviewMessage?: string
     }
 
+    type ReadAllMessageVo = {
+        /** 状态码 */
+        code: number
+        /** 消息 */
+        message: string
+        /** 是否成功 */
+        data: Record<string, any>
+        /** 时间戳 */
+        timestamp: string
+        /** 路径 */
+        path: string
+    }
+
     type ReadMessageDto = {
         /** 消息id */
         id: string
@@ -290,6 +303,51 @@ declare namespace API {
         reviewStatus: number
         /** 审核消息 */
         reviewMessage?: string
+    }
+
+    type ShowPictureModelVo = {
+        /** 图片id */
+        id: string
+        /** 图片url */
+        url: string
+        /** 图片简介 */
+        introduction: string
+        /** 图片分类 */
+        category: string
+        /** 图片标签 */
+        tags: string[]
+        /** 图片格式 */
+        format: string
+        /** 图片大小 */
+        fileSize: number
+        /** 图片宽度 */
+        width: number
+        /** 图片高度 */
+        height: number
+        /** 图片名称 */
+        filename: string
+        /** 图片宽高比 */
+        picScale: number
+    }
+
+    type ShowPictureVo = {
+        /** 状态码 */
+        code: number
+        /** 消息 */
+        message: string
+        /** 图片信息 */
+        data: ShowPictureVoType
+        /** 时间戳 */
+        timestamp: string
+        /** 路径 */
+        path: string
+    }
+
+    type ShowPictureVoType = {
+        /** 图片信息 */
+        list: ShowPictureModelVo[]
+        /** 总数 */
+        total: number
     }
 
     type TagCategoryList = {
