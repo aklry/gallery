@@ -158,6 +158,10 @@ const usePictureHooks = () => {
         messageContent.value = ''
     }
 
+    const goToBatchAddPicture = () => {
+        router.push('/picture/add/batch')
+    }
+
     onMounted(() => {
         fetchData()
     })
@@ -173,7 +177,8 @@ const usePictureHooks = () => {
         handleReview,
         openMessageModal,
         messageContent,
-        handleMessageOk
+        handleMessageOk,
+        goToBatchAddPicture
     }
 }
 

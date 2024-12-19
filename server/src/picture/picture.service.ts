@@ -419,7 +419,6 @@ export class PictureService {
     }
     async setPicture(picture: UploadPictureVoModel[], req: Request) {
         const user = req.session.user
-        console.log(picture)
         if (!user) {
             throw new NotLoginException('用户未登录', BusinessStatus.NOT_LOGIN_ERROR.code)
         }

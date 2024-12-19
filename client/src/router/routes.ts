@@ -51,6 +51,11 @@ export const routes: RouteRecordRaw[] = [
         component: () => import('@/views/picture/add-picture/index.vue')
     },
     {
+        path: '/picture/add/batch',
+        name: 'add-picture-batch',
+        component: () => import('@/views/picture/picture-batch/index.vue')
+    },
+    {
         path: '/picture/:id',
         name: 'picture-detail',
         component: () => import('@/views/picture/picture-detail/index.vue'),

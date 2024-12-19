@@ -427,7 +427,12 @@ declare namespace API {
         url: string
     }
 
-    type UploadBatchPictureDto = {}
+    type UploadBatchPictureDto = {
+        /** 关键词 */
+        keywords: string
+        /** 添加数量 */
+        count: number
+    }
 
     type UploadBatchPictureVo = {
         /** 状态码 */

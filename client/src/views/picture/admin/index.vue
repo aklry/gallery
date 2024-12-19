@@ -2,6 +2,7 @@
 import { ReviewStatus } from '@/constants'
 import usePictureHooks from './hooks'
 import { formatTime, formatSize } from '@/utils'
+import { PlusOutlined } from '@ant-design/icons-vue'
 const {
     columns,
     dataSource,
@@ -14,12 +15,21 @@ const {
     handleReview,
     openMessageModal,
     messageContent,
-    handleMessageOk
+    handleMessageOk,
+    goToBatchAddPicture
 } = usePictureHooks()
 </script>
 
 <template>
     <a-card class="picture-admin" title="图片管理" :bordered="false">
+        <template #extra>
+            <a-button type="primary" @click="goToBatchAddPicture">
+                <a-space>
+                    批量增加
+                    <PlusOutlined />
+                </a-space>
+            </a-button>
+        </template>
         <a-form :model="searchParams" layout="inline" class="mb-[10px]">
             <a-form-item label="关键词" name="searchText">
                 <a-input v-model:value="searchParams.searchText" placeholder="请输入关键词" />
