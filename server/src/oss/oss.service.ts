@@ -59,7 +59,11 @@ export class OssService {
                 ext = extname(filename)
             }
             const uploadFileName = `${OSS_PICTURE_PATH}/${prefix}/${Date.now()}-${Math.random() * 1e19}${ext}`
-            const result = await this.ossClient.put(uploadFileName, fileBuffer)
+            const result = await this.ossClient.put(uploadFileName, fileBuffer, {
+                headers: {
+                    'Content-Disposition': `attachment; filename="${filename}"`
+                }
+            })
             const imageInfo = await this.ossClient.get(uploadFileName, {
                 process: 'image/info'
             })
