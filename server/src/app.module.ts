@@ -13,6 +13,8 @@ import { PictureModule } from './picture/picture.module'
 import { ExtractModule } from './extract/extract.module'
 import { MessageModule } from './message/message.module'
 import { RedisService } from './redis/redis.service'
+import { CleanModule } from './clean/clean.module'
+import { ScheduleModule } from '@nestjs/schedule'
 
 @Module({
     imports: [
@@ -23,7 +25,9 @@ import { RedisService } from './redis/redis.service'
         PictureModule,
         ExtractModule,
         MessageModule,
-        RedisModule
+        RedisModule,
+        CleanModule,
+        ScheduleModule.forRoot()
     ],
     controllers: [AppController],
     providers: [AppService]

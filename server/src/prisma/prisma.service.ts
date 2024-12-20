@@ -70,6 +70,9 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
 
             if (params.action === 'findMany') {
                 // 添加 isDelete 条件
+                if ('isDelete' in params.args.where) {
+                    return next(params)
+                }
                 params.args.where = { ...params.args.where, isDelete: 0 }
             }
 

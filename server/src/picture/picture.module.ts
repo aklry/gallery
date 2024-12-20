@@ -6,6 +6,7 @@ import { ExtractModule } from '../extract/extract.module'
 @Module({
     controllers: [PictureController],
     providers: [PictureService],
-    imports: [ExtractModule]
+    imports: [ExtractModule],
+    exports: [PictureService]
 })
 export class PictureModule {}

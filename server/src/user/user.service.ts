@@ -16,6 +16,7 @@ import { DeleteRequest } from '../common/delete.dto'
 import { EditUserDto } from './dto/edit-user.dto'
 import { OssService } from '../oss/oss.service'
 import { UploadAvatarDto } from './dto/upload-avatar.dto'
+import { RedisService } from '../redis/redis.service'
 @Injectable()
 export class UserService {
     constructor(

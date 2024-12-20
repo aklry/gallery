@@ -79,4 +79,17 @@ export class OssService {
             throw new UploadFailedException(BusinessStatus.OPERATION_ERROR.message, BusinessStatus.OPERATION_ERROR.code)
         }
     }
+
+    getOssClient(): OSS {
+        return this.ossClient
+    }
+
+    getOssPathFromUrl(url: string): string {
+        try {
+            const urlObj = new URL(url)
+            return urlObj.pathname.substring(1)
+        } catch (error) {
+            throw new Error('Invalid OSS URL')
+        }
+    }
 }

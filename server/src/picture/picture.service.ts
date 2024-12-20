@@ -487,4 +487,23 @@ export class PictureService {
             }
         }
     }
+
+    async findDeletedPicture() {
+        const result = await this.prismaService.picture.findMany({
+            where: {
+                isDelete: 1
+            }
+        })
+        return result
+    }
+
+    async deletePictureById(id: string) {
+        const result = await this.prismaService.picture.delete({
+            where: { id }
+        })
+        if (!result) {
+            throw new DaoErrorException('图片删除失败', BusinessStatus.OPERATION_ERROR.code)
+        }
+        return true
+    }
 }
