@@ -15,6 +15,7 @@ import { MessageModule } from './message/message.module'
 import { RedisService } from './redis/redis.service'
 import { CleanModule } from './clean/clean.module'
 import { ScheduleModule } from '@nestjs/schedule'
+import { RedisCacheModule } from './cache/cache.module'
 
 @Module({
     imports: [
@@ -27,7 +28,8 @@ import { ScheduleModule } from '@nestjs/schedule'
         MessageModule,
         RedisModule,
         CleanModule,
-        ScheduleModule.forRoot()
+        ScheduleModule.forRoot(),
+        RedisCacheModule
     ],
     controllers: [AppController],
     providers: [AppService]

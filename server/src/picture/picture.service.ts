@@ -22,13 +22,15 @@ import { ReviewStatus } from './enum'
 import { MessageStatus } from '@prisma/client'
 import { UploadPictureUrlDto } from './dto/upload-picture-url.dto'
 import { ShowPictureModelVo } from './vo/show-picture.vo'
+import { RedisCacheService } from '../cache/cache.service'
 
 @Injectable()
 export class PictureService {
     constructor(
         private readonly prismaService: PrismaService,
         private readonly ossService: OssService,
-        private readonly extractService: ExtractService
+        private readonly extractService: ExtractService,
+        private readonly redisCacheService: RedisCacheService
     ) {}
 
     async getPictureByPage(queryPictureDto: QueryPictureDto) {
@@ -101,7 +103,11 @@ export class PictureService {
         if (Number(pageSize) > 20) {
             throw new DaoErrorException(BusinessStatus.OPERATION_ERROR.message, BusinessStatus.OPERATION_ERROR.code)
         }
-
+        const cacheKey = `picture_page_${current}_${pageSize}`
+        const cacheData = await this.redisCacheService.get<ShowPictureModelVo[]>(cacheKey)
+        if (cacheData) {
+            return cacheData
+        }
         // Build where clause for search and filters
         const where: any = {
             ...(searchText && {
@@ -150,6 +156,14 @@ export class PictureService {
             filename: item.name,
             picScale: item.picScale
         }))
+        await this.redisCacheService.set(
+            cacheKey,
+            {
+                list: result,
+                total
+            },
+            3600000
+        )
         return {
             list: result,
             total
