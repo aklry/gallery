@@ -4,7 +4,7 @@ import { useRouter } from 'vue-router'
 
 const useHomeHooks = () => {
     const router = useRouter()
-    const dataList = ref<API.PictureVoModel[]>()
+    const dataList = ref<API.ShowPictureModelVo[]>()
     const total = ref<number>(0)
     const searchParams = reactive<API.QueryPictureDto>({
         current: '1',
@@ -39,6 +39,14 @@ const useHomeHooks = () => {
     onMounted(() => {
         fetchData()
     })
+    const handleSearchPicture = (value: string) => {
+        if (!value) {
+            searchParams.searchText = undefined
+        } else {
+            searchParams.searchText = value
+        }
+        fetchData()
+    }
     watch([() => searchParams.category, () => searchParams.tags], () => {
         fetchData()
     })
@@ -48,7 +56,8 @@ const useHomeHooks = () => {
         searchParams,
         changeTabs,
         changeTags,
-        clickPicture
+        clickPicture,
+        handleSearchPicture
     }
 }
 export default useHomeHooks

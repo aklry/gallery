@@ -1,5 +1,14 @@
 <template>
     <div class="home h-full">
+        <div class="input-search">
+            <a-input-search
+                placeholder="从海量图片中搜索"
+                size="large"
+                enterButton="搜索"
+                @search="handleSearchPicture"
+                v-model:value="searchParams.searchText"
+            />
+        </div>
         <tabs :tag_category="tag_category" @changeTabs="changeTabs" />
         <tag-bars :tag_category="tag_category" @changeTags="changeTags" />
         <a-list :grid="{ gutter: 16, xs: 1, sm: 2, md: 3, lg: 4, xl: 5, xxl: 6 }" :data-source="dataList">
@@ -7,7 +16,11 @@
                 <a-list-item>
                     <a-card @click="clickPicture(picture.id)">
                         <template #cover>
-                            <img :src="picture.url" :alt="picture.filename" style="height: 180px; object-fit: cover" />
+                            <img
+                                :src="picture.thumbnailUrl ?? picture.url"
+                                :alt="picture.filename"
+                                style="height: 180px; object-fit: cover"
+                            />
                         </template>
                         <a-card-meta :title="picture.filename">
                             <template #description>
@@ -32,7 +45,9 @@ import usePictureStore from '@/store/modules/picture'
 import TagBars from './components/tag-bars/index.vue'
 const pictureStore = usePictureStore()
 const { tag_category } = storeToRefs(pictureStore)
-const { dataList, changeTabs, changeTags, clickPicture } = useHomeHooks()
+const { dataList, changeTabs, changeTags, clickPicture, handleSearchPicture, searchParams } = useHomeHooks()
 </script>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+@use './css/index' as *;
+</style>

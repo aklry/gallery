@@ -53,6 +53,7 @@ const usePictureDetail = (id: string) => {
         router.push(`/picture/add?id=${id}`)
     }
     const downloadPicture = (url?: string, filename?: string) => {
+        console.log(url, filename)
         download(url, filename)
     }
     onMounted(() => {

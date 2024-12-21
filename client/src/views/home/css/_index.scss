@@ -1,0 +1,5 @@
+@use '@/assets/styles/mixins' as *;
+
+.input-search {
+    @apply max-w-[500px] mx-auto;
+}

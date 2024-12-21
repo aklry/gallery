@@ -18,6 +18,8 @@ export class UploadPictureVoModel {
     height: number
     @ApiProperty({ description: '图片名称', required: true })
     filename: string
+    @ApiProperty({ description: '图片缩略图url', required: true })
+    thumbnailUrl: string
 }
 
 export class UploadPictureVo extends ResponseVo<UploadPictureVoModel> {

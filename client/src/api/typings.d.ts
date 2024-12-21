@@ -328,6 +328,8 @@ declare namespace API {
         filename: string
         /** 图片宽高比 */
         picScale: number
+        /** 缩略图url */
+        thumbnailUrl: string
     }
 
     type ShowPictureVo = {
@@ -484,6 +486,8 @@ declare namespace API {
         height: number
         /** 图片名称 */
         filename: string
+        /** 图片缩略图url */
+        thumbnailUrl: string
     }
 
     type User = {

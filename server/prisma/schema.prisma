@@ -45,6 +45,7 @@ model picture {
   reviewerId    String   @default("") @db.VarChar(256)
   reviewTime    DateTime @default(now()) @db.DateTime(0)
   isDelete      Int      @default(0) @db.TinyInt
+  thumbnailUrl  String?  @db.VarChar(512)
 
   @@index([name], map: "idx_name")
   @@index([introduction], map: "idx_introduction")

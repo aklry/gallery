@@ -105,7 +105,7 @@ export class PictureService {
         }
         const cacheKey = `picture_page_${current}_${pageSize}`
         const cacheData = await this.redisCacheService.get<ShowPictureModelVo[]>(cacheKey)
-        if (cacheData) {
+        if (cacheData && !searchText) {
             return cacheData
         }
         // Build where clause for search and filters
@@ -154,16 +154,19 @@ export class PictureService {
             width: item.picWidth,
             height: item.picHeight,
             filename: item.name,
-            picScale: item.picScale
+            picScale: item.picScale,
+            thumbnailUrl: item.thumbnailUrl
         }))
-        await this.redisCacheService.set(
-            cacheKey,
-            {
-                list: result,
-                total
-            },
-            3600000
-        )
+        if (result.length > 0) {
+            await this.redisCacheService.set(
+                cacheKey,
+                {
+                    list: result,
+                    total
+                },
+                3600000
+            )
+        }
         return {
             list: result,
             total
@@ -262,6 +265,7 @@ export class PictureService {
         if (!result) {
             throw new DaoErrorException('图片删除失败', BusinessStatus.OPERATION_ERROR.code)
         }
+        this.redisCacheService.clear()
         return true
     }
     async uploadFile(
@@ -318,7 +322,8 @@ export class PictureService {
                       editTime: new Date(),
                       userId: user?.id || '',
                       reviewStatus,
-                      reviewTime
+                      reviewTime,
+                      thumbnailUrl: ossResult.thumbnailUrl
                   }
               })
             : await this.prismaService.picture.create({
@@ -333,7 +338,8 @@ export class PictureService {
                       userId: user?.id || '',
                       tags: '',
                       category: '',
-                      introduction: ''
+                      introduction: '',
+                      thumbnailUrl: ossResult.thumbnailUrl
                   }
               })
         if (!picture) {
@@ -347,7 +353,8 @@ export class PictureService {
             fileSize: picture.picSize,
             width: picture.picWidth,
             height: picture.picHeight,
-            filename: picture.name
+            filename: picture.name,
+            thumbnailUrl: picture.thumbnailUrl
         } as UploadPictureVoModel
     }
 
@@ -451,7 +458,8 @@ export class PictureService {
                 picFormat: item.format,
                 reviewStatus: 1,
                 reviewTime: new Date(),
-                reviewerId: user.id
+                reviewerId: user.id,
+                thumbnailUrl: item.thumbnailUrl
             }))
         })
     }

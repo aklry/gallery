@@ -29,6 +29,12 @@ export class RedisCacheService {
         await this.cacheManager.del(key)
     }
     /**
+     * 清除所有缓存数据
+     */
+    async clear(): Promise<void> {
+        await this.cacheManager.reset()
+    }
+    /**
      * 获取缓存数据，如果不存在则通过回调函数获取并缓存
      * @param key 缓存键
      * @param callback 回调函数，用于获取数据

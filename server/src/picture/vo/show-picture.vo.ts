@@ -24,6 +24,8 @@ export class ShowPictureModelVo {
     filename: string
     @ApiProperty({ description: '图片宽高比', required: true })
     picScale: number
+    @ApiProperty({ description: '缩略图url', required: true })
+    thumbnailUrl: string
 }
 
 export class ShowPictureVoType {
