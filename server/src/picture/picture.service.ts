@@ -105,7 +105,8 @@ export class PictureService {
         }
         const cacheKey = `picture_page_${current}_${pageSize}`
         const cacheData = await this.redisCacheService.get<ShowPictureModelVo[]>(cacheKey)
-        if (cacheData && !searchText) {
+        const isQuery = !searchText && !filters.category && filters.tags && filters.tags.length === 0
+        if (cacheData && isQuery) {
             return cacheData
         }
         // Build where clause for search and filters

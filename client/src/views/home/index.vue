@@ -1,9 +1,9 @@
 <template>
-    <div class="home h-full">
+    <div class="home h-full overflow-scroll" v-load:[++current].loaded="fetchData">
         <div class="input-search">
             <a-input-search
                 placeholder="从海量图片中搜索"
-                size="large"
+                size="middle"
                 enterButton="搜索"
                 @search="handleSearchPicture"
                 v-model:value="searchParams.searchText"
@@ -45,7 +45,8 @@ import usePictureStore from '@/store/modules/picture'
 import TagBars from './components/tag-bars/index.vue'
 const pictureStore = usePictureStore()
 const { tag_category } = storeToRefs(pictureStore)
-const { dataList, changeTabs, changeTags, clickPicture, handleSearchPicture, searchParams } = useHomeHooks()
+const { dataList, changeTabs, changeTags, clickPicture, handleSearchPicture, searchParams, fetchData, current } =
+    useHomeHooks()
 </script>
 
 <style scoped lang="scss">

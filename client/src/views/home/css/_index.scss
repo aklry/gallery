@@ -3,3 +3,7 @@
 .input-search {
     @apply max-w-[500px] mx-auto;
 }
+
+::-webkit-scrollbar {
+    display: none;
+}

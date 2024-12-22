@@ -10,7 +10,5 @@
 
 .content {
     background: linear-gradient(to bottom, #fefefe, #fff);
-    @apply p-[20px] pb-[64px] overflow-auto;
-
-    height: calc(100vh - 64px - 64px);
+    @apply p-[20px] overflow-hidden box-border;
 }
