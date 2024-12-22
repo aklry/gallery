@@ -1,4 +1,4 @@
-import { ref, reactive, onMounted, watch } from 'vue'
+import { ref, reactive, watch } from 'vue'
 import { pictureControllerGetPictureByPageVoV1 } from '@/api/picture'
 import { useRouter } from 'vue-router'
 import { sessionCache } from '@/utils/cache'
@@ -14,7 +14,7 @@ const useHomeHooks = () => {
         sortField: 'createTime',
         sortOrder: 'desc'
     })
-    const current = ref(Number(searchParams.current))
+    const loading = ref(true)
     const fetchData = async (current?: string) => {
         if (current) {
             searchParams.current = current
@@ -27,6 +27,7 @@ const useHomeHooks = () => {
             if (res.data.list.length === 0) {
                 sessionCache.setCache('loaded', false)
                 message.info('没有更多图片了')
+                loading.value = false
             } else {
                 dataList.value = dataList.value?.concat(res.data.list)
             }
@@ -52,9 +53,6 @@ const useHomeHooks = () => {
             path: `/picture/${id}`
         })
     }
-    onMounted(() => {
-        fetchData()
-    })
     const handleSearchPicture = (value: string) => {
         if (!value) {
             searchParams.searchText = undefined
@@ -63,14 +61,14 @@ const useHomeHooks = () => {
         }
         fetchData()
     }
-    watch([() => searchParams.category, () => searchParams.tags, () => searchParams.current], () => {
+    watch([() => searchParams.category, () => searchParams.tags], () => {
         fetchData()
     })
     return {
         dataList,
         total,
         searchParams,
-        current,
+        loading,
         changeTabs,
         changeTags,
         clickPicture,

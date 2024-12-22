@@ -1,32 +1,38 @@
 import type { Directive } from 'vue'
 import { sessionCache } from '@/utils/cache'
-import { debounce } from 'lodash'
-const vLoad: Directive<HTMLDivElement, any> = {
-    mounted(el, binding) {
-        // @ts-ignore
-        if (el._isBind) return
-        const handleScroll = () => {
-            const scrollTop = el.scrollTop
-            const clientHeight = el.clientHeight
-            const scrollHeight = el.scrollHeight
-            if (scrollTop + clientHeight >= scrollHeight) {
-                if (binding.modifiers.loaded) {
-                    sessionCache.setCache('loaded', true)
-                }
-                binding.value(binding?.arg?.toString())
-            }
-        }
 
-        const throttledScroll: any = debounce(handleScroll, 1000)
-        // @ts-ignore
-        el._scrollHandler = throttledScroll
-        // @ts-ignore
-        el._isBind = true
-        el.addEventListener('scroll', throttledScroll)
+interface CustomElement extends HTMLElement {
+    _observer?: IntersectionObserver
+}
+let current = 0
+const vLoad: Directive<CustomElement, any> = {
+    mounted(el, binding) {
+        if ('_observer' in el) return
+
+        const observer = new IntersectionObserver(
+            entries => {
+                if (entries[0].intersectionRatio > 0) {
+                    sessionCache.setCache('loaded', true)
+                    current++
+                    binding.value(current.toString())
+                }
+            },
+            {
+                root: null,
+                rootMargin: '20px', // 提前20px触发
+                threshold: 0.1 // 当目标元素10%可见时触发
+            }
+        )
+
+        el._observer = observer
+        observer.observe(el)
     },
     unmounted(el) {
-        // @ts-ignore
-        el.removeEventListener('scroll', el._scrollHandler)
+        current = 0
+        if ('_observer' in el) {
+            el._observer?.disconnect()
+            delete el._observer
+        }
     }
 }
 export default vLoad

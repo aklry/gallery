@@ -1,5 +1,5 @@
 <template>
-    <div class="home h-full overflow-scroll" v-load:[++current].loaded="fetchData">
+    <div class="home h-full overflow-scroll">
         <div class="input-search">
             <a-input-search
                 placeholder="从海量图片中搜索"
@@ -34,6 +34,9 @@
                 </a-list-item>
             </template>
         </a-list>
+        <div class="load-more w-full flex justify-center items-center" v-load="fetchData" v-if="loading">
+            <a-spin tip="加载中..." />
+        </div>
     </div>
 </template>
 
@@ -45,7 +48,7 @@ import usePictureStore from '@/store/modules/picture'
 import TagBars from './components/tag-bars/index.vue'
 const pictureStore = usePictureStore()
 const { tag_category } = storeToRefs(pictureStore)
-const { dataList, changeTabs, changeTags, clickPicture, handleSearchPicture, searchParams, fetchData, current } =
+const { dataList, changeTabs, changeTags, clickPicture, handleSearchPicture, fetchData, searchParams, loading } =
     useHomeHooks()
 </script>
 
