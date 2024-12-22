@@ -4,7 +4,7 @@ import { sessionCache } from '@/utils/cache'
 interface CustomElement extends HTMLElement {
     _observer?: IntersectionObserver
 }
-let current = 0
+let current = 1
 const vLoad: Directive<CustomElement, any> = {
     mounted(el, binding) {
         if ('_observer' in el) return
@@ -28,7 +28,7 @@ const vLoad: Directive<CustomElement, any> = {
         observer.observe(el)
     },
     unmounted(el) {
-        current = 0
+        current = 1
         if ('_observer' in el) {
             el._observer?.disconnect()
             delete el._observer

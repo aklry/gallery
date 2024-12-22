@@ -1,4 +1,4 @@
-import { ref, reactive, watch } from 'vue'
+import { ref, reactive, watch, onMounted } from 'vue'
 import { pictureControllerGetPictureByPageVoV1 } from '@/api/picture'
 import { useRouter } from 'vue-router'
 import { sessionCache } from '@/utils/cache'
@@ -14,8 +14,9 @@ const useHomeHooks = () => {
         sortField: 'createTime',
         sortOrder: 'desc'
     })
-    const loading = ref(true)
+    const loading = ref(false)
     const fetchData = async (current?: string) => {
+        loading.value = true
         if (current) {
             searchParams.current = current
         }
@@ -34,6 +35,9 @@ const useHomeHooks = () => {
         }
         total.value = res.data.total
     }
+    onMounted(() => {
+        fetchData()
+    })
     const changeTabs = (key: string) => {
         if (key === 'all') {
             searchParams.category = undefined

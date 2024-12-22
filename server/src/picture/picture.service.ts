@@ -23,6 +23,7 @@ import { MessageStatus } from '@prisma/client'
 import { UploadPictureUrlDto } from './dto/upload-picture-url.dto'
 import { ShowPictureModelVo } from './vo/show-picture.vo'
 import { RedisCacheService } from '../cache/cache.service'
+import axios from 'axios'
 
 @Injectable()
 export class PictureService {
@@ -415,16 +416,15 @@ export class PictureService {
     }
 
     async uploadBatch(uploadBatchPictureDto: UploadBatchPictureDto, req: Request) {
-        const { keywords, count } = uploadBatchPictureDto
-        const url = `https://cn.bing.com/images/async?q=${keywords}&mmasync=1`
-        const html = await this.extractService.fetchHtml(url)
-        const data = await this.extractService.extractImage(html, count)
-        if (data.length === 0) {
-            throw new UploadFailedException('图片链接不能为空', BusinessStatus.OPERATION_ERROR.code)
+        const user = req.session.user
+        if (!user) {
+            throw new NotLoginException('用户未登录', BusinessStatus.NOT_LOGIN_ERROR.code)
         }
+        const { keywords, count } = uploadBatchPictureDto
+        const imageUrl = await this.getPictureByKeywords(keywords, count)
         let uploadCount = 0
         const fileResult: UploadPictureVoModel[] = []
-        for (const url of data) {
+        for (const url of imageUrl) {
             try {
                 const file = await this.ossService.uploadFile(url, null)
                 uploadCount++
@@ -528,5 +528,21 @@ export class PictureService {
             throw new DaoErrorException('图片删除失败', BusinessStatus.OPERATION_ERROR.code)
         }
         return true
+    }
+
+    async getPictureByKeywords(keywords: string, count: number) {
+        const url = `https://images.baidu.com/search/acjson?tn=resultjson_com&word=${keywords}&pn=${count}`
+        const res = await axios.get(url)
+        let imageUrl: string[] = []
+        res.data.data.forEach((item: any) => {
+            imageUrl.push(item.thumbURL)
+        })
+        if (imageUrl.length === 0) {
+            throw new UploadFailedException('图片链接不能为空', BusinessStatus.OPERATION_ERROR.code)
+        }
+        if (imageUrl.length > count) {
+            imageUrl = imageUrl.slice(0, count)
+        }
+        return imageUrl
     }
 }
