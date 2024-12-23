@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common'
-import { PrismaService } from '../prisma/prisma.service'
-import { MessageVoModel } from './vo/message.vo'
-import { ReadMessageDto } from './dto/read-message.dto'
-import { DaoErrorException, NotLoginException } from '../custom-exception'
-import { BusinessStatus } from '../config'
 import { MessageStatus } from '@prisma/client'
 import { Request } from 'express'
+import { BusinessStatus } from '../config'
+import { BusinessException } from '../custom-exception'
+import { PrismaService } from '../prisma/prisma.service'
+import { ReadMessageDto } from './dto/read-message.dto'
+import { MessageVoModel } from './vo/message.vo'
 @Injectable()
 export class MessageService {
     constructor(private readonly prisma: PrismaService) {}
@@ -94,7 +94,7 @@ export class MessageService {
             }
         })
         if (!message) {
-            throw new DaoErrorException('消息不存在', BusinessStatus.PARAMS_ERROR.code)
+            throw new BusinessException('消息不存在', BusinessStatus.PARAMS_ERROR.code)
         }
         const result = await this.prisma.message.update({
             where: {
@@ -105,7 +105,7 @@ export class MessageService {
             }
         })
         if (!result) {
-            throw new DaoErrorException('消息已读失败', BusinessStatus.PARAMS_ERROR.code)
+            throw new BusinessException('消息已读失败', BusinessStatus.PARAMS_ERROR.code)
         }
         return true
     }
@@ -113,7 +113,7 @@ export class MessageService {
     async readAllMessage(req: Request) {
         const user = req.session.user
         if (!user) {
-            throw new NotLoginException(BusinessStatus.NOT_LOGIN_ERROR.message, BusinessStatus.NOT_LOGIN_ERROR.code)
+            throw new BusinessException(BusinessStatus.NOT_LOGIN_ERROR.message, BusinessStatus.NOT_LOGIN_ERROR.code)
         }
         const result = await this.prisma.message.updateMany({
             where: {
@@ -124,7 +124,7 @@ export class MessageService {
             }
         })
         if (!result) {
-            throw new DaoErrorException('消息已读失败', BusinessStatus.PARAMS_ERROR.code)
+            throw new BusinessException('消息已读失败', BusinessStatus.PARAMS_ERROR.code)
         }
         return true
     }

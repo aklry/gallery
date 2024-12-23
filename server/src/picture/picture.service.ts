@@ -2,7 +2,7 @@ import { UploadBatchPictureDto } from './dto/uploadBatch-picture.dto'
 import { Injectable } from '@nestjs/common'
 import { UpdatePictureDto } from './dto/update-picture.dto'
 import { extname } from 'node:path'
-import { DaoErrorException, NotLoginException, UploadFailedException } from '../custom-exception'
+import { BusinessException } from '../custom-exception'
 import { BusinessStatus } from '../config'
 import { UploadPictureDto } from './dto/upload-picture.dto'
 import type { Request } from 'express'
@@ -102,7 +102,7 @@ export class PictureService {
     async getPictureByPageVo(queryPictureDto: QueryPictureDto) {
         const { current, pageSize, searchText, ...filters } = queryPictureDto
         if (Number(pageSize) > 20) {
-            throw new DaoErrorException(BusinessStatus.OPERATION_ERROR.message, BusinessStatus.OPERATION_ERROR.code)
+            throw new BusinessException(BusinessStatus.OPERATION_ERROR.message, BusinessStatus.OPERATION_ERROR.code)
         }
         const cacheKey = `picture_page_${current}_${pageSize}`
         const cacheData = await this.redisCacheService.get<ShowPictureModelVo[]>(cacheKey)
@@ -180,7 +180,7 @@ export class PictureService {
             where: { id }
         })
         if (!result) {
-            throw new DaoErrorException('图片不存在', BusinessStatus.OPERATION_ERROR.code)
+            throw new BusinessException('图片不存在', BusinessStatus.OPERATION_ERROR.code)
         }
         const user = await this.prismaService.user.findUnique({
             where: { id: result.userId }
@@ -216,7 +216,7 @@ export class PictureService {
             where: { id }
         })
         if (!result) {
-            throw new DaoErrorException('图片不存在', BusinessStatus.OPERATION_ERROR.code)
+            throw new BusinessException('图片不存在', BusinessStatus.OPERATION_ERROR.code)
         }
         const user = await this.prismaService.user.findUnique({
             where: { id: result.userId }
@@ -251,21 +251,21 @@ export class PictureService {
         const { id } = deletePicture
         const user = req.session.user
         if (!user) {
-            throw new NotLoginException('用户未登录', BusinessStatus.NOT_LOGIN_ERROR.code)
+            throw new BusinessException('用户未登录', BusinessStatus.NOT_LOGIN_ERROR.code)
         }
         const userId = user.id
         const oldPicture = await this.getById(id)
         if (!oldPicture) {
-            throw new DaoErrorException('图片不存在', BusinessStatus.OPERATION_ERROR.code)
+            throw new BusinessException('图片不存在', BusinessStatus.OPERATION_ERROR.code)
         }
         if (oldPicture.user.id !== userId && user.userRole !== UserRole.ADMIN) {
-            throw new DaoErrorException('仅自己或管理员可以删除', BusinessStatus.OPERATION_ERROR.code)
+            throw new BusinessException('仅自己或管理员可以删除', BusinessStatus.OPERATION_ERROR.code)
         }
         const result = await this.prismaService.picture.delete({
             where: { id }
         })
         if (!result) {
-            throw new DaoErrorException('图片删除失败', BusinessStatus.OPERATION_ERROR.code)
+            throw new BusinessException('图片删除失败', BusinessStatus.OPERATION_ERROR.code)
         }
         this.redisCacheService.clear()
         return true
@@ -277,14 +277,14 @@ export class PictureService {
     ) {
         if (typeof file === 'string') {
             if (file.length > 1024) {
-                throw new DaoErrorException('图片链接过长', BusinessStatus.OPERATION_ERROR.code)
+                throw new BusinessException('图片链接过长', BusinessStatus.OPERATION_ERROR.code)
             }
         } else {
             this.validatePicture(file)
         }
         const user = req.session.user
         if (!user) {
-            throw new NotLoginException('用户未登录', BusinessStatus.NOT_LOGIN_ERROR.code)
+            throw new BusinessException('用户未登录', BusinessStatus.NOT_LOGIN_ERROR.code)
         }
         let pictureId: string | undefined = undefined
         if (uploadPictureDto && uploadPictureDto.id) {
@@ -296,10 +296,10 @@ export class PictureService {
                 }
             })
             if (!picture) {
-                throw new UploadFailedException('图片不存在', BusinessStatus.OPERATION_ERROR.code)
+                throw new BusinessException('图片不存在', BusinessStatus.OPERATION_ERROR.code)
             }
             if (picture.userId !== user.id && user.userRole !== UserRole.ADMIN) {
-                throw new DaoErrorException('仅限本人或管理员修改', BusinessStatus.OPERATION_ERROR.code)
+                throw new BusinessException('仅限本人或管理员修改', BusinessStatus.OPERATION_ERROR.code)
             }
         }
         // 上传图片
@@ -345,7 +345,7 @@ export class PictureService {
                   }
               })
         if (!picture) {
-            throw new UploadFailedException('图片上传失败', BusinessStatus.OPERATION_ERROR.code)
+            throw new BusinessException('图片上传失败', BusinessStatus.OPERATION_ERROR.code)
         }
         return {
             id: picture.id,
@@ -362,15 +362,15 @@ export class PictureService {
 
     validatePicture(file: Express.Multer.File) {
         if (!file) {
-            throw new UploadFailedException('图片不能为空', BusinessStatus.OPERATION_ERROR.code)
+            throw new BusinessException('图片不能为空', BusinessStatus.OPERATION_ERROR.code)
         }
         const ext = extname(file.originalname)
         if (ext !== '.jpg' && ext !== '.png' && ext !== '.jpeg' && ext !== 'webp') {
-            throw new UploadFailedException('图片格式错误', BusinessStatus.OPERATION_ERROR.code)
+            throw new BusinessException('图片格式错误', BusinessStatus.OPERATION_ERROR.code)
         }
         const maxSize = 2 * 1024 * 1024 // 2MB in bytes
         if (file.size > maxSize) {
-            throw new UploadFailedException('图片大小不能超过2M', BusinessStatus.OPERATION_ERROR.code)
+            throw new BusinessException('图片大小不能超过2M', BusinessStatus.OPERATION_ERROR.code)
         }
         return true
     }
@@ -391,7 +391,7 @@ export class PictureService {
             }
         })
         if (!result) {
-            throw new DaoErrorException('图片更新失败', BusinessStatus.OPERATION_ERROR.code)
+            throw new BusinessException('图片更新失败', BusinessStatus.OPERATION_ERROR.code)
         }
         return true
     }
@@ -410,7 +410,7 @@ export class PictureService {
             }
         })
         if (!result) {
-            throw new DaoErrorException('图片更新失败', BusinessStatus.OPERATION_ERROR.code)
+            throw new BusinessException('图片更新失败', BusinessStatus.OPERATION_ERROR.code)
         }
         return true
     }
@@ -418,7 +418,7 @@ export class PictureService {
     async uploadBatch(uploadBatchPictureDto: UploadBatchPictureDto, req: Request) {
         const user = req.session.user
         if (!user) {
-            throw new NotLoginException('用户未登录', BusinessStatus.NOT_LOGIN_ERROR.code)
+            throw new BusinessException('用户未登录', BusinessStatus.NOT_LOGIN_ERROR.code)
         }
         const { keywords, count } = uploadBatchPictureDto
         const imageUrl = await this.getPictureByKeywords(keywords, count)
@@ -442,7 +442,7 @@ export class PictureService {
     async setPicture(picture: UploadPictureVoModel[], req: Request) {
         const user = req.session.user
         if (!user) {
-            throw new NotLoginException('用户未登录', BusinessStatus.NOT_LOGIN_ERROR.code)
+            throw new BusinessException('用户未登录', BusinessStatus.NOT_LOGIN_ERROR.code)
         }
         await this.prismaService.picture.createMany({
             data: picture.map(item => ({
@@ -472,7 +472,7 @@ export class PictureService {
         })
         this.validPicture(picture)
         if (picture.reviewStatus === reviewStatus) {
-            throw new DaoErrorException('请勿重复审核', BusinessStatus.OPERATION_ERROR.code)
+            throw new BusinessException('请勿重复审核', BusinessStatus.OPERATION_ERROR.code)
         }
         const result = await this.prismaService.picture.update({
             where: { id },
@@ -484,7 +484,7 @@ export class PictureService {
             }
         })
         if (!result) {
-            throw new DaoErrorException('图片审核失败', BusinessStatus.OPERATION_ERROR.code)
+            throw new BusinessException('图片审核失败', BusinessStatus.OPERATION_ERROR.code)
         } else {
             await this.prismaService.message.create({
                 data: {
@@ -499,14 +499,14 @@ export class PictureService {
     }
     validPicture(picture: Picture | GetPictureVoModel) {
         if (picture === null) {
-            throw new DaoErrorException('图片不存在', BusinessStatus.OPERATION_ERROR.code)
+            throw new BusinessException('图片不存在', BusinessStatus.OPERATION_ERROR.code)
         }
         if (picture.id === null) {
-            throw new DaoErrorException('id不能为空', BusinessStatus.OPERATION_ERROR.code)
+            throw new BusinessException('id不能为空', BusinessStatus.OPERATION_ERROR.code)
         }
         if (picture.url !== '') {
             if (picture.url.length > 1024) {
-                throw new DaoErrorException('url过长', BusinessStatus.OPERATION_ERROR.code)
+                throw new BusinessException('url过长', BusinessStatus.OPERATION_ERROR.code)
             }
         }
     }
@@ -525,7 +525,7 @@ export class PictureService {
             where: { id }
         })
         if (!result) {
-            throw new DaoErrorException('图片删除失败', BusinessStatus.OPERATION_ERROR.code)
+            throw new BusinessException('图片删除失败', BusinessStatus.OPERATION_ERROR.code)
         }
         return true
     }
@@ -538,7 +538,7 @@ export class PictureService {
             imageUrl.push(item.thumbURL)
         })
         if (imageUrl.length === 0) {
-            throw new UploadFailedException('图片链接不能为空', BusinessStatus.OPERATION_ERROR.code)
+            throw new BusinessException('图片链接不能为空', BusinessStatus.OPERATION_ERROR.code)
         }
         if (imageUrl.length > count) {
             imageUrl = imageUrl.slice(0, count)

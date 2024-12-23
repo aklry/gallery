@@ -2,7 +2,7 @@ import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
 import { Observable } from 'rxjs'
 import { BusinessStatus } from '../config'
-import { NotLoginException, NoAuthException } from '../custom-exception'
+import { BusinessException } from '../custom-exception'
 import { Roles } from '../role/role.decorator'
 
 @Injectable()
@@ -10,7 +10,7 @@ export class AuthGuard implements CanActivate {
     canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
         const session = context.switchToHttp().getRequest().session
         if (!session.user || !session.user.id) {
-            throw new NotLoginException(BusinessStatus.NOT_LOGIN_ERROR.message, BusinessStatus.NOT_LOGIN_ERROR.code)
+            throw new BusinessException(BusinessStatus.NOT_LOGIN_ERROR.message, BusinessStatus.NOT_LOGIN_ERROR.code)
         }
         return true
     }
@@ -28,11 +28,11 @@ export class RoleGuard implements CanActivate {
         const request = context.switchToHttp().getRequest()
         const user = request.session.user
         if (!user || !user.id) {
-            throw new NotLoginException(BusinessStatus.NOT_LOGIN_ERROR.message, BusinessStatus.NOT_LOGIN_ERROR.code)
+            throw new BusinessException(BusinessStatus.NOT_LOGIN_ERROR.message, BusinessStatus.NOT_LOGIN_ERROR.code)
         }
         const hasAuth = roles.includes(user.userRole)
         if (!hasAuth) {
-            throw new NoAuthException(BusinessStatus.NOT_AUTH_ERROR.message, BusinessStatus.NOT_AUTH_ERROR.code)
+            throw new BusinessException(BusinessStatus.NOT_AUTH_ERROR.message, BusinessStatus.NOT_AUTH_ERROR.code)
         }
         return hasAuth
     }
