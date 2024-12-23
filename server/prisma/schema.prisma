@@ -76,16 +76,10 @@ enum MessageStatus {
   READ
 }
 
-enum SpaceLevel {
-  FREE
-  BASIC
-  PREMIUM
-}
-
 model space {
   id           String   @id @default(cuid())
   spaceName    String?   @db.VarChar(128)
-  spaceLevel   SpaceLevel? @default(FREE)
+  spaceLevel   Int? @default(0)
   maxSize      BigInt?   @default(0)
   maxCount     BigInt?   @default(0)
   totalSize    BigInt?   @default(0)
