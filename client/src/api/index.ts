@@ -6,9 +6,11 @@ import * as app from './app'
 import * as user from './user'
 import * as picture from './picture'
 import * as message from './message'
+import * as space from './space'
 export default {
     app,
     user,
     picture,
-    message
+    message,
+    space
 }

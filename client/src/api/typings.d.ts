@@ -1,4 +1,24 @@
 declare namespace API {
+    type AddSpaceVo = {
+        /** 状态码 */
+        code: number
+        /** 消息 */
+        message: string
+        /** 空间ID */
+        data: string
+        /** 时间戳 */
+        timestamp: string
+        /** 路径 */
+        path: string
+    }
+
+    type CreateSpaceDto = {
+        /** 空间名称 */
+        spaceName: string
+        /** 空间等级 */
+        spaceLevel: 0 | 1 | 2
+    }
+
     type CreateUserDto = {
         /** 用户昵称 */
         userName: string
@@ -392,6 +412,32 @@ declare namespace API {
         message: string
         /** 更新结果 */
         data: Record<string, any>
+        /** 时间戳 */
+        timestamp: string
+        /** 路径 */
+        path: string
+    }
+
+    type UpdateSpaceDto = {
+        /** 空间id */
+        id: string
+        /** 空间名称 */
+        spaceName?: string
+        /** 空间等级 */
+        spaceLevel?: 0 | 1 | 2
+        /** 空间图片最大容量 */
+        maxSize?: number
+        /** 空间图片最大数量 */
+        maxCount?: number
+    }
+
+    type UpdateSpaceVo = {
+        /** 状态码 */
+        code: number
+        /** 消息 */
+        message: string
+        /** 更新结果 */
+        data: boolean
         /** 时间戳 */
         timestamp: string
         /** 路径 */
