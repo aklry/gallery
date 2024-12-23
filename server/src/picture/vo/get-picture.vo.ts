@@ -28,6 +28,8 @@ export class GetPictureVoModel {
     createTime?: string
     @ApiProperty({ description: '用户信息', type: LoginVoModel })
     user?: LoginVoModel
+    @ApiProperty({ description: '空间ID' })
+    spaceId?: string
     @ApiProperty({ description: '编辑时间' })
     editTime?: string
 }

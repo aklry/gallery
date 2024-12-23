@@ -49,8 +49,8 @@ export class PictureController {
     @UseGuards(AuthGuard)
     @ApiResponse({ type: ShowPictureVo })
     @ApiOperation({ summary: '获取图片列表(非管理员)' })
-    async getPictureByPageVo(@Body(new ValidationPipe()) queryPictureDto: QueryPictureDto) {
-        const data = await this.pictureService.getPictureByPageVo(queryPictureDto)
+    async getPictureByPageVo(@Body(new ValidationPipe()) queryPictureDto: QueryPictureDto, @Req() req: Request) {
+        const data = await this.pictureService.getPictureByPageVo(queryPictureDto, req)
         return this.responseService.success(data)
     }
 
@@ -92,7 +92,8 @@ export class PictureController {
             type: 'object',
             properties: {
                 file: { type: 'file', format: 'binary' },
-                id: { type: 'string' }
+                id: { type: 'string' },
+                spaceId: { type: 'string' }
             }
         }
     })
@@ -125,8 +126,8 @@ export class PictureController {
     @Post('/edit')
     @ApiResponse({ type: UpdatePictureVo })
     @ApiOperation({ summary: '更新图片(非管理员)' })
-    async editPicture(@Body(new ValidationPipe()) updatePictureDto: UpdatePictureDto) {
-        const data = await this.pictureService.edit(updatePictureDto)
+    async editPicture(@Body(new ValidationPipe()) updatePictureDto: UpdatePictureDto, @Req() req: Request) {
+        const data = await this.pictureService.edit(updatePictureDto, req)
         return this.responseService.success(data)
     }
 

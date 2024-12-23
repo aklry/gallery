@@ -92,6 +92,17 @@ export class SpaceService {
         }
         return lock
     }
+    async getById(id: string) {
+        const result = await this.prismaService.space.findUnique({
+            where: {
+                id
+            }
+        })
+        if (!result) {
+            throw new BusinessException('空间不存在', BusinessStatus.PARAMS_ERROR.code)
+        }
+        return result
+    }
     validateSpace(space: Space, add: boolean) {
         if (space === null) {
             throw new BusinessException(BusinessStatus.PARAMS_ERROR.message, BusinessStatus.PARAMS_ERROR.code)

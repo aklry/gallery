@@ -14,7 +14,6 @@ import { PictureVoModel } from './vo/picture.vo'
 import { GetPictureVoModel } from './vo/get-picture.vo'
 import { LoginVoModel } from '../user/vo/user-login.vo'
 import { DeletePictureDto } from './dto/delete-picture.dto'
-import { ExtractService } from '../extract/extract.service'
 import { ReviewPictureDto } from './dto/review-picture.dto'
 import { UserRole } from '../user/enum/user'
 import { Picture } from './entities/picture.entity'
@@ -23,6 +22,7 @@ import { MessageStatus } from '@prisma/client'
 import { UploadPictureUrlDto } from './dto/upload-picture-url.dto'
 import { ShowPictureModelVo } from './vo/show-picture.vo'
 import { RedisCacheService } from '../cache/cache.service'
+import { SpaceService } from '../space/space.service'
 import axios from 'axios'
 
 @Injectable()
@@ -30,8 +30,8 @@ export class PictureService {
     constructor(
         private readonly prismaService: PrismaService,
         private readonly ossService: OssService,
-        private readonly extractService: ExtractService,
-        private readonly redisCacheService: RedisCacheService
+        private readonly redisCacheService: RedisCacheService,
+        private readonly spaceService: SpaceService
     ) {}
 
     async getPictureByPage(queryPictureDto: QueryPictureDto) {
@@ -88,6 +88,7 @@ export class PictureService {
             picFormat: item.picFormat,
             createTime: item.createTime.toISOString(),
             userId: item.userId,
+            spaceId: item.spaceId,
             editTime: item.editTime.toISOString(),
             reviewStatus: item.reviewStatus,
             reviewTime: item.reviewTime.toISOString(),
@@ -99,25 +100,46 @@ export class PictureService {
         }
     }
 
-    async getPictureByPageVo(queryPictureDto: QueryPictureDto) {
+    async getPictureByPageVo(queryPictureDto: QueryPictureDto, req: Request) {
         const { current, pageSize, searchText, ...filters } = queryPictureDto
         if (Number(pageSize) > 20) {
             throw new BusinessException(BusinessStatus.OPERATION_ERROR.message, BusinessStatus.OPERATION_ERROR.code)
         }
-        const cacheKey = `picture_page_${current}_${pageSize}`
-        const cacheData = await this.redisCacheService.get<ShowPictureModelVo[]>(cacheKey)
-        const isQuery = !searchText && !filters.category && filters.tags && filters.tags.length === 0
-        if (cacheData && isQuery) {
-            return cacheData
+        if (!filters.spaceId) {
+            filters.reviewStatus = 1
+            filters.nullSpaceId = true
+        } else {
+            const user = req.session.user
+            const space = await this.spaceService.getById(filters.spaceId)
+            if (!space) {
+                throw new BusinessException('空间不存在', BusinessStatus.PARAMS_ERROR.code)
+            }
+            if (space.userId !== user.id) {
+                throw new BusinessException('无权限', BusinessStatus.NOT_AUTH_ERROR.code)
+            }
         }
+        // const cacheKey = `picture_page_${current}_${pageSize}`
+        // const cacheData = await this.redisCacheService.get<ShowPictureModelVo[]>(cacheKey)
+        // const isQuery = !searchText && !filters.category && filters.tags && filters.tags.length === 0
+        // if (cacheData && isQuery) {
+        //     return cacheData
+        // }
         // Build where clause for search and filters
         const where: any = {
             ...(searchText && {
                 OR: [{ name: { contains: searchText } }, { introduction: { contains: searchText } }]
             }),
             reviewStatus: 1,
+            ...(filters.spaceId ? { spaceId: filters.spaceId } : {}),
+            ...(filters.nullSpaceId ? { spaceId: null } : {}),
             ...Object.entries(filters).reduce((acc: any, [key, value]) => {
-                if (value !== undefined && key !== 'sortField' && key !== 'sortOrder' && key !== 'reviewStatus') {
+                if (
+                    value !== undefined &&
+                    key !== 'sortField' &&
+                    key !== 'sortOrder' &&
+                    key !== 'reviewStatus' &&
+                    key !== 'spaceId'
+                ) {
                     if (key === 'tags' && Array.isArray(value)) {
                         acc[key] = {
                             contains: value.map(tag => `"${tag}"`).join(',')
@@ -159,16 +181,16 @@ export class PictureService {
             picScale: item.picScale,
             thumbnailUrl: item.thumbnailUrl
         }))
-        if (result.length > 0) {
-            await this.redisCacheService.set(
-                cacheKey,
-                {
-                    list: result,
-                    total
-                },
-                3600000
-            )
-        }
+        // if (result.length > 0) {
+        //     await this.redisCacheService.set(
+        //         cacheKey,
+        //         {
+        //             list: result,
+        //             total
+        //         },
+        //         3600000
+        //     )
+        // }
         return {
             list: result,
             total
@@ -258,6 +280,7 @@ export class PictureService {
         if (!oldPicture) {
             throw new BusinessException('图片不存在', BusinessStatus.OPERATION_ERROR.code)
         }
+        this.checkPictureAuth(user, oldPicture)
         if (oldPicture.user.id !== userId && user.userRole !== UserRole.ADMIN) {
             throw new BusinessException('仅自己或管理员可以删除', BusinessStatus.OPERATION_ERROR.code)
         }
@@ -266,6 +289,27 @@ export class PictureService {
         })
         if (!result) {
             throw new BusinessException('图片删除失败', BusinessStatus.OPERATION_ERROR.code)
+        }
+        const spaceId = oldPicture.spaceId
+        if (spaceId) {
+            this.prismaService.$transaction(async prisma => {
+                const space = await prisma.space.update({
+                    where: {
+                        id: spaceId
+                    },
+                    data: {
+                        totalCount: {
+                            decrement: 1
+                        },
+                        totalSize: {
+                            decrement: BigInt(oldPicture.picSize)
+                        }
+                    }
+                })
+                if (!space) {
+                    throw new BusinessException('空间更新失败', BusinessStatus.OPERATION_ERROR.code)
+                }
+            })
         }
         this.redisCacheService.clear()
         return true
@@ -286,6 +330,22 @@ export class PictureService {
         if (!user) {
             throw new BusinessException('用户未登录', BusinessStatus.NOT_LOGIN_ERROR.code)
         }
+        let spaceId = uploadPictureDto?.spaceId
+        if (spaceId) {
+            const space = await this.spaceService.getById(spaceId)
+            if (!space) {
+                throw new BusinessException('空间不存在', BusinessStatus.PARAMS_ERROR.code)
+            }
+            if (space.userId !== user.id) {
+                throw new BusinessException('仅限本人空间使用', BusinessStatus.NOT_AUTH_ERROR.code)
+            }
+            if (space.totalCount >= space.maxCount) {
+                throw new BusinessException('空间已满', BusinessStatus.OPERATION_ERROR.code)
+            }
+            if (space.totalSize >= space.maxSize) {
+                throw new BusinessException('空间条数不足', BusinessStatus.OPERATION_ERROR.code)
+            }
+        }
         let pictureId: string | undefined = undefined
         if (uploadPictureDto && uploadPictureDto.id) {
             pictureId = uploadPictureDto.id
@@ -298,6 +358,15 @@ export class PictureService {
             if (!picture) {
                 throw new BusinessException('图片不存在', BusinessStatus.OPERATION_ERROR.code)
             }
+            if (!spaceId) {
+                if (picture.spaceId) {
+                    spaceId = picture.spaceId
+                }
+            } else {
+                if (picture.spaceId !== spaceId) {
+                    throw new BusinessException('图片空间不匹配', BusinessStatus.OPERATION_ERROR.code)
+                }
+            }
             if (picture.userId !== user.id && user.userRole !== UserRole.ADMIN) {
                 throw new BusinessException('仅限本人或管理员修改', BusinessStatus.OPERATION_ERROR.code)
             }
@@ -305,7 +374,7 @@ export class PictureService {
         // 上传图片
         const name = typeof file === 'string' ? file : file.originalname
         const buffer = typeof file === 'string' ? null : file.buffer
-        const ossResult = await this.ossService.uploadFile(name, buffer)
+        const ossResult = await this.ossService.uploadFile(name, buffer, 'space')
         const reviewStatus = user.userRole === UserRole.ADMIN ? 1 : 0
         const reviewTime = user.userRole === UserRole.ADMIN ? new Date() : undefined
         const picture = pictureId
@@ -323,6 +392,7 @@ export class PictureService {
                       name: ossResult.filename,
                       editTime: new Date(),
                       userId: user?.id || '',
+                      spaceId,
                       reviewStatus,
                       reviewTime,
                       thumbnailUrl: ossResult.thumbnailUrl
@@ -338,6 +408,7 @@ export class PictureService {
                       picHeight: Number(ossResult.height),
                       name: ossResult.filename,
                       userId: user?.id || '',
+                      spaceId,
                       tags: '',
                       category: '',
                       introduction: '',
@@ -347,6 +418,26 @@ export class PictureService {
         if (!picture) {
             throw new BusinessException('图片上传失败', BusinessStatus.OPERATION_ERROR.code)
         }
+        this.prismaService.$transaction(async prisma => {
+            if (spaceId) {
+                const space = await prisma.space.update({
+                    where: {
+                        id: spaceId
+                    },
+                    data: {
+                        totalCount: {
+                            increment: 1
+                        },
+                        totalSize: {
+                            increment: BigInt(ossResult.fileSize)
+                        }
+                    }
+                })
+                if (!space) {
+                    throw new BusinessException('空间更新失败', BusinessStatus.OPERATION_ERROR.code)
+                }
+            }
+        })
         return {
             id: picture.id,
             url: picture.url,
@@ -356,7 +447,8 @@ export class PictureService {
             width: picture.picWidth,
             height: picture.picHeight,
             filename: picture.name,
-            thumbnailUrl: picture.thumbnailUrl
+            thumbnailUrl: picture.thumbnailUrl,
+            spaceId: picture.spaceId
         } as UploadPictureVoModel
     }
 
@@ -396,10 +488,12 @@ export class PictureService {
         return true
     }
     // 修改图片信息(用户使用)
-    async edit(updatePictureDto: UpdatePictureDto) {
+    async edit(updatePictureDto: UpdatePictureDto, req: Request) {
         const { id, ...rest } = updatePictureDto
+        const user = req.session.user
         const oldPicture = await this.getById(id)
         this.validPicture(oldPicture)
+        this.checkPictureAuth(user, oldPicture)
         const result = await this.prismaService.picture.update({
             where: { id },
             data: {
@@ -544,5 +638,23 @@ export class PictureService {
             imageUrl = imageUrl.slice(0, count)
         }
         return imageUrl
+    }
+
+    /**
+     * 校验权限
+     */
+    checkPictureAuth(user: LoginVoModel, picture: GetPictureVoModel) {
+        const spaceId = picture.spaceId
+        if (!spaceId) {
+            // 公共图库
+            if (picture.user.id !== user.id && user.userRole !== UserRole.ADMIN) {
+                throw new BusinessException('仅限本人或管理员使用', BusinessStatus.NOT_AUTH_ERROR.code)
+            }
+        } else {
+            // 空间图片
+            if (picture.user.id !== user.id) {
+                throw new BusinessException('无权限', BusinessStatus.NOT_AUTH_ERROR.code)
+            }
+        }
     }
 }

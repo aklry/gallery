@@ -9,4 +9,8 @@ export class UploadPictureDto {
     @IsOptional()
     @ApiProperty({ description: '图片id(用于修改)', required: false })
     id?: string
+    @IsNotEmpty()
+    @IsString()
+    @ApiProperty({ description: '空间id', required: true })
+    spaceId: string
 }

@@ -62,6 +62,11 @@ export class Picture {
     @ApiProperty({ description: '用户id', required: true })
     userId: string
     /**
+     * 空间id
+     */
+    @ApiProperty({ description: '空间id', required: true })
+    spaceId: string
+    /**
      * 创建时间
      */
     @ApiProperty({ description: '创建时间', required: true })

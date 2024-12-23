@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsArray, IsNumber, IsOptional, IsString } from 'class-validator'
+import { IsArray, IsBoolean, IsNumber, IsOptional, IsString } from 'class-validator'
 import { PageRequest } from '../../common/page.dto'
 
 export class QueryPictureDto extends PageRequest {
@@ -51,6 +51,10 @@ export class QueryPictureDto extends PageRequest {
     @IsOptional()
     @ApiProperty({ description: '用户id', required: false })
     userId?: string
+    @IsString()
+    @IsOptional()
+    @ApiProperty({ description: '空间ID', required: false })
+    spaceId?: string
     @IsNumber()
     @IsOptional()
     @ApiProperty({ description: '审核状态', required: false })
@@ -63,4 +67,8 @@ export class QueryPictureDto extends PageRequest {
     @IsOptional()
     @ApiProperty({ description: '审核消息', required: false })
     reviewMessage?: string
+    @IsBoolean()
+    @IsOptional()
+    @ApiProperty({ description: '是否为公共图库', required: false })
+    nullSpaceId?: boolean
 }

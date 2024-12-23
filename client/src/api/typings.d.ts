@@ -129,6 +129,8 @@ declare namespace API {
         createTime: string
         /** 用户信息 */
         user: LoginVoModel
+        /** 空间ID */
+        spaceId: string
         /** 编辑时间 */
         editTime: string
     }
@@ -229,6 +231,8 @@ declare namespace API {
         createTime: string
         /** 用户id */
         userId: string
+        /** 空间id */
+        spaceId: string
         /** 审核状态 */
         reviewStatus: number
         /** 审核时间 */
@@ -277,12 +281,16 @@ declare namespace API {
         searchText?: string
         /** 用户id */
         userId?: string
+        /** 空间ID */
+        spaceId?: string
         /** 审核状态 */
         reviewStatus?: number
         /** 审核人id */
         reviewerId?: string
         /** 审核消息 */
         reviewMessage?: string
+        /** 是否为公共图库 */
+        nullSpaceId?: boolean
     }
 
     type ReadAllMessageVo = {
@@ -370,6 +378,30 @@ declare namespace API {
         list: ShowPictureModelVo[]
         /** 总数 */
         total: number
+    }
+
+    type SpaceLevelVo = {
+        /** 状态码 */
+        code: number
+        /** 消息 */
+        message: string
+        /** 空间等级 */
+        data: SpaceLevelVoModel
+        /** 时间戳 */
+        timestamp: string
+        /** 路径 */
+        path: string
+    }
+
+    type SpaceLevelVoModel = {
+        /** 空间等级 */
+        value: number
+        /** 空间等级名称 */
+        text: string
+        /** 空间最大容量 */
+        maxSize: number
+        /** 空间最大数量 */
+        maxCount: number
     }
 
     type TagCategoryList = {
@@ -500,6 +532,8 @@ declare namespace API {
         url: string
         /** 图片id */
         id?: string
+        /** 空间id */
+        spaceId: string
     }
 
     type UploadPictureVo = {
@@ -534,6 +568,8 @@ declare namespace API {
         filename: string
         /** 图片缩略图url */
         thumbnailUrl: string
+        /** 空间id */
+        spaceId?: string
     }
 
     type User = {

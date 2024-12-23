@@ -117,6 +117,7 @@ export async function pictureControllerUpdatePictureV1(body: API.UpdatePictureDt
 export async function pictureControllerUploadFileV1(
     body: {
         id?: string
+        spaceId?: string
     },
     file?: File,
     options?: { [key: string]: any }

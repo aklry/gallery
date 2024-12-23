@@ -7,7 +7,8 @@ import {
     BusinessStatus,
     OSS_PICTURE_PATH,
     OSS_IMAGE_DOMAIN,
-    OSS_PREVIOUS_IMAGE_DOMAIN
+    OSS_PREVIOUS_IMAGE_DOMAIN,
+    OSS_SPACE_PICTURE_PATH
 } from '../config'
 import { BusinessException } from '../custom-exception'
 import { UploadPictureVoModel } from '../picture/vo/upload-picture.vo'
@@ -60,7 +61,7 @@ export class OssService {
             }
             // 生成唯一的文件名
             const uniqueId = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`
-            const uploadFileName = `${OSS_PICTURE_PATH}/${prefix}/${uniqueId}${ext}`
+            const uploadFileName = `${prefix === 'space' ? OSS_SPACE_PICTURE_PATH : OSS_PICTURE_PATH}/${uniqueId}${ext}`
 
             // 上传原始图片
             const result = await this.ossClient.put(uploadFileName, fileBuffer, {

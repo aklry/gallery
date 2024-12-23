@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Req, UseGuards } from '@nestjs/common'
+import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common'
 import { SpaceService } from './space.service'
 import { CreateSpaceDto } from './dto/create-space.dto'
 import { type Request } from 'express'
@@ -8,9 +8,10 @@ import { Roles } from '../role/role.decorator'
 import { UserRole } from '../user/enum/user'
 import { AuthGuard, RoleGuard } from '../auth/auth.guard'
 import { ApiOperation, ApiResponse } from '@nestjs/swagger'
-import { AddSpaceVo, UpdateSpaceVo } from './vo'
+import { AddSpaceVo, UpdateSpaceVo, SpaceLevelVo } from './vo'
 import { ValidationPipe } from '../pipe/validation.pipe'
 import { version } from '../config'
+import { SpaceLevelMap } from './enum'
 
 @Controller({
     path: 'space',
@@ -36,6 +37,20 @@ export class SpaceController {
     @ApiResponse({ type: UpdateSpaceVo })
     async updateSpace(@Body(new ValidationPipe()) updateSpaceDto: UpdateSpaceDto) {
         const result = await this.spaceService.updateSpace(updateSpaceDto)
+        return this.responseService.success(result)
+    }
+    @Get('/list/level')
+    @ApiOperation({ summary: '获取空间等级列表' })
+    @ApiResponse({ type: SpaceLevelVo })
+    async listSpaceLevel() {
+        const result = Object.values(SpaceLevelMap).map(item => {
+            return {
+                value: item.value,
+                text: item.text,
+                maxCount: item.maxCount,
+                maxSize: item.maxSize
+            }
+        })
         return this.responseService.success(result)
     }
 }
