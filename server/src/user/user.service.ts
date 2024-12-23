@@ -16,7 +16,6 @@ import { DeleteRequest } from '../common/delete.dto'
 import { EditUserDto } from './dto/edit-user.dto'
 import { OssService } from '../oss/oss.service'
 import { UploadAvatarDto } from './dto/upload-avatar.dto'
-import { RedisService } from '../redis/redis.service'
 @Injectable()
 export class UserService {
     constructor(
@@ -50,11 +49,17 @@ export class UserService {
     }
     async getLoginUser(req: Request) {
         const user = req.session.user
+        if (!user) {
+            return this.responseService.error(null, '用户未登录', BusinessStatus.PARAMS_ERROR.code)
+        }
         const userInfo = await this.prismaService.user.findUnique({
             where: {
                 id: user.id
             }
         })
+        if (!userInfo) {
+            return this.responseService.error(null, '用户不存在', BusinessStatus.PARAMS_ERROR.code)
+        }
         return {
             id: userInfo.id,
             userAccount: userInfo.userAccount,

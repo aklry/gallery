@@ -9,7 +9,7 @@ import {
     OSS_IMAGE_DOMAIN,
     OSS_PREVIOUS_IMAGE_DOMAIN
 } from '../config'
-import { UploadFailedException } from '../custom-exception'
+import { BusinessException } from '../custom-exception'
 import { UploadPictureVoModel } from '../picture/vo/upload-picture.vo'
 import axios from 'axios'
 interface ImageInfo {
@@ -52,7 +52,7 @@ export class OssService {
                     if (['jpeg', 'jpg', 'png', 'webp'].includes(extension)) {
                         ext = `.${extension}`
                     } else {
-                        throw new UploadFailedException('不支持的图片格式', BusinessStatus.OPERATION_ERROR.code)
+                        throw new BusinessException('不支持的图片格式', BusinessStatus.OPERATION_ERROR.code)
                     }
                 }
             } else {
@@ -103,7 +103,7 @@ export class OssService {
                 thumbnailUrl: thumbUrl
             } as UploadPictureVoModel
         } catch (error) {
-            throw new UploadFailedException(BusinessStatus.OPERATION_ERROR.message, BusinessStatus.OPERATION_ERROR.code)
+            throw new BusinessException(BusinessStatus.OPERATION_ERROR.message, BusinessStatus.OPERATION_ERROR.code)
         }
     }
 

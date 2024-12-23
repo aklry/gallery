@@ -37,6 +37,7 @@ model picture {
   picScale      Float
   picFormat     String   @db.VarChar(32)
   userId        String   @db.VarChar(256)
+  spaceId       String?   @db.VarChar(256)
   createTime    DateTime @default(now()) @db.DateTime(0)
   editTime      DateTime @default(now()) @db.DateTime(0)
   updateTime    DateTime @default(now()) @db.DateTime(0)
@@ -53,6 +54,7 @@ model picture {
   @@index([tags], map: "idx_tags")
   @@index([userId], map: "idx_userId")
   @@index([reviewStatus], map: "idx_reviewStatus")
+  @@index([spaceId], map: "idx_spaceId")
 }
 
 model message {
@@ -72,4 +74,29 @@ model message {
 enum MessageStatus {
   UNREAD
   READ
+}
+
+enum SpaceLevel {
+  FREE
+  BASIC
+  PREMIUM
+}
+
+model space {
+  id           String   @id @default(cuid())
+  spaceName    String?   @db.VarChar(128)
+  spaceLevel   SpaceLevel? @default(FREE)
+  maxSize      BigInt?   @default(0)
+  maxCount     BigInt?   @default(0)
+  totalSize    BigInt?   @default(0)
+  totalCount   BigInt?   @default(0)
+  userId       String   @db.VarChar(256)
+  createTime   DateTime @default(now()) @db.DateTime(0)
+  editTime     DateTime @default(now()) @db.DateTime(0)
+  updateTime   DateTime @default(now()) @db.DateTime(0)
+  isDelete     Int      @default(0) @db.TinyInt
+
+  @@index([userId], map: "idx_userId")
+  @@index([spaceName], map: "idx_spaceName")
+  @@index([spaceLevel], map: "idx_spaceLevel")
 }
