@@ -16,6 +16,11 @@ export const useMenus = () => {
             title: '创建图片'
         },
         {
+            key: '/space/add',
+            label: '创建空间',
+            title: '创建空间'
+        },
+        {
             key: '/user/admin',
             label: '用户管理',
             title: '用户管理'
@@ -24,6 +29,11 @@ export const useMenus = () => {
             key: '/picture/admin',
             label: '图片管理',
             title: '图片管理'
+        },
+        {
+            key: '/space/admin',
+            label: '空间管理',
+            title: '空间管理'
         }
     ]
 

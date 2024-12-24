@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsNotEmpty, IsOptional, IsString } from 'class-validator'
+import { IsOptional, IsString } from 'class-validator'
 
 export class UploadPictureUrlDto {
     @ApiProperty({ description: '图片链接', required: true })
@@ -9,8 +9,8 @@ export class UploadPictureUrlDto {
     @IsString()
     @IsOptional()
     id?: string
-    @ApiProperty({ description: '空间id', required: true })
+    @ApiProperty({ description: '空间id', required: false })
     @IsString()
-    @IsNotEmpty()
-    spaceId: string
+    @IsOptional()
+    spaceId?: string
 }

@@ -61,7 +61,7 @@ export class OssService {
             }
             // 生成唯一的文件名
             const uniqueId = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`
-            const uploadFileName = `${prefix === 'space' ? OSS_SPACE_PICTURE_PATH : OSS_PICTURE_PATH}/${uniqueId}${ext}`
+            const uploadFileName = `${OSS_PICTURE_PATH}/${prefix}/${uniqueId}${ext}`
 
             // 上传原始图片
             const result = await this.ossClient.put(uploadFileName, fileBuffer, {

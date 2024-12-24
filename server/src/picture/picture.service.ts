@@ -138,7 +138,8 @@ export class PictureService {
                     key !== 'sortField' &&
                     key !== 'sortOrder' &&
                     key !== 'reviewStatus' &&
-                    key !== 'spaceId'
+                    key !== 'spaceId' &&
+                    key !== 'nullSpaceId'
                 ) {
                     if (key === 'tags' && Array.isArray(value)) {
                         acc[key] = {
@@ -258,6 +259,7 @@ export class PictureService {
             createTime: result.createTime.toISOString(),
             userId: result.userId,
             editTime: result.editTime.toISOString(),
+            thumbnailUrl: result.thumbnailUrl,
             user: {
                 id: user?.id,
                 userAccount: user?.userAccount,
@@ -514,13 +516,28 @@ export class PictureService {
         if (!user) {
             throw new BusinessException('用户未登录', BusinessStatus.NOT_LOGIN_ERROR.code)
         }
-        const { keywords, count } = uploadBatchPictureDto
+        const { keywords, count, spaceId } = uploadBatchPictureDto
+        if (spaceId) {
+            const space = await this.spaceService.getById(spaceId)
+            if (!space) {
+                throw new BusinessException('空间不存在', BusinessStatus.PARAMS_ERROR.code)
+            }
+            if (space.userId !== user.id) {
+                throw new BusinessException('仅限本人空间使用', BusinessStatus.NOT_AUTH_ERROR.code)
+            }
+            if (space.totalCount >= space.maxCount) {
+                throw new BusinessException('空间已满', BusinessStatus.OPERATION_ERROR.code)
+            }
+            if (space.totalSize >= space.maxSize) {
+                throw new BusinessException('空间条数不足', BusinessStatus.OPERATION_ERROR.code)
+            }
+        }
         const imageUrl = await this.getPictureByKeywords(keywords, count)
         let uploadCount = 0
         const fileResult: UploadPictureVoModel[] = []
         for (const url of imageUrl) {
             try {
-                const file = await this.ossService.uploadFile(url, null)
+                const file = await this.ossService.uploadFile(url, null, spaceId ? 'space' : 'public')
                 uploadCount++
                 fileResult.push(file)
             } catch (error) {
@@ -530,10 +547,11 @@ export class PictureService {
         }
         return {
             count: uploadCount,
-            list: fileResult
+            list: fileResult,
+            spaceId
         }
     }
-    async setPicture(picture: UploadPictureVoModel[], req: Request) {
+    async setPicture(picture: UploadPictureVoModel[], spaceId: string, req: Request) {
         const user = req.session.user
         if (!user) {
             throw new BusinessException('用户未登录', BusinessStatus.NOT_LOGIN_ERROR.code)
@@ -554,7 +572,8 @@ export class PictureService {
                 reviewStatus: 1,
                 reviewTime: new Date(),
                 reviewerId: user.id,
-                thumbnailUrl: item.thumbnailUrl
+                thumbnailUrl: item.thumbnailUrl,
+                spaceId
             }))
         })
     }

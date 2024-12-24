@@ -38,6 +38,18 @@ export async function spaceControllerEditSpaceV1(body: API.EditSpaceDto, options
     })
 }
 
+/** 获取空间列表 POST /api/v1/space/list */
+export async function spaceControllerListSpaceV1(body: API.QuerySpaceDto, options?: { [key: string]: any }) {
+    return ryRequest.request<API.SpaceVo>('/api/v1/space/list', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        data: body,
+        ...(options || {})
+    })
+}
+
 /** 获取空间等级列表 GET /api/v1/space/list/level */
 export async function spaceControllerListSpaceLevelV1(options?: { [key: string]: any }) {
     return ryRequest.request<API.SpaceLevelVo>('/api/v1/space/list/level', {

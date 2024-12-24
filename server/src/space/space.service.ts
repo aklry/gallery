@@ -10,6 +10,10 @@ import { type Request } from 'express'
 import { UserRole } from '../user/enum/user'
 import { DeleteSpaceDto } from './dto/delete-space.dto'
 import { EditSpaceDto } from './dto/edit-space.dto'
+import { QuerySpaceDto } from './dto/query-space.dto'
+import { Prisma } from '@prisma/client'
+import { PictureVoModel } from 'src/picture/vo/picture.vo'
+import { SpaceModelVo } from './vo/space.vo'
 @Injectable()
 export class SpaceService {
     constructor(private readonly prismaService: PrismaService) {}
@@ -136,6 +140,64 @@ export class SpaceService {
             throw new BusinessException('删除空间失败', BusinessStatus.OPERATION_ERROR.code)
         }
         return true
+    }
+    async getSpaceByPage(query: QuerySpaceDto) {
+        const { current, pageSize, spaceName, spaceLevel, userId } = query
+        const where: Prisma.spaceWhereInput = {}
+        if (spaceName) {
+            where.spaceName = {
+                contains: spaceName
+            }
+        }
+        if (spaceLevel) {
+            where.spaceLevel = spaceLevel
+        }
+        if (userId) {
+            where.userId = userId
+        }
+        const [data, total] = await Promise.all([
+            this.prismaService.space.findMany({
+                where,
+                skip: (Number(current) - 1) * Number(pageSize),
+                take: Number(pageSize)
+            }),
+            this.prismaService.space.count({
+                where
+            })
+        ])
+        const result: SpaceModelVo[] = await Promise.all(
+            data.map(async item => {
+                const user = await this.prismaService.user.findUnique({
+                    where: { id: item.userId }
+                })
+                return {
+                    id: item.id,
+                    spaceName: item.spaceName,
+                    spaceLevel: item.spaceLevel,
+                    maxSize: item.maxSize,
+                    maxCount: item.maxCount,
+                    totalSize: item.totalSize,
+                    totalCount: item.totalCount,
+                    userId: item.userId,
+                    createTime: item.createTime,
+                    editTime: item.editTime,
+                    updateTime: item.updateTime,
+                    user: {
+                        id: user?.id,
+                        userName: user?.userName,
+                        userAvatar: user?.userAvatar,
+                        userProfile: user?.userProfile,
+                        userRole: user?.userRole,
+                        createTime: user?.createTime.toISOString(),
+                        userAccount: user?.userAccount
+                    }
+                }
+            })
+        )
+        return {
+            list: result,
+            total
+        }
     }
     // 空间创建人使用
     async editSpace(editSpaceDto: EditSpaceDto, req: Request) {

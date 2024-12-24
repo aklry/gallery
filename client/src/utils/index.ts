@@ -18,6 +18,13 @@ export const downloadPicture = (url?: string, filename?: string) => {
     if (!url) return
     saveAs(url, filename || 'picture.jpg')
 }
+/**
+ * 将MB转为字节
+ */
+export const transformSize = (size?: number) => {
+    if (!size) return
+    return size * 1024 * 1024
+}
 
 /**
  *

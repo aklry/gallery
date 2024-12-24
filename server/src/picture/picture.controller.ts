@@ -146,8 +146,8 @@ export class PictureController {
     @ApiResponse({ type: UploadBatchPictureVo })
     @ApiOperation({ summary: '批量上传图片(管理员)' })
     async uploadBatch(@Body(new ValidationPipe()) uploadBatchPictureDto: UploadBatchPictureDto, @Req() req: Request) {
-        const { count, list } = await this.pictureService.uploadBatch(uploadBatchPictureDto, req)
-        await this.pictureService.setPicture(list, req)
+        const { count, list, spaceId } = await this.pictureService.uploadBatch(uploadBatchPictureDto, req)
+        await this.pictureService.setPicture(list, spaceId, req)
         return this.responseService.success(count)
     }
 

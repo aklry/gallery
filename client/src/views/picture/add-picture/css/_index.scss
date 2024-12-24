@@ -2,4 +2,10 @@
 
 .add-picture {
     @include screen-center;
+    @apply overflow-y-scroll h-full;
+}
+
+::-webkit-scrollbar {
+    display: none;
+    width: 0;
 }

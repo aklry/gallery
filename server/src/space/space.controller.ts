@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common'
+import { Body, Controller, Get, Post, Query, Req, UseGuards } from '@nestjs/common'
 import { SpaceService } from './space.service'
 import { CreateSpaceDto } from './dto/create-space.dto'
 import { type Request } from 'express'
@@ -8,12 +8,13 @@ import { Roles } from '../role/role.decorator'
 import { UserRole } from '../user/enum/user'
 import { AuthGuard, RoleGuard } from '../auth/auth.guard'
 import { ApiOperation, ApiResponse } from '@nestjs/swagger'
-import { AddSpaceVo, UpdateSpaceVo, SpaceLevelVo, EditSpaceVo, DeleteSpaceVo } from './vo'
+import { AddSpaceVo, UpdateSpaceVo, SpaceLevelVo, EditSpaceVo, DeleteSpaceVo, SpaceVo } from './vo'
 import { ValidationPipe } from '../pipe/validation.pipe'
 import { version } from '../config'
 import { SpaceLevelMap } from './enum'
 import { DeleteSpaceDto } from './dto/delete-space.dto'
 import { EditSpaceDto } from './dto/edit-space.dto'
+import { QuerySpaceDto } from './dto/query-space.dto'
 
 @Controller({
     path: 'space',
@@ -69,6 +70,15 @@ export class SpaceController {
                 maxSize: item.maxSize
             }
         })
+        return this.responseService.success(result)
+    }
+    @Post('/list')
+    @UseGuards(AuthGuard, RoleGuard)
+    @Roles([UserRole.ADMIN])
+    @ApiOperation({ summary: '获取空间列表' })
+    @ApiResponse({ type: SpaceVo })
+    async listSpace(@Body(new ValidationPipe()) querySpaceDto: QuerySpaceDto) {
+        const result = await this.spaceService.getSpaceByPage(querySpaceDto)
         return this.responseService.success(result)
     }
 }

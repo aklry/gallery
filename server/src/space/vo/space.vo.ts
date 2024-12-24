@@ -10,13 +10,13 @@ export class SpaceModelVo {
     spaceName: string
     @ApiProperty({ description: '空间等级', required: true, enum: SpaceLevelEnum })
     spaceLevel: SpaceLevelEnum
-    @ApiProperty({ description: '最大容量', required: true })
+    @ApiProperty({ description: '最大容量', required: true, type: BigInt })
     maxSize: bigint
-    @ApiProperty({ description: '最大数量', required: true })
+    @ApiProperty({ description: '最大数量', required: true, type: BigInt })
     maxCount: bigint
-    @ApiProperty({ description: '总容量', required: true })
+    @ApiProperty({ description: '总容量', required: true, type: BigInt })
     totalSize: bigint
-    @ApiProperty({ description: '总数量', required: true })
+    @ApiProperty({ description: '总数量', required: true, type: BigInt })
     totalCount: bigint
     @ApiProperty({ description: '用户ID', required: true })
     userId: string
@@ -30,6 +30,14 @@ export class SpaceModelVo {
     user: UserVoModel
 }
 
-export class SpaceVo extends ResponseVo<SpaceModelVo> {
-    data: SpaceModelVo
+export class SpaceVoType {
+    @ApiProperty({ description: '空间列表', required: true, type: [SpaceModelVo] })
+    list: SpaceModelVo[]
+    @ApiProperty({ description: '总数', required: true })
+    total: number
+}
+
+export class SpaceVo extends ResponseVo<SpaceVoType> {
+    @ApiProperty({ description: '空间列表', required: true, type: SpaceVoType })
+    data: SpaceVoType
 }

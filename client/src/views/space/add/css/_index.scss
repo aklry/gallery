@@ -1,0 +1,5 @@
+@use '@/assets/styles/mixins/index' as *;
+
+.add-space {
+    @include screen-center;
+}

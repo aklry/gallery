@@ -68,5 +68,24 @@ export const routes: RouteRecordRaw[] = [
         meta: {
             access: AccessEnum.ADMIN
         }
+    },
+    {
+        path: '/space/admin',
+        name: 'admin-space',
+        component: () => import('@/views/space/admin/index.vue'),
+        meta: {
+            access: AccessEnum.ADMIN
+        }
+    },
+    {
+        path: '/space/add',
+        name: 'add-space',
+        component: () => import('@/views/space/add/index.vue')
+    },
+    {
+        path: '/space/:id',
+        name: 'space-detail',
+        component: () => import('@/views/space/detail/index.vue'),
+        props: true
     }
 ]

@@ -16,24 +16,35 @@ const useHomeHooks = () => {
     })
     const loading = ref(false)
     const fetchData = async (current?: string) => {
-        loading.value = true
-        if (current) {
-            searchParams.current = current
-        }
-        const loaded = sessionCache.getCache('loaded')
-        const res = await pictureControllerGetPictureByPageVoV1(searchParams)
-        if (dataList.value.length === 0 && !loaded) {
-            dataList.value = res.data.list
-        } else {
-            if (res.data.list.length === 0) {
-                sessionCache.setCache('loaded', false)
-                message.info('没有更多图片了')
-                loading.value = false
-            } else {
-                dataList.value = dataList.value?.concat(res.data.list)
+        try {
+            loading.value = true
+            if (current) {
+                searchParams.current = current
             }
+            const loaded = sessionCache.getCache('loaded')
+            const res = await pictureControllerGetPictureByPageVoV1(searchParams)
+            if (dataList.value.length === 0 && !loaded) {
+                console.log(1)
+                if (res.data.list.length > 0) {
+                    dataList.value = res.data.list
+                } else {
+                    sessionCache.setCache('loaded', false)
+                    message.info('没有更多图片了')
+                    loading.value = false
+                }
+            } else {
+                if (res.data.list.length === 0) {
+                    sessionCache.setCache('loaded', false)
+                    message.info('没有更多图片了')
+                    loading.value = false
+                } else {
+                    dataList.value = dataList.value?.concat(res.data.list)
+                }
+            }
+            total.value = res.data.total
+        } catch (error) {
+            message.error('获取图片失败')
         }
-        total.value = res.data.total
     }
     onMounted(() => {
         fetchData()

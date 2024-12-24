@@ -15,11 +15,11 @@ export class UpdateSpaceDto {
     @IsEnum(SpaceLevelEnum)
     @IsOptional()
     spaceLevel?: SpaceLevelEnum
-    @ApiProperty({ description: '空间图片最大容量', required: false })
+    @ApiProperty({ description: '空间图片最大容量', required: false, type: BigInt })
     @IsNumber()
     @IsOptional()
     maxSize?: bigint
-    @ApiProperty({ description: '空间图片最大数量', required: false })
+    @ApiProperty({ description: '空间图片最大数量', required: false, type: BigInt })
     @IsNumber()
     @IsOptional()
     maxCount?: bigint

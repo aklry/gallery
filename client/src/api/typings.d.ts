@@ -171,6 +171,8 @@ declare namespace API {
         spaceId: string
         /** 编辑时间 */
         editTime: string
+        /** 缩略图URL */
+        thumbnailUrl: string
     }
 
     type LoginVoModel = {
@@ -331,6 +333,25 @@ declare namespace API {
         nullSpaceId?: boolean
     }
 
+    type QuerySpaceDto = {
+        /** 当前页 */
+        current: string
+        /** 每页条数 */
+        pageSize: string
+        /** 排序字段 */
+        sortField?: string
+        /** 排序方式 */
+        sortOrder?: string
+        /** 空间id */
+        id?: string
+        /** 用户id */
+        userId?: string
+        /** 空间名称 */
+        spaceName?: string
+        /** 空间等级 */
+        spaceLevel?: 0 | 1 | 2
+    }
+
     type ReadAllMessageVo = {
         /** 状态码 */
         code: number
@@ -424,7 +445,7 @@ declare namespace API {
         /** 消息 */
         message: string
         /** 空间等级 */
-        data: SpaceLevelVoModel
+        data: SpaceLevelVoModel[]
         /** 时间戳 */
         timestamp: string
         /** 路径 */
@@ -440,6 +461,53 @@ declare namespace API {
         maxSize: number
         /** 空间最大数量 */
         maxCount: number
+    }
+
+    type SpaceModelVo = {
+        /** 空间ID */
+        id: string
+        /** 空间名称 */
+        spaceName: string
+        /** 空间等级 */
+        spaceLevel: 0 | 1 | 2
+        /** 最大容量 */
+        maxSize: number
+        /** 最大数量 */
+        maxCount: number
+        /** 总容量 */
+        totalSize: number
+        /** 总数量 */
+        totalCount: number
+        /** 用户ID */
+        userId: string
+        /** 创建时间 */
+        createTime: string
+        /** 编辑时间 */
+        editTime: string
+        /** 更新时间 */
+        updateTime: string
+        /** 用户信息 */
+        user: UserVoModel
+    }
+
+    type SpaceVo = {
+        /** 状态码 */
+        code: number
+        /** 消息 */
+        message: string
+        /** 空间列表 */
+        data: SpaceVoType
+        /** 时间戳 */
+        timestamp: string
+        /** 路径 */
+        path: string
+    }
+
+    type SpaceVoType = {
+        /** 空间列表 */
+        list: SpaceModelVo[]
+        /** 总数 */
+        total: number
     }
 
     type TagCategoryList = {
@@ -550,6 +618,8 @@ declare namespace API {
         keywords: string
         /** 添加数量 */
         count: number
+        /** 空间id */
+        spaceId?: string
     }
 
     type UploadBatchPictureVo = {
@@ -571,7 +641,7 @@ declare namespace API {
         /** 图片id */
         id?: string
         /** 空间id */
-        spaceId: string
+        spaceId?: string
     }
 
     type UploadPictureVo = {

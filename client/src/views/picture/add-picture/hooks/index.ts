@@ -1,9 +1,9 @@
 import { ref, reactive, onMounted } from 'vue'
 import {
     pictureControllerUpdatePictureV1,
-    pictureControllerGetByIdV1,
     pictureControllerEditPictureV1,
-    pictureControllerUploadFileByUrlV1
+    pictureControllerUploadFileByUrlV1,
+    pictureControllerGetByIdVoV1
 } from '@/api/picture'
 import { message } from 'ant-design-vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -77,7 +77,8 @@ const useAddPicture = () => {
                     width: res.data.width,
                     height: res.data.height,
                     fileSize: res.data.fileSize,
-                    format: res.data.format
+                    format: res.data.format,
+                    thumbnailUrl: res.data.thumbnailUrl
                 }
             } else {
                 message.error(res.message)
@@ -92,7 +93,7 @@ const useAddPicture = () => {
     onMounted(async () => {
         if (id) {
             try {
-                const res = await pictureControllerGetByIdV1({ id: id as string })
+                const res = await pictureControllerGetByIdVoV1({ id: id as string })
                 if (res.code === 1) {
                     Object.assign(pictureInfo, {
                         id: res.data.id,
@@ -109,7 +110,8 @@ const useAddPicture = () => {
                         width: res.data.picWidth,
                         height: res.data.picHeight,
                         fileSize: res.data.picSize,
-                        format: res.data.picFormat
+                        format: res.data.picFormat,
+                        thumbnailUrl: res.data.thumbnailUrl
                     }
                 }
             } catch (error) {

@@ -32,6 +32,8 @@ export class GetPictureVoModel {
     spaceId?: string
     @ApiProperty({ description: '编辑时间' })
     editTime?: string
+    @ApiProperty({ description: '缩略图URL' })
+    thumbnailUrl?: string
 }
 export class GetPictureVo extends ResponseVo<GetPictureVoModel> {
     @ApiProperty({ description: '图片信息', type: GetPictureVoModel })

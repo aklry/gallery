@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsNumber, Max, Min } from 'class-validator'
+import { IsString, IsNotEmpty, IsNumber, Max, Min, IsOptional } from 'class-validator'
 import { ApiProperty } from '@nestjs/swagger'
 
 export class UploadBatchPictureDto {
@@ -13,4 +13,9 @@ export class UploadBatchPictureDto {
     @Min(1)
     @ApiProperty({ description: '添加数量', required: true })
     count: number
+
+    @IsString()
+    @IsOptional()
+    @ApiProperty({ description: '空间id', required: false })
+    spaceId?: string
 }

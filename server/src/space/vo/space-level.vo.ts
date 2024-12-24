@@ -12,7 +12,7 @@ export class SpaceLevelVoModel {
     maxCount: number
 }
 
-export class SpaceLevelVo extends ResponseVo<SpaceLevelVoModel> {
-    @ApiProperty({ description: '空间等级', type: SpaceLevelVoModel })
-    data: SpaceLevelVoModel
+export class SpaceLevelVo extends ResponseVo<SpaceLevelVoModel[]> {
+    @ApiProperty({ description: '空间等级', type: SpaceLevelVoModel, isArray: true })
+    data: SpaceLevelVoModel[]
 }
