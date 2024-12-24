@@ -9,7 +9,7 @@ import type { Request } from 'express'
 import { PrismaService } from '../prisma/prisma.service'
 import { OssService } from '../oss/oss.service'
 import { UploadPictureVoModel } from './vo/upload-picture.vo'
-import { QueryPictureDto } from './dto/query-picture.dto'
+import { QueryPictureDto, PartialQueryPictureDto } from './dto/query-picture.dto'
 import { PictureVoModel } from './vo/picture.vo'
 import { GetPictureVoModel } from './vo/get-picture.vo'
 import { LoginVoModel } from '../user/vo/user-login.vo'
@@ -24,6 +24,7 @@ import { ShowPictureModelVo } from './vo/show-picture.vo'
 import { RedisCacheService } from '../cache/cache.service'
 import { SpaceService } from '../space/space.service'
 import axios from 'axios'
+import { Prisma } from '@prisma/client'
 
 @Injectable()
 export class PictureService {
@@ -674,6 +675,38 @@ export class PictureService {
             if (picture.user.id !== user.id) {
                 throw new BusinessException('无权限', BusinessStatus.NOT_AUTH_ERROR.code)
             }
+        }
+    }
+    // 用户查询图片接口
+    async queryPictureUser(queryPictureDto: PartialQueryPictureDto) {
+        const { searchText } = queryPictureDto
+        const where: Prisma.pictureWhereInput = {}
+        if (searchText) {
+            where.OR = [{ name: { contains: searchText } }, { introduction: { contains: searchText } }]
+        }
+        const [data, total] = await Promise.all([
+            this.prismaService.picture.findMany({
+                where
+            }),
+            this.prismaService.picture.count({ where })
+        ])
+        const result: ShowPictureModelVo[] = data.map(item => ({
+            id: item.id,
+            url: item.url,
+            introduction: item.introduction,
+            category: item.category,
+            tags: item.tags === '' ? [] : JSON.parse(item.tags) || [],
+            format: item.picFormat,
+            fileSize: item.picSize,
+            width: item.picWidth,
+            height: item.picHeight,
+            filename: item.name,
+            picScale: item.picScale,
+            thumbnailUrl: item.thumbnailUrl
+        }))
+        return {
+            list: result,
+            total
         }
     }
 }

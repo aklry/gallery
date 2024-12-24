@@ -2,11 +2,11 @@ import { ApiProperty } from '@nestjs/swagger'
 import { IsOptional, IsString, IsNotEmpty } from 'class-validator'
 
 export class PageRequest {
-    @ApiProperty({ description: '当前页' })
+    @ApiProperty({ description: '当前页', required: true })
     @IsString()
     @IsNotEmpty()
     current: string
-    @ApiProperty({ description: '每页条数' })
+    @ApiProperty({ description: '每页条数', required: true })
     @IsString()
     @IsNotEmpty()
     pageSize: string

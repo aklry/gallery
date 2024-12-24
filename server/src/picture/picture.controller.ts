@@ -10,7 +10,7 @@ import { version } from '../config'
 import { AuthGuard, RoleGuard } from '../auth/auth.guard'
 import { Roles } from '../role/role.decorator'
 import { UserRole } from '../user/enum/user'
-import { QueryPictureDto } from './dto/query-picture.dto'
+import { QueryPictureDto, PartialQueryPictureDto } from './dto/query-picture.dto'
 import { PictureVo } from './vo/picture.vo'
 import { ValidationPipe } from '../pipe/validation.pipe'
 import { DeletePictureDto } from './dto/delete-picture.dto'
@@ -158,5 +158,23 @@ export class PictureController {
     async reviewPicture(@Body(new ValidationPipe()) reviewPictureDto: ReviewPictureDto, @Req() req: Request) {
         const data = await this.pictureService.reviewPicture(reviewPictureDto, req)
         return this.responseService.success(data)
+    }
+
+    @Post('/query')
+    @UseGuards(AuthGuard)
+    @ApiResponse({ type: ShowPictureVo })
+    @ApiOperation({ summary: '首页查询图片' })
+    @ApiBody({
+        description: '首页查询图片',
+        schema: {
+            type: 'object',
+            properties: {
+                searchText: { type: 'string' }
+            }
+        }
+    })
+    async queryPicture(@Body(new ValidationPipe()) queryPictureDto: PartialQueryPictureDto) {
+        const result = await this.pictureService.queryPictureUser(queryPictureDto)
+        return this.responseService.success(result)
     }
 }

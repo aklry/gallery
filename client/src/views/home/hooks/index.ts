@@ -1,5 +1,5 @@
 import { ref, reactive, watch, onMounted } from 'vue'
-import { pictureControllerGetPictureByPageVoV1 } from '@/api/picture'
+import { pictureControllerGetPictureByPageVoV1, pictureControllerQueryPictureV1 } from '@/api/picture'
 import { useRouter } from 'vue-router'
 import { sessionCache } from '@/utils/cache'
 import { message } from 'ant-design-vue'
@@ -16,15 +16,14 @@ const useHomeHooks = () => {
     })
     const loading = ref(false)
     const fetchData = async (current?: string) => {
+        const loaded = sessionCache.getCache('loaded')
         try {
             loading.value = true
             if (current) {
                 searchParams.current = current
             }
-            const loaded = sessionCache.getCache('loaded')
             const res = await pictureControllerGetPictureByPageVoV1(searchParams)
             if (dataList.value.length === 0 && !loaded) {
-                console.log(1)
                 if (res.data.list.length > 0) {
                     dataList.value = res.data.list
                 } else {
@@ -44,6 +43,10 @@ const useHomeHooks = () => {
             total.value = res.data.total
         } catch (error) {
             message.error('获取图片失败')
+        } finally {
+            if (!loaded) {
+                loading.value = false
+            }
         }
     }
     onMounted(() => {
@@ -68,13 +71,19 @@ const useHomeHooks = () => {
             path: `/picture/${id}`
         })
     }
+    const queryPictureBySearchText = async (queryPictureDto: Partial<API.QueryPictureDto>) => {
+        const res = await pictureControllerQueryPictureV1(queryPictureDto)
+        dataList.value = res.data.list
+        total.value = res.data.total
+    }
     const handleSearchPicture = (value: string) => {
         if (!value) {
             searchParams.searchText = undefined
         } else {
             searchParams.searchText = value
         }
-        fetchData()
+        console.log(value)
+        queryPictureBySearchText({ searchText: value })
     }
     watch([() => searchParams.category, () => searchParams.tags], () => {
         fetchData()

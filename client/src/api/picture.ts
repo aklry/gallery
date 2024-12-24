@@ -81,6 +81,23 @@ export async function pictureControllerGetPictureByPageVoV1(
     })
 }
 
+/** 首页查询图片 POST /api/v1/picture/query */
+export async function pictureControllerQueryPictureV1(
+    body: {
+        searchText?: string
+    },
+    options?: { [key: string]: any }
+) {
+    return ryRequest.request<API.ShowPictureVo>('/api/v1/picture/query', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        data: body,
+        ...(options || {})
+    })
+}
+
 /** 审核图片(管理员) POST /api/v1/picture/review */
 export async function pictureControllerReviewPictureV1(body: API.ReviewPictureDto, options?: { [key: string]: any }) {
     return ryRequest.request<any>('/api/v1/picture/review', {

@@ -72,3 +72,5 @@ export class QueryPictureDto extends PageRequest {
     @ApiProperty({ description: '是否为公共图库', required: false })
     nullSpaceId?: boolean
 }
+
+export type PartialQueryPictureDto = Partial<QueryPictureDto>
