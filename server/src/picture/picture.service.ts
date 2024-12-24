@@ -374,7 +374,7 @@ export class PictureService {
         // 上传图片
         const name = typeof file === 'string' ? file : file.originalname
         const buffer = typeof file === 'string' ? null : file.buffer
-        const ossResult = await this.ossService.uploadFile(name, buffer, 'space')
+        const ossResult = await this.ossService.uploadFile(name, buffer, spaceId ? 'space' : 'public')
         const reviewStatus = user.userRole === UserRole.ADMIN ? 1 : 0
         const reviewTime = user.userRole === UserRole.ADMIN ? new Date() : undefined
         const picture = pictureId

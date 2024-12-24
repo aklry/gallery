@@ -14,6 +14,30 @@ export async function spaceControllerAddSpaceV1(body: API.CreateSpaceDto, option
     })
 }
 
+/** 删除空间 POST /api/v1/space/delete */
+export async function spaceControllerDeleteSpaceV1(body: API.DeleteSpaceDto, options?: { [key: string]: any }) {
+    return ryRequest.request<API.DeleteSpaceVo>('/api/v1/space/delete', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        data: body,
+        ...(options || {})
+    })
+}
+
+/** 编辑空间 POST /api/v1/space/edit */
+export async function spaceControllerEditSpaceV1(body: API.EditSpaceDto, options?: { [key: string]: any }) {
+    return ryRequest.request<API.EditSpaceVo>('/api/v1/space/edit', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        data: body,
+        ...(options || {})
+    })
+}
+
 /** 获取空间等级列表 GET /api/v1/space/list/level */
 export async function spaceControllerListSpaceLevelV1(options?: { [key: string]: any }) {
     return ryRequest.request<API.SpaceLevelVo>('/api/v1/space/list/level', {

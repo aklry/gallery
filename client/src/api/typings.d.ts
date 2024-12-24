@@ -55,6 +55,44 @@ declare namespace API {
         id: string
     }
 
+    type DeleteSpaceDto = {
+        /** 空间ID */
+        id: string
+    }
+
+    type DeleteSpaceVo = {
+        /** 状态码 */
+        code: number
+        /** 消息 */
+        message: string
+        /** 删除空间结果 */
+        data: Record<string, any>
+        /** 时间戳 */
+        timestamp: string
+        /** 路径 */
+        path: string
+    }
+
+    type EditSpaceDto = {
+        /** 空间id */
+        id: string
+        /** 空间名称 */
+        spaceName: string
+    }
+
+    type EditSpaceVo = {
+        /** 状态码 */
+        code: number
+        /** 消息 */
+        message: string
+        /** 编辑空间结果 */
+        data: Record<string, any>
+        /** 时间戳 */
+        timestamp: string
+        /** 路径 */
+        path: string
+    }
+
     type EditUserDto = {
         /** 用户id */
         id: string

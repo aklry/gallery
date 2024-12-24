@@ -8,10 +8,12 @@ import { Roles } from '../role/role.decorator'
 import { UserRole } from '../user/enum/user'
 import { AuthGuard, RoleGuard } from '../auth/auth.guard'
 import { ApiOperation, ApiResponse } from '@nestjs/swagger'
-import { AddSpaceVo, UpdateSpaceVo, SpaceLevelVo } from './vo'
+import { AddSpaceVo, UpdateSpaceVo, SpaceLevelVo, EditSpaceVo, DeleteSpaceVo } from './vo'
 import { ValidationPipe } from '../pipe/validation.pipe'
 import { version } from '../config'
 import { SpaceLevelMap } from './enum'
+import { DeleteSpaceDto } from './dto/delete-space.dto'
+import { EditSpaceDto } from './dto/edit-space.dto'
 
 @Controller({
     path: 'space',
@@ -24,7 +26,7 @@ export class SpaceController {
     ) {}
     @Post('/add')
     @ApiResponse({ type: AddSpaceVo })
-    @UseGuards(RoleGuard)
+    @UseGuards(AuthGuard)
     @ApiOperation({ summary: '创建空间' })
     async addSpace(@Body(new ValidationPipe()) createSpaceDto: CreateSpaceDto, @Req() req: Request) {
         const result = await this.spaceService.addSpace(createSpaceDto, req)
@@ -37,6 +39,22 @@ export class SpaceController {
     @ApiResponse({ type: UpdateSpaceVo })
     async updateSpace(@Body(new ValidationPipe()) updateSpaceDto: UpdateSpaceDto) {
         const result = await this.spaceService.updateSpace(updateSpaceDto)
+        return this.responseService.success(result)
+    }
+    @Post('/delete')
+    @UseGuards(AuthGuard)
+    @ApiOperation({ summary: '删除空间' })
+    @ApiResponse({ type: DeleteSpaceVo })
+    async deleteSpace(@Body(new ValidationPipe()) deleteSpaceDto: DeleteSpaceDto, @Req() req: Request) {
+        const result = await this.spaceService.deleteSpace(deleteSpaceDto, req)
+        return this.responseService.success(result)
+    }
+    @Post('/edit')
+    @UseGuards(AuthGuard)
+    @ApiOperation({ summary: '编辑空间' })
+    @ApiResponse({ type: EditSpaceVo })
+    async editSpace(@Body(new ValidationPipe()) editSpaceDto: EditSpaceDto, @Req() req: Request) {
+        const result = await this.spaceService.editSpace(editSpaceDto, req)
         return this.responseService.success(result)
     }
     @Get('/list/level')

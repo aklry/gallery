@@ -8,9 +8,12 @@ import { PrismaService } from '../prisma/prisma.service'
 import { CreateSpaceDto } from './dto/create-space.dto'
 import { type Request } from 'express'
 import { UserRole } from '../user/enum/user'
+import { DeleteSpaceDto } from './dto/delete-space.dto'
+import { EditSpaceDto } from './dto/edit-space.dto'
 @Injectable()
 export class SpaceService {
     constructor(private readonly prismaService: PrismaService) {}
+    // 空间管理员使用
     async updateSpace(updateSpaceDto: UpdateSpaceDto) {
         if (updateSpaceDto === null || updateSpaceDto.id === null) {
             throw new BusinessException(BusinessStatus.PARAMS_ERROR.message, BusinessStatus.PARAMS_ERROR.code)
@@ -46,6 +49,7 @@ export class SpaceService {
         }
         return true
     }
+    // 创建空间
     async addSpace(createSpaceDto: CreateSpaceDto, req: Request) {
         const user = req.session.user
         if (user === null || user === undefined) {
@@ -102,6 +106,61 @@ export class SpaceService {
             throw new BusinessException('空间不存在', BusinessStatus.PARAMS_ERROR.code)
         }
         return result
+    }
+    async deleteSpace(deleteSpaceDto: DeleteSpaceDto, req: Request) {
+        const { id } = deleteSpaceDto
+        const user = req.session.user
+        if (!id) {
+            throw new BusinessException('空间ID不能为空', BusinessStatus.PARAMS_ERROR.code)
+        }
+        if (user.role !== UserRole.ADMIN && id !== user.id) {
+            throw new BusinessException('无权限删除空间', BusinessStatus.NOT_AUTH_ERROR.code)
+        }
+        const space = await this.getById(id)
+        this.validateSpace(space, false)
+        const result = await this.prismaService.$transaction(async prisma => {
+            const deletedSpace = await prisma.space.delete({
+                where: {
+                    id
+                }
+            })
+            // 删除空间下的所有图片
+            await prisma.picture.deleteMany({
+                where: {
+                    spaceId: id
+                }
+            })
+            return deletedSpace
+        })
+        if (!result) {
+            throw new BusinessException('删除空间失败', BusinessStatus.OPERATION_ERROR.code)
+        }
+        return true
+    }
+    // 空间创建人使用
+    async editSpace(editSpaceDto: EditSpaceDto, req: Request) {
+        const { id, spaceName } = editSpaceDto
+        const user = req.session.user
+        if (!id) {
+            throw new BusinessException('空间ID不能为空', BusinessStatus.PARAMS_ERROR.code)
+        }
+        if (id !== user.id) {
+            throw new BusinessException('无权限编辑空间', BusinessStatus.NOT_AUTH_ERROR.code)
+        }
+        const space = await this.getById(id)
+        this.validateSpace(space, false)
+        const result = await this.prismaService.space.update({
+            where: {
+                id
+            },
+            data: {
+                spaceName
+            }
+        })
+        if (!result) {
+            throw new BusinessException('编辑空间失败', BusinessStatus.OPERATION_ERROR.code)
+        }
+        return true
     }
     validateSpace(space: Space, add: boolean) {
         if (space === null) {
