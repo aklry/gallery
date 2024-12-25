@@ -12,7 +12,8 @@ export const useSpaceDetail = () => {
     const privatePictureList = ref<API.ShowPictureModelVo[]>([])
     const loading = ref(false)
     const percent = computed(() => {
-        return (((spaceDetail.value?.totalSize ?? 0) / (spaceDetail.value?.maxSize ?? 1)) * 100).toFixed(2)
+        const percent = (((spaceDetail.value?.totalSize ?? 0) / (spaceDetail.value?.maxSize ?? 1)) * 100).toFixed(2)
+        return parseFloat(percent)
     })
     const fetchSpaceDetail = async () => {
         const res = await spaceControllerListSpaceV1({
