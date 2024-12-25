@@ -1,0 +1,7 @@
+.space-detail-header {
+    @apply flex justify-between items-center;
+
+    h2 {
+        @apply text-2xl font-bold;
+    }
+}

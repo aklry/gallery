@@ -46,8 +46,15 @@ export class PictureService {
             ...(searchText && {
                 OR: [{ name: { contains: searchText } }, { introduction: { contains: searchText } }]
             }),
+            ...(filters.nullSpaceId ? { spaceId: null } : {}),
             ...Object.entries(filters).reduce((acc: any, [key, value]) => {
-                if (value !== undefined && key !== 'sortField' && key !== 'sortOrder' && key !== 'reviewStatus') {
+                if (
+                    value !== undefined &&
+                    key !== 'sortField' &&
+                    key !== 'sortOrder' &&
+                    key !== 'reviewStatus' &&
+                    key !== 'nullSpaceId'
+                ) {
                     if (key === 'tags' && Array.isArray(value)) {
                         acc[key] = {
                             contains: value.map(tag => `"${tag}"`).join(',')
@@ -130,7 +137,7 @@ export class PictureService {
             ...(searchText && {
                 OR: [{ name: { contains: searchText } }, { introduction: { contains: searchText } }]
             }),
-            reviewStatus: 1,
+            reviewStatus: filters.spaceId ? undefined : 1,
             ...(filters.spaceId ? { spaceId: filters.spaceId } : {}),
             ...(filters.nullSpaceId ? { spaceId: null } : {}),
             ...Object.entries(filters).reduce((acc: any, [key, value]) => {
@@ -421,8 +428,8 @@ export class PictureService {
         if (!picture) {
             throw new BusinessException('图片上传失败', BusinessStatus.OPERATION_ERROR.code)
         }
-        this.prismaService.$transaction(async prisma => {
-            if (spaceId) {
+        if (spaceId) {
+            await this.prismaService.$transaction(async prisma => {
                 const space = await prisma.space.update({
                     where: {
                         id: spaceId
@@ -432,15 +439,15 @@ export class PictureService {
                             increment: 1
                         },
                         totalSize: {
-                            increment: BigInt(ossResult.fileSize)
+                            increment: BigInt(picture.picSize)
                         }
                     }
                 })
                 if (!space) {
                     throw new BusinessException('空间更新失败', BusinessStatus.OPERATION_ERROR.code)
                 }
-            }
-        })
+            })
+        }
         return {
             id: picture.id,
             url: picture.url,

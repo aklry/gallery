@@ -11,7 +11,7 @@
         </div>
         <tabs :tag_category="tag_category" @changeTabs="changeTabs" />
         <tag-bars :tag_category="tag_category" @changeTags="changeTags" />
-        <a-list :grid="{ gutter: 16, xs: 1, sm: 2, md: 3, lg: 4, xl: 5, xxl: 6 }" :data-source="dataList">
+        <a-list :grid="{ gutter: 16, xs: 1, sm: 2, md: 3, lg: 4, xl: 5, xxl: 5 }" :data-source="dataList">
             <template #renderItem="{ item: picture }: { item: API.ShowPictureModelVo }">
                 <a-list-item>
                     <a-card @click="clickPicture(picture.id)">

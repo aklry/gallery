@@ -83,6 +83,11 @@ export const routes: RouteRecordRaw[] = [
         component: () => import('@/views/space/add/index.vue')
     },
     {
+        path: '/space/user',
+        name: 'user-space',
+        component: () => import('@/views/space/user/index.vue')
+    },
+    {
         path: '/space/:id',
         name: 'space-detail',
         component: () => import('@/views/space/detail/index.vue'),

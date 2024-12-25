@@ -30,6 +30,7 @@ const props = defineProps<{
     onUploadAvatarSuccess?: (result: API.UploadAvatarVoModel) => void
     picture?: API.UploadPictureVoModel | API.UploadAvatarVoModel
     prefix?: string
+    spaceId?: string
 }>()
 const uploadCustomRequest = async () => {
     loading.value = true
@@ -37,7 +38,10 @@ const uploadCustomRequest = async () => {
         let res: API.UploadAvatarVo | API.UploadPictureVo
         let params: any = {}
         if (props.picture && 'id' in props.picture) {
-            params = { id: props.picture.id }
+            params.id = props.picture.id
+        }
+        if (props.spaceId) {
+            params.spaceId = props.spaceId
         }
         if (props.prefix) {
             res = await userControllerUploadUserAvatarV1({ prefix: props.prefix }, fileList.value[0].originFileObj)

@@ -102,6 +102,7 @@ export class PictureController {
         @Req() req: Request,
         @Body(new ValidationPipe()) uploadPictureDto?: UploadPictureDto
     ) {
+        console.log(uploadPictureDto)
         const data = await this.pictureService.uploadFile(file, req, uploadPictureDto)
         return this.responseService.success(data)
     }

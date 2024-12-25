@@ -5,10 +5,10 @@
 }
 
 .ant-layout-footer {
-    @apply bg-white p-0 h-[64px];
+    @apply bg-white p-0 h-[64px] leading-[64px];
 }
 
 .content {
     background: linear-gradient(to bottom, #fefefe, #fff);
-    @apply p-[20px] overflow-hidden box-border;
+    @apply p-[20px] overflow-hidden box-border pb-[20px];
 }

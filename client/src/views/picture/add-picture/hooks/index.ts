@@ -19,12 +19,16 @@ const useAddPicture = () => {
     const route = useRoute()
     const router = useRouter()
     const id = route.query?.id
+    const spaceId = route.query?.spaceId as string
     const picture = ref<API.UploadPictureVoModel>()
     const url = ref<string>('')
     const handleUploadSuccess = (result: API.UploadPictureVoModel) => {
         picture.value = result
         pictureInfo.name = result.filename
         pictureInfo.id = result.id
+        if (spaceId) {
+            pictureInfo.spaceId = spaceId
+        }
     }
     const loading = ref<boolean>(false)
     const uploadLoading = ref<boolean>(false)
@@ -33,7 +37,8 @@ const useAddPicture = () => {
         introduction: '',
         name: '',
         category: '',
-        tags: []
+        tags: [],
+        spaceId: ''
     })
     const handleUpdatePicture = async () => {
         try {
@@ -128,6 +133,7 @@ const useAddPicture = () => {
         loading,
         tag_category,
         id,
+        spaceId,
         uploadLoading,
         handleUploadPictureByUrl
     }

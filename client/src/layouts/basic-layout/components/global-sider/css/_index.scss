@@ -1,0 +1,12 @@
+.global-sider {
+    width: 200px;
+    height: 100%;
+}
+
+.ant-layout-sider {
+    @apply h-screen;
+}
+
+.ant-menu {
+    @apply bg-[#34495E] text-white;
+}

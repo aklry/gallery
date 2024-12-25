@@ -73,8 +73,7 @@ export class SpaceController {
         return this.responseService.success(result)
     }
     @Post('/list')
-    @UseGuards(AuthGuard, RoleGuard)
-    @Roles([UserRole.ADMIN])
+    @UseGuards(AuthGuard)
     @ApiOperation({ summary: '获取空间列表' })
     @ApiResponse({ type: SpaceVo })
     async listSpace(@Body(new ValidationPipe()) querySpaceDto: QuerySpaceDto) {

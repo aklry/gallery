@@ -1,11 +1,15 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsArray, IsNotEmpty, IsString } from 'class-validator'
+import { IsArray, IsNotEmpty, IsOptional, IsString } from 'class-validator'
 
 export class UpdatePictureDto {
     @IsString()
     @IsNotEmpty()
     @ApiProperty({ description: '图片id', required: true })
     id: string
+    @IsString()
+    @IsOptional()
+    @ApiProperty({ description: '空间id', required: false })
+    spaceId?: string
     @IsString()
     @IsNotEmpty()
     @ApiProperty({ description: '图片名称', required: true })

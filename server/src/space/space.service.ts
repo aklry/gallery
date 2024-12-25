@@ -142,7 +142,7 @@ export class SpaceService {
         return true
     }
     async getSpaceByPage(query: QuerySpaceDto) {
-        const { current, pageSize, spaceName, spaceLevel, userId } = query
+        const { current, pageSize, spaceName, spaceLevel, userId, id } = query
         const where: Prisma.spaceWhereInput = {}
         if (spaceName) {
             where.spaceName = {
@@ -154,6 +154,9 @@ export class SpaceService {
         }
         if (userId) {
             where.userId = userId
+        }
+        if (id) {
+            where.id = id
         }
         const [data, total] = await Promise.all([
             this.prismaService.space.findMany({

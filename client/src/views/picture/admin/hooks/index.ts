@@ -13,7 +13,8 @@ const usePictureHooks = () => {
         current: '1',
         pageSize: '10',
         sortField: 'createTime',
-        sortOrder: 'desc'
+        sortOrder: 'desc',
+        nullSpaceId: true
     })
     const dataSource = ref<API.PictureVoModel[]>([])
     const total = ref(0)

@@ -55,6 +55,7 @@
     "commitlint",
     "cuid",
     "datasource",
+    "genid",
     "hoverable",
     "huayunjian",
     "metatype",
@@ -62,9 +63,9 @@
     "Persistedstate",
     "pinia",
     "resave",
+    "sider",
     "tencentcdb",
     "umijs",
-    "vite",
-    "genid"
+    "vite"
   ]
 }

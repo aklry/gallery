@@ -1,13 +1,13 @@
 <template>
     <a-row>
-        <a-col flex="150px" class="mr-[20px]">
-            <a href="http://docs.aklry.com" target="_blank">
-                <img src="@/assets/images/logo.png" alt="画云间" class="w-[50px]" />
-            </a>
-            <div class="text-[24px] font-bold ml-[10px]">画云间</div>
-        </a-col>
         <a-col flex="auto">
-            <a-menu v-model:selectedKeys="current" mode="horizontal" :items="items" @click="changeRoute" />
+            <a-menu
+                v-model:selectedKeys="current"
+                mode="horizontal"
+                :items="items"
+                class="w-full"
+                @click="changeRoute"
+            />
         </a-col>
         <a-col flex="150px">
             <template v-if="loginUser && loginUser.id">

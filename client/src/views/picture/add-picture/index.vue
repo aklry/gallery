@@ -3,7 +3,7 @@
         <h2 class="text-xl">{{ id ? '修改图片' : '创建图片' }}</h2>
         <a-tabs>
             <a-tab-pane key="1" tab="文件上传">
-                <picture-upload :picture="picture" :onUploadPictureSuccess="handleUploadSuccess" />
+                <picture-upload :picture="picture" :spaceId="spaceId" :onUploadPictureSuccess="handleUploadSuccess" />
             </a-tab-pane>
             <a-tab-pane key="2" tab="URL上传">
                 <a-input v-model:value="url" placeholder="请输入图片链接" />
@@ -50,6 +50,7 @@ const {
     loading,
     tag_category,
     id,
+    spaceId,
     uploadLoading,
     handleUploadPictureByUrl
 } = useAddPicture()
