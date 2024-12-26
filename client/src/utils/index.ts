@@ -129,3 +129,10 @@ export const ryThrottle = (fn: Function, interval: number, { leading = true, tra
     }
     return _throttle
 }
+
+export const toHexColor = (color?: string) => {
+    if (!color) return color
+    const originColor = color.startsWith('0x') ? color.slice(2) : color
+    const hexColor = parseInt(originColor, 16).toString(16).padStart(6, '0')
+    return `#${hexColor}`
+}

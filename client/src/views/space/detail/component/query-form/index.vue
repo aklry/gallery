@@ -3,7 +3,8 @@ import { useQueryFormHooks } from './hooks'
 import { QueryFormPropsType } from './types'
 
 const props = defineProps<QueryFormPropsType>()
-const { searchParams, tag_category, dateRange, rangePresets, doSearch, doReset } = useQueryFormHooks(props)
+const { searchParams, tag_category, dateRange, rangePresets, doSearch, doReset, handlePureColorChange } =
+    useQueryFormHooks(props)
 </script>
 
 <template>
@@ -32,6 +33,9 @@ const { searchParams, tag_category, dateRange, rangePresets, doSearch, doReset }
             </a-form-item>
             <a-form-item label="简介" name="introduction">
                 <a-input v-model:value="searchParams.introduction" placeholder="请输入图片简介" />
+            </a-form-item>
+            <a-form-item label="按颜色搜索" class="color-search">
+                <color-picker format="hex" @pureColorChange="handlePureColorChange" />
             </a-form-item>
             <a-form-item class="more">
                 <a-collapse>

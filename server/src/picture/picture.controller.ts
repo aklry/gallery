@@ -71,7 +71,10 @@ export class PictureController {
     @ApiOperation({ summary: '根据颜色值获取相似图片' })
     async getPictureByColor(@Query('spaceId') spaceId: string, @Query('color') color: string, @Req() req: Request) {
         const data = await this.pictureService.getPictureByColor(spaceId, color, req)
-        return this.responseService.success(data)
+        return this.responseService.success({
+            list: data,
+            total: data.length
+        })
     }
 
     @Get('/get/:id')

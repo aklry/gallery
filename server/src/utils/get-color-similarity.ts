@@ -1,4 +1,5 @@
 export function hexToRgb(hex: string): { r: number; g: number; b: number } {
+    hex = hex.startsWith('0x') ? hex.replace('0x', '#') : hex
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
     return result
         ? {
@@ -21,5 +22,5 @@ export function euclideanDistance(
 }
 
 export function normalizeDistance(distance: number): number {
-    return distance / Math.sqrt(Math.pow(255, 2) + Math.pow(255, 2) + Math.pow(255, 2))
+    return 1 - distance / Math.sqrt(Math.pow(255, 2) * 3)
 }

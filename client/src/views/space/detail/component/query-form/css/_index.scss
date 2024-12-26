@@ -16,8 +16,12 @@
     .more {
         @apply col-span-full;
     }
+
+    .color-search {
+        @apply col-span-full;
+    }
 }
 
-:deep(.ant-collapse-content-box ){
+:deep(.ant-collapse-content-box) {
     @apply grid grid-cols-3 gap-3;
 }

@@ -2,7 +2,7 @@ import { ref, useTemplateRef } from 'vue'
 import usePictureStore from '@/store/modules/picture'
 import { storeToRefs } from 'pinia'
 import { FormInstance, message } from 'ant-design-vue'
-import { pictureControllerGetPictureByPageVoV1 } from '@/api/picture.ts'
+import { pictureControllerGetPictureByPageVoV1, pictureControllerGetPictureByColorV1 } from '@/api/picture.ts'
 import { QueryFormPropsType } from '../types'
 import dayjs, { type Dayjs } from 'dayjs'
 
@@ -11,6 +11,7 @@ export const useQueryFormHooks = (props: QueryFormPropsType) => {
     const pictureStore = usePictureStore()
     const dateRange = ref<RangeValue>()
     const { tag_category } = storeToRefs(pictureStore)
+    const picColor = ref<string>('')
     const initParams = {
         current: '1',
         pageSize: '10',
@@ -33,11 +34,19 @@ export const useQueryFormHooks = (props: QueryFormPropsType) => {
             newQueryParams.endEditTime = end.toISOString()
         }
         try {
-            const res = await pictureControllerGetPictureByPageVoV1({
-                ...initParams,
-                ...newQueryParams,
-                spaceId: props.spaceId
-            })
+            let res: API.ShowPictureVo
+            if (picColor.value) {
+                res = await pictureControllerGetPictureByColorV1({
+                    color: picColor.value,
+                    spaceId: props.spaceId as string
+                })
+            } else {
+                res = await pictureControllerGetPictureByPageVoV1({
+                    ...initParams,
+                    ...newQueryParams,
+                    spaceId: props.spaceId
+                })
+            }
             if (res.code === 1) {
                 props.onSuccess?.(res)
             } else {
@@ -49,7 +58,11 @@ export const useQueryFormHooks = (props: QueryFormPropsType) => {
     }
     const doReset = () => {
         form.value?.resetFields()
+        picColor.value = ''
         props.onReset?.()
+    }
+    const handlePureColorChange = (color: string) => {
+        picColor.value = color
     }
     return {
         searchParams,
@@ -57,6 +70,7 @@ export const useQueryFormHooks = (props: QueryFormPropsType) => {
         dateRange,
         rangePresets,
         doSearch,
-        doReset
+        doReset,
+        handlePureColorChange
     }
 }

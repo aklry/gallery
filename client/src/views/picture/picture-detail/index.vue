@@ -29,6 +29,16 @@
                         <a-descriptions-item label="上传时间">{{
                             formatTime(picture?.createTime)
                         }}</a-descriptions-item>
+                        <a-descriptions-item label="主色调">
+                            <a-space>
+                                {{ toHexColor(picture?.picColor) || '暂无主色调' }}
+                                <div
+                                    :style="{ backgroundColor: toHexColor(picture?.picColor) }"
+                                    class="color-box"
+                                    v-if="picture?.picColor"
+                                />
+                            </a-space>
+                        </a-descriptions-item>
                         <a-descriptions-item label="操作">
                             <a-space>
                                 <a-button size="small" v-if="canEditOrDelete" @click="editPicture">编辑</a-button>
@@ -56,7 +66,7 @@
 </template>
 <script setup lang="ts">
 import usePictureDetail from './hooks'
-import { formatTime, formatSize } from '@/utils'
+import { formatTime, formatSize, toHexColor } from '@/utils'
 
 const props = defineProps<{
     id: string
@@ -65,4 +75,6 @@ const props = defineProps<{
 const { picture, deletePicture, canEditOrDelete, editPicture, downloadPicture } = usePictureDetail(props.id)
 </script>
 
-<style scoped></style>
+<style scoped lang="scss">
+@use './css/index.scss' as *;
+</style>

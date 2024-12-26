@@ -763,14 +763,14 @@ export class PictureService {
             .map(item => {
                 const itemColor = hexToRgb(item.picColor)
                 const distance = euclideanDistance(originColor, itemColor)
-                const similarity = parseFloat(normalizeDistance(distance).toFixed(2))
+                const similarity = normalizeDistance(distance)
                 return {
                     item,
                     similarity
                 }
             })
             .sort((a, b) => b.similarity - a.similarity)
-            .map(item => item.item)
+            .map(item => ({ ...item.item, tags: item.item.tags === '' ? [] : JSON.parse(item.item.tags) || [] }))
             .slice(0, 12)
     }
 }
