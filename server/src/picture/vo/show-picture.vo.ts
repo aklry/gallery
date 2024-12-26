@@ -14,6 +14,8 @@ export class ShowPictureModelVo {
     tags: string[]
     @ApiProperty({ description: '图片格式', required: true })
     format: string
+    @ApiProperty({ description: '图片颜色', required: true })
+    color: string
     @ApiProperty({ description: '图片大小', required: true })
     fileSize: bigint
     @ApiProperty({ description: '图片宽度', required: true })

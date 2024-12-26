@@ -1,4 +1,15 @@
-import { Controller, Get, Post, Body, Param, Req, UseInterceptors, UploadedFile, UseGuards } from '@nestjs/common'
+import {
+    Controller,
+    Get,
+    Post,
+    Body,
+    Param,
+    Req,
+    UseInterceptors,
+    UploadedFile,
+    UseGuards,
+    Query
+} from '@nestjs/common'
 import { PictureService } from './picture.service'
 import type { Request } from 'express'
 import { FileInterceptor } from '@nestjs/platform-express'
@@ -54,6 +65,15 @@ export class PictureController {
         return this.responseService.success(data)
     }
 
+    @Get('/list/color')
+    @UseGuards(AuthGuard)
+    @ApiResponse({ type: ShowPictureVo })
+    @ApiOperation({ summary: '根据颜色值获取相似图片' })
+    async getPictureByColor(@Query('spaceId') spaceId: string, @Query('color') color: string, @Req() req: Request) {
+        const data = await this.pictureService.getPictureByColor(spaceId, color, req)
+        return this.responseService.success(data)
+    }
+
     @Get('/get/:id')
     @Roles([UserRole.ADMIN])
     @UseGuards(AuthGuard, RoleGuard)
@@ -106,6 +126,7 @@ export class PictureController {
         const data = await this.pictureService.uploadFile(file, req, uploadPictureDto)
         return this.responseService.success(data)
     }
+
     @Post('/upload/url')
     @ApiResponse({ type: UploadPictureVo })
     @ApiOperation({ summary: '上传图片(url)' })

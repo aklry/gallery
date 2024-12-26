@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { ResponseVo } from '../../common/response.vo'
-import { LoginVoModel } from '../../user/vo/user-login.vo'
+import { LoginVoModel } from '../../user/vo'
+
 export class GetPictureVoModel {
     @ApiProperty({ description: '图片ID' })
     id?: string
@@ -24,6 +25,8 @@ export class GetPictureVoModel {
     picScale?: number
     @ApiProperty({ description: '图片格式' })
     picFormat?: string
+    @ApiProperty({ description: '图片颜色' })
+    picColor?: string
     @ApiProperty({ description: '创建时间' })
     createTime?: string
     @ApiProperty({ description: '用户信息', type: LoginVoModel })
@@ -35,6 +38,7 @@ export class GetPictureVoModel {
     @ApiProperty({ description: '缩略图URL' })
     thumbnailUrl?: string
 }
+
 export class GetPictureVo extends ResponseVo<GetPictureVoModel> {
     @ApiProperty({ description: '图片信息', type: GetPictureVoModel })
     data: GetPictureVoModel

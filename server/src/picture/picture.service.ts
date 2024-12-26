@@ -9,7 +9,7 @@ import type { Request } from 'express'
 import { PrismaService } from '../prisma/prisma.service'
 import { OssService } from '../oss/oss.service'
 import { UploadPictureVoModel } from './vo/upload-picture.vo'
-import { QueryPictureDto, PartialQueryPictureDto } from './dto/query-picture.dto'
+import { PartialQueryPictureDto, QueryPictureDto } from './dto/query-picture.dto'
 import { PictureVoModel } from './vo/picture.vo'
 import { GetPictureVoModel } from './vo/get-picture.vo'
 import { LoginVoModel } from '../user/vo'
@@ -18,13 +18,13 @@ import { ReviewPictureDto } from './dto/review-picture.dto'
 import { UserRole } from '../user/enum/user'
 import { Picture } from './entities/picture.entity'
 import { ReviewStatus } from './enum'
-import { MessageStatus } from '@prisma/client'
+import { MessageStatus, Prisma } from '@prisma/client'
 import { UploadPictureUrlDto } from './dto/upload-picture-url.dto'
 import { ShowPictureModelVo } from './vo/show-picture.vo'
 import { RedisCacheService } from '../cache/cache.service'
 import { SpaceService } from '../space/space.service'
 import axios from 'axios'
-import { Prisma } from '@prisma/client'
+import { hexToRgb, euclideanDistance, normalizeDistance } from '../utils'
 
 @Injectable()
 export class PictureService {
@@ -93,6 +93,7 @@ export class PictureService {
             picWidth: item.picWidth,
             picHeight: item.picHeight,
             picScale: item.picScale,
+            picColor: item.picColor,
             picFormat: item.picFormat,
             createTime: item.createTime.toISOString(),
             userId: item.userId,
@@ -191,7 +192,8 @@ export class PictureService {
             height: item.picHeight,
             filename: item.name,
             picScale: item.picScale,
-            thumbnailUrl: item.thumbnailUrl
+            thumbnailUrl: item.thumbnailUrl,
+            color: item.picColor
         }))
         // if (result.length > 0) {
         //     await this.redisCacheService.set(
@@ -266,6 +268,7 @@ export class PictureService {
             picWidth: result.picWidth,
             picHeight: result.picHeight,
             picScale: result.picScale,
+            picColor: result.picColor,
             picFormat: result.picFormat,
             createTime: result.createTime.toISOString(),
             userId: result.userId,
@@ -403,6 +406,7 @@ export class PictureService {
                       picFormat: ossResult.format,
                       picWidth: Number(ossResult.width),
                       picHeight: Number(ossResult.height),
+                      picColor: ossResult.color,
                       name: ossResult.filename,
                       editTime: new Date(),
                       userId: user?.id || '',
@@ -420,6 +424,7 @@ export class PictureService {
                       picFormat: ossResult.format,
                       picWidth: Number(ossResult.width),
                       picHeight: Number(ossResult.height),
+                      picColor: ossResult.color,
                       name: ossResult.filename,
                       userId: user?.id || '',
                       spaceId,
@@ -462,7 +467,8 @@ export class PictureService {
             height: picture.picHeight,
             filename: picture.name,
             thumbnailUrl: picture.thumbnailUrl,
-            spaceId: picture.spaceId
+            spaceId: picture.spaceId,
+            color: picture.picColor
         } as UploadPictureVoModel
     }
 
@@ -642,12 +648,11 @@ export class PictureService {
     }
 
     async findDeletedPicture() {
-        const result = await this.prismaService.picture.findMany({
+        return await this.prismaService.picture.findMany({
             where: {
                 isDelete: 1
             }
         })
-        return result
     }
 
     async deletePictureById(id: string) {
@@ -719,11 +724,53 @@ export class PictureService {
             height: item.picHeight,
             filename: item.name,
             picScale: item.picScale,
-            thumbnailUrl: item.thumbnailUrl
+            thumbnailUrl: item.thumbnailUrl,
+            color: item.picColor
         }))
         return {
             list: result,
             total
         }
+    }
+
+    // 根据颜色值查询图片
+    async getPictureByColor(spaceId: string, color: string, req: Request) {
+        const user = req.session.user
+        if (!spaceId || !color) {
+            throw new BusinessException('参数错误', BusinessStatus.PARAMS_ERROR.code)
+        }
+        const space = await this.spaceService.getById(spaceId)
+        if (!space) {
+            throw new BusinessException('空间不存在', BusinessStatus.PARAMS_ERROR.code)
+        }
+        if (user.id !== space.userId) {
+            throw new BusinessException('没有空间访问权限', BusinessStatus.NOT_AUTH_ERROR.code)
+        }
+        const pictureList = await this.prismaService.picture.findMany({
+            where: {
+                spaceId,
+                picColor: {
+                    not: ''
+                }
+            }
+        })
+        if (!pictureList || pictureList.length === 0) {
+            return []
+        }
+        // 遍历查询的结构，与颜色值进行相似度匹配，并进行排序(相似度高的在前面)
+        const originColor = hexToRgb(color)
+        return pictureList
+            .map(item => {
+                const itemColor = hexToRgb(item.picColor)
+                const distance = euclideanDistance(originColor, itemColor)
+                const similarity = parseFloat(normalizeDistance(distance).toFixed(2))
+                return {
+                    item,
+                    similarity
+                }
+            })
+            .sort((a, b) => b.similarity - a.similarity)
+            .map(item => item.item)
+            .slice(0, 12)
     }
 }

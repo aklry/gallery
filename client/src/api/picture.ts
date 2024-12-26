@@ -54,6 +54,21 @@ export async function pictureControllerGetByIdVoV1(
     })
 }
 
+/** 根据颜色值获取相似图片 GET /api/v1/picture/list/color */
+export async function pictureControllerGetPictureByColorV1(
+    // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
+    params: API.PictureControllerGetPictureByColorV1Params,
+    options?: { [key: string]: any }
+) {
+    return ryRequest.request<API.ShowPictureVo>('/api/v1/picture/list/color', {
+        method: 'GET',
+        params: {
+            ...params
+        },
+        ...(options || {})
+    })
+}
+
 /** 获取图片列表(管理员) POST /api/v1/picture/list/page */
 export async function pictureControllerGetPictureByPageV1(body: API.QueryPictureDto, options?: { [key: string]: any }) {
     return ryRequest.request<API.PictureVo>('/api/v1/picture/list/page', {

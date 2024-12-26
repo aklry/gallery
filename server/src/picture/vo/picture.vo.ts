@@ -23,6 +23,8 @@ export class PictureVoModel {
     picScale: number
     @ApiProperty({ description: '图片格式', required: true })
     picFormat: string
+    @ApiProperty({ description: '图片颜色', required: true })
+    picColor: string
     @ApiProperty({ description: '创建时间', required: true })
     createTime: string
     @ApiProperty({ description: '用户id', required: true })

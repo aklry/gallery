@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE `picture` ADD COLUMN `picColor` VARCHAR(10) NOT NULL DEFAULT '#000000';

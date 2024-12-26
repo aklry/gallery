@@ -163,6 +163,8 @@ declare namespace API {
         picScale: number
         /** 图片格式 */
         picFormat: string
+        /** 图片颜色 */
+        picColor: string
         /** 创建时间 */
         createTime: string
         /** 用户信息 */
@@ -231,6 +233,11 @@ declare namespace API {
         id: string
     }
 
+    type PictureControllerGetPictureByColorV1Params = {
+        spaceId: string
+        color: string
+    }
+
     type PictureVo = {
         /** 状态码 */
         code: number
@@ -267,6 +274,8 @@ declare namespace API {
         picScale: number
         /** 图片格式 */
         picFormat: string
+        /** 图片颜色 */
+        picColor: string
         /** 创建时间 */
         createTime: string
         /** 用户id */
@@ -409,6 +418,8 @@ declare namespace API {
         tags: string[]
         /** 图片格式 */
         format: string
+        /** 图片颜色 */
+        color: string
         /** 图片大小 */
         fileSize: number
         /** 图片宽度 */
@@ -672,6 +683,8 @@ declare namespace API {
         picScale: number
         /** 图片格式 */
         format: string
+        /** 图片颜色 */
+        color: string
         /** 图片大小 */
         fileSize: number
         /** 图片宽度 */

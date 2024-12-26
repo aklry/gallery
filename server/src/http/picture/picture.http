@@ -7,12 +7,14 @@
 #     "count": 10
 # }
 
-POST http://localhost:3000/api/v1/picture/review
-Content-Type: application/json
-Cookie: connect.sid=s%3AsXTpP-rGAMrniKV9qcUHQHP00n6MO-G9.0315M9Z4qDyzEWfTGYANsTPnwRu%2FMR%2BJs8HY16XBCoc
+#POST http://localhost:3000/api/v1/picture/review
+#Content-Type: application/json
+#Cookie: connect.sid=s%3AsXTpP-rGAMrniKV9qcUHQHP00n6MO-G9.0315M9Z4qDyzEWfTGYANsTPnwRu%2FMR%2BJs8HY16XBCoc
+#
+#{
+#    "id": "cm4sh8ow9000asosgu7eslld1",
+#    "reviewStatus": 1,
+#    "reviewMessage": "审核通过"
+#}
 
-{
-    "id": "cm4sh8ow9000asosgu7eslld1",
-    "reviewStatus": 1,
-    "reviewMessage": "审核通过"
-}
+GET http://localhost:3000/api/v1/picture/list/color?spaceId=cm527jphc0003v5gc2u96qrge&color=#ff9556

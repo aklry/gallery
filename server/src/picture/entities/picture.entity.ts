@@ -52,6 +52,11 @@ export class Picture {
     @ApiProperty({ description: '图片缩放比例', required: true })
     picScale: number
     /**
+     * 图片颜色
+     */
+    @ApiProperty({ description: '图片颜色', required: true })
+    picColor: string
+    /**
      * 图片格式
      */
     @ApiProperty({ description: '图片格式', required: true })

@@ -27,9 +27,12 @@ interface ImageInfo {
         value: string
     }
 }
+interface PaletteInfo {
+    RGB: string
+}
 @Injectable()
 export class OssService {
-    private ossClient: OSS
+    private readonly ossClient: OSS
     constructor() {
         const config = getOssConfig()
         this.ossClient = new OSS({
@@ -77,6 +80,14 @@ export class OssService {
             }
             const compressedImage = await this.ossClient.get(uploadFileName, thumbnailOptions)
 
+            // 获取图片主色调
+            const paletteOptions = {
+                process: 'image/average-hue'
+            }
+            const paletteImage = await this.ossClient.get(uploadFileName, paletteOptions)
+            const paletteImageInfo = JSON.parse(paletteImage.content.toString()) as PaletteInfo
+            const rgb = paletteImageInfo.RGB
+
             // 上传缩略图
             const thumbFileName = `${uploadFileName.replace(ext, '')}-thumb.webp`
             const thumbResult = await this.ossClient.put(thumbFileName, compressedImage.content, {
@@ -101,7 +112,8 @@ export class OssService {
                 width: info.ImageWidth.value,
                 height: info.ImageHeight.value,
                 filename: isUrl ? uploadFileName.split('/').pop().split('-').pop() : filename,
-                thumbnailUrl: thumbUrl
+                thumbnailUrl: thumbUrl,
+                color: rgb
             } as UploadPictureVoModel
         } catch (error) {
             throw new BusinessException(BusinessStatus.OPERATION_ERROR.message, BusinessStatus.OPERATION_ERROR.code)
@@ -111,8 +123,6 @@ export class OssService {
     getOssClient(): OSS {
         return this.ossClient
     }
-
-    generateTempFile() {}
 
     getOssPathFromUrl(url: string): string {
         try {
