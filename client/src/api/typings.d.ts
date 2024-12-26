@@ -331,6 +331,10 @@ declare namespace API {
         reviewMessage?: string
         /** 是否为公共图库 */
         nullSpaceId?: boolean
+        /** 开始编辑时间 */
+        startEditTime?: string
+        /** 结束编辑时间 */
+        endEditTime?: string
     }
 
     type QuerySpaceDto = {

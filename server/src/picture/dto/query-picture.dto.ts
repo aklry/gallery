@@ -71,6 +71,10 @@ export class QueryPictureDto extends PageRequest {
     @IsOptional()
     @ApiProperty({ description: '是否为公共图库', required: false })
     nullSpaceId?: boolean
+    @ApiProperty({ description: '开始编辑时间', required: false })
+    startEditTime?: string
+    @ApiProperty({ description: '结束编辑时间', required: false })
+    endEditTime?: string
 }
 
 export type PartialQueryPictureDto = Partial<QueryPictureDto>

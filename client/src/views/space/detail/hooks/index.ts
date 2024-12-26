@@ -75,6 +75,17 @@ export const useSpaceDetail = () => {
         router.push(`/picture/add?id=${id}&spaceId=${spaceId}`)
     }
 
+    const handleSearch = (result: API.ShowPictureVo) => {
+        const list = result.data.list
+        if (list.length > 0) {
+            privatePictureList.value = list
+        }
+    }
+
+    const handleReset = async () => {
+        await fetchPrivatePicture()
+    }
+
     onMounted(() => {
         fetchSpaceDetail()
         fetchPrivatePicture()
@@ -86,7 +97,10 @@ export const useSpaceDetail = () => {
         privatePictureList,
         loading,
         percent,
+        spaceId,
         handleDeletePrivatePicture,
-        handleEditPrivatePicture
+        handleEditPrivatePicture,
+        handleSearch,
+        handleReset
     }
 }

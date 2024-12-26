@@ -2,6 +2,7 @@
 import { useSpaceDetail } from './hooks'
 import { PlusOutlined } from '@ant-design/icons-vue'
 import PictureCard from '@/components/picture-card/index.vue'
+import QueryForm from './component/query-form/index.vue'
 
 const {
     spaceDetail,
@@ -10,7 +11,10 @@ const {
     loading,
     handleDeletePrivatePicture,
     handleEditPrivatePicture,
-    percent
+    percent,
+    spaceId,
+    handleSearch,
+    handleReset
 } = useSpaceDetail()
 </script>
 <template>
@@ -31,6 +35,7 @@ const {
                 </a-tooltip>
             </a-space>
         </div>
+        <query-form :onSuccess="handleSearch" :spaceId="spaceId as string" :onReset="handleReset" />
         <picture-card
             :picture="privatePictureList"
             :loading="loading"

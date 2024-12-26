@@ -16,7 +16,7 @@ const usePictureStore = defineStore(
             const tagList = res.data.tagList.map(item => ({ value: item }))
             const categoryList = res.data.categoryList.map(item => ({ value: item }))
 
-            tag_category.value = { tagList, categoryList }
+            tag_category.value = { tagList, categoryList } as TagCategory
         }
 
         return { tag_category, getTagCategory }

@@ -12,7 +12,7 @@ import { UploadPictureVoModel } from './vo/upload-picture.vo'
 import { QueryPictureDto, PartialQueryPictureDto } from './dto/query-picture.dto'
 import { PictureVoModel } from './vo/picture.vo'
 import { GetPictureVoModel } from './vo/get-picture.vo'
-import { LoginVoModel } from '../user/vo/user-login.vo'
+import { LoginVoModel } from '../user/vo'
 import { DeletePictureDto } from './dto/delete-picture.dto'
 import { ReviewPictureDto } from './dto/review-picture.dto'
 import { UserRole } from '../user/enum/user'
@@ -109,7 +109,7 @@ export class PictureService {
     }
 
     async getPictureByPageVo(queryPictureDto: QueryPictureDto, req: Request) {
-        const { current, pageSize, searchText, ...filters } = queryPictureDto
+        const { current, pageSize, searchText, startEditTime, endEditTime, ...filters } = queryPictureDto
         if (Number(pageSize) > 20) {
             throw new BusinessException(BusinessStatus.OPERATION_ERROR.message, BusinessStatus.OPERATION_ERROR.code)
         }
@@ -133,10 +133,12 @@ export class PictureService {
         //     return cacheData
         // }
         // Build where clause for search and filters
-        const where: any = {
+
+        const where: Prisma.pictureWhereInput = {
             ...(searchText && {
                 OR: [{ name: { contains: searchText } }, { introduction: { contains: searchText } }]
             }),
+            ...(startEditTime && endEditTime ? { editTime: { gt: startEditTime, lt: endEditTime } } : {}),
             reviewStatus: filters.spaceId ? undefined : 1,
             ...(filters.spaceId ? { spaceId: filters.spaceId } : {}),
             ...(filters.nullSpaceId ? { spaceId: null } : {}),
@@ -147,7 +149,8 @@ export class PictureService {
                     key !== 'sortOrder' &&
                     key !== 'reviewStatus' &&
                     key !== 'spaceId' &&
-                    key !== 'nullSpaceId'
+                    key !== 'nullSpaceId' &&
+                    key !== 'editTime'
                 ) {
                     if (key === 'tags' && Array.isArray(value)) {
                         acc[key] = {
@@ -324,6 +327,7 @@ export class PictureService {
         this.redisCacheService.clear()
         return true
     }
+
     async uploadFile(
         file: Express.Multer.File | string,
         req: Request,
@@ -476,6 +480,7 @@ export class PictureService {
         }
         return true
     }
+
     // 修改图片信息(管理员使用)
     async update(updatePictureDto: UpdatePictureDto, req: Request) {
         const user = req.session.user
@@ -497,6 +502,7 @@ export class PictureService {
         }
         return true
     }
+
     // 修改图片信息(用户使用)
     async edit(updatePictureDto: UpdatePictureDto, req: Request) {
         const { id, ...rest } = updatePictureDto
@@ -559,6 +565,7 @@ export class PictureService {
             spaceId
         }
     }
+
     async setPicture(picture: UploadPictureVoModel[], spaceId: string, req: Request) {
         const user = req.session.user
         if (!user) {
@@ -585,6 +592,7 @@ export class PictureService {
             }))
         })
     }
+
     async reviewPicture(reviewPictureDto: ReviewPictureDto, req: Request) {
         const user = req.session.user
         const { id, reviewStatus, reviewMessage } = reviewPictureDto
@@ -618,6 +626,7 @@ export class PictureService {
         }
         return true
     }
+
     validPicture(picture: Picture | GetPictureVoModel) {
         if (picture === null) {
             throw new BusinessException('图片不存在', BusinessStatus.OPERATION_ERROR.code)
@@ -684,6 +693,7 @@ export class PictureService {
             }
         }
     }
+
     // 用户查询图片接口
     async queryPictureUser(queryPictureDto: PartialQueryPictureDto) {
         const { searchText } = queryPictureDto

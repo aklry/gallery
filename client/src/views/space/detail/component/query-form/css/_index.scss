@@ -1,0 +1,23 @@
+.query-form {
+    @apply mb-2;
+}
+
+.ant-form {
+    @apply grid grid-cols-3 gap-3;
+
+    & .ant-input-number {
+        @apply w-full;
+    }
+
+    &-item {
+        @apply mb-2;
+    }
+
+    .more {
+        @apply col-span-full;
+    }
+}
+
+:deep(.ant-collapse-content-box ){
+    @apply grid grid-cols-3 gap-3;
+}

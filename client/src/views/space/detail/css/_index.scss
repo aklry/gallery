@@ -1,7 +1,15 @@
+.space-detail {
+    @apply max-h-full overflow-auto;
+}
+
 .space-detail-header {
     @apply flex justify-between items-center;
 
     h2 {
         @apply text-2xl font-bold;
     }
+}
+
+::-webkit-scrollbar {
+    width: 0;
 }
