@@ -1,30 +1,31 @@
-import { UploadBatchPictureDto } from './dto/uploadBatch-picture.dto'
 import { Injectable } from '@nestjs/common'
-import { UpdatePictureDto } from './dto/update-picture.dto'
 import { extname } from 'node:path'
 import { BusinessException } from '../custom-exception'
 import { BusinessStatus } from '../config'
-import { UploadPictureDto } from './dto/upload-picture.dto'
 import type { Request } from 'express'
 import { PrismaService } from '../prisma/prisma.service'
 import { OssService } from '../oss/oss.service'
-import { UploadPictureVoModel } from './vo/upload-picture.vo'
-import { PartialQueryPictureDto, QueryPictureDto } from './dto/query-picture.dto'
-import { PictureVoModel } from './vo/picture.vo'
-import { GetPictureVoModel } from './vo/get-picture.vo'
 import { LoginVoModel } from '../user/vo'
-import { DeletePictureDto } from './dto/delete-picture.dto'
-import { ReviewPictureDto } from './dto/review-picture.dto'
 import { UserRole } from '../user/enum/user'
 import { Picture } from './entities/picture.entity'
 import { ReviewStatus } from './enum'
 import { MessageStatus, Prisma } from '@prisma/client'
-import { UploadPictureUrlDto } from './dto/upload-picture-url.dto'
-import { ShowPictureModelVo } from './vo/show-picture.vo'
+import { ShowPictureModelVo, PictureVoModel, GetPictureVoModel, UploadPictureVoModel } from './vo'
 import { RedisCacheService } from '../cache/cache.service'
 import { SpaceService } from '../space/space.service'
 import axios from 'axios'
 import { hexToRgb, euclideanDistance, normalizeDistance } from '../utils'
+import {
+    EditPictureByBatchDto,
+    PartialQueryPictureDto,
+    QueryPictureDto,
+    UploadBatchPictureDto,
+    UpdatePictureDto,
+    UploadPictureDto,
+    DeletePictureDto,
+    ReviewPictureDto,
+    UploadPictureUrlDto
+} from './dto'
 
 @Injectable()
 export class PictureService {
@@ -517,7 +518,7 @@ export class PictureService {
         this.validPicture(oldPicture)
         this.checkPictureAuth(user, oldPicture)
         const result = await this.prismaService.picture.update({
-            where: { id },
+            where: { id, spaceId: rest.spaceId },
             data: {
                 ...rest,
                 tags: JSON.stringify(rest.tags),
@@ -772,5 +773,51 @@ export class PictureService {
             .sort((a, b) => b.similarity - a.similarity)
             .map(item => ({ ...item.item, tags: item.item.tags === '' ? [] : JSON.parse(item.item.tags) || [] }))
             .slice(0, 12)
+    }
+
+    // 批量编辑图片
+    async editPictureBatch(editPictureByBatchDto: EditPictureByBatchDto, req: Request) {
+        const user = req.session.user
+        const { idList, spaceId, category, tags, nameRule } = editPictureByBatchDto
+        const space = await this.spaceService.getById(spaceId)
+        if (!user || !user.id) {
+            throw new BusinessException('未登录', BusinessStatus.NOT_LOGIN_ERROR.code)
+        }
+        if (!spaceId || !idList || idList.length === 0) {
+            throw new BusinessException('参数错误', BusinessStatus.PARAMS_ERROR.code)
+        }
+        if (!space) {
+            throw new BusinessException('空间不存在', BusinessStatus.PARAMS_ERROR.code)
+        }
+        if (user.id !== space.userId) {
+            throw new BusinessException('没有空间访问权限', BusinessStatus.NOT_AUTH_ERROR.code)
+        }
+        return await this.prismaService.$transaction(async prisma => {
+            let count = 1
+            // Update pictures one by one to increment count
+            const result = await Promise.all(
+                idList.map(async id => {
+                    const updated = await prisma.picture.update({
+                        where: {
+                            id,
+                            spaceId
+                        },
+                        data: {
+                            category: category ? category : undefined,
+                            tags: tags.length > 0 ? JSON.stringify(tags) : undefined,
+                            name: nameRule ? this.generateFileName(nameRule, count++) : undefined
+                        }
+                    })
+                    return updated
+                })
+            )
+            if (!result) {
+                throw new BusinessException('图片批量编辑失败', BusinessStatus.OPERATION_ERROR.code)
+            }
+            return true
+        })
+    }
+    generateFileName(rule: string, index: number) {
+        return rule.replace(/{index}/g, index.toString())
     }
 }

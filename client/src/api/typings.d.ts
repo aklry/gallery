@@ -73,6 +73,32 @@ declare namespace API {
         path: string
     }
 
+    type EditPictureBatchVo = {
+        /** 状态码 */
+        code: number
+        /** 消息 */
+        message: string
+        /** 批量编辑结果 */
+        data: boolean
+        /** 时间戳 */
+        timestamp: string
+        /** 路径 */
+        path: string
+    }
+
+    type EditPictureByBatchDto = {
+        /** 图片id列表 */
+        idList: string[]
+        /** 空间id */
+        spaceId: string
+        /** 图片类别 */
+        category?: string
+        /** 图片标签 */
+        tags?: string[]
+        /** 命名规则 */
+        nameRule?: string
+    }
+
     type EditSpaceDto = {
         /** 空间id */
         id: string

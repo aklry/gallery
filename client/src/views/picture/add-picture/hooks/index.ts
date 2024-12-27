@@ -26,8 +26,8 @@ const useAddPicture = () => {
         picture.value = result
         pictureInfo.name = result.filename
         pictureInfo.id = result.id
-        if (spaceId) {
-            pictureInfo.spaceId = spaceId
+        if (result.spaceId) {
+            pictureInfo.spaceId = result.spaceId
         }
     }
     const loading = ref<boolean>(false)
@@ -38,7 +38,7 @@ const useAddPicture = () => {
         name: '',
         category: '',
         tags: [],
-        spaceId: ''
+        spaceId
     })
     const handleUpdatePicture = async () => {
         try {
@@ -83,7 +83,8 @@ const useAddPicture = () => {
                     height: res.data.height,
                     fileSize: res.data.fileSize,
                     format: res.data.format,
-                    thumbnailUrl: res.data.thumbnailUrl
+                    thumbnailUrl: res.data.thumbnailUrl,
+                    color: res.data.color
                 }
             } else {
                 message.error(res.message)
@@ -105,7 +106,8 @@ const useAddPicture = () => {
                         name: res.data.name,
                         introduction: res.data.introduction,
                         category: res.data.category,
-                        tags: res.data.tags
+                        tags: res.data.tags,
+                        spaceId: res.data.spaceId
                     })
                     picture.value = {
                         id: res.data.id,
@@ -116,7 +118,8 @@ const useAddPicture = () => {
                         height: res.data.picHeight,
                         fileSize: res.data.picSize,
                         format: res.data.picFormat,
-                        thumbnailUrl: res.data.thumbnailUrl
+                        thumbnailUrl: res.data.thumbnailUrl,
+                        color: res.data.picColor
                     }
                 }
             } catch (error) {

@@ -1,6 +1,10 @@
 import { useRoute, useRouter } from 'vue-router'
 import { spaceControllerListSpaceV1 } from '@/api/space'
-import { pictureControllerDeletePictureV1, pictureControllerGetPictureByPageVoV1 } from '@/api/picture'
+import {
+    pictureControllerDeletePictureV1,
+    pictureControllerEditPictureByBatchV1,
+    pictureControllerGetPictureByPageVoV1
+} from '@/api/picture'
 import { computed, onMounted, ref } from 'vue'
 import { message, Modal } from 'ant-design-vue'
 
@@ -11,6 +15,7 @@ export const useSpaceDetail = () => {
     const spaceDetail = ref<API.SpaceModelVo>()
     const privatePictureList = ref<API.ShowPictureModelVo[]>([])
     const loading = ref(false)
+    const editBatchModalVisible = ref(false)
     const percent = computed(() => {
         const percent = (((spaceDetail.value?.totalSize ?? 0) / (spaceDetail.value?.maxSize ?? 1)) * 100).toFixed(2)
         return parseFloat(percent)
@@ -81,6 +86,25 @@ export const useSpaceDetail = () => {
             privatePictureList.value = list
         }
     }
+    // 批量编辑图片
+    const handleEditBatchPicture = async (params: API.EditPictureByBatchDto, callback?: () => void) => {
+        try {
+            const res = await pictureControllerEditPictureByBatchV1({
+                ...params,
+                spaceId: spaceId as string
+            })
+            if (res.code === 1) {
+                message.success('编辑图片成功')
+                editBatchModalVisible.value = false
+                fetchPrivatePicture()
+                callback?.()
+            } else {
+                message.error(res.message)
+            }
+        } catch (error) {
+            message.error('编辑图片失败')
+        }
+    }
 
     const handleReset = async () => {
         await fetchPrivatePicture()
@@ -98,9 +122,11 @@ export const useSpaceDetail = () => {
         loading,
         percent,
         spaceId,
+        editBatchModalVisible,
         handleDeletePrivatePicture,
         handleEditPrivatePicture,
         handleSearch,
-        handleReset
+        handleReset,
+        handleEditBatchPicture
     }
 }

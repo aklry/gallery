@@ -13,28 +13,35 @@ import {
 import { PictureService } from './picture.service'
 import type { Request } from 'express'
 import { FileInterceptor } from '@nestjs/platform-express'
-import { UploadPictureDto } from './dto/upload-picture.dto'
 import { ApiBody, ApiConsumes, ApiOperation, ApiResponse } from '@nestjs/swagger'
-import { UploadPictureVo } from './vo/upload-picture.vo'
+import {
+    UploadPictureVo,
+    PictureVo,
+    UploadBatchPictureVo,
+    ShowPictureVo,
+    GetPictureVo,
+    DeletePictureVo,
+    UpdatePictureVo,
+    TagCategoryListVo,
+    EditPictureBatchVo
+} from './vo'
 import { ResponseService } from '../response/response.service'
 import { version } from '../config'
 import { AuthGuard, RoleGuard } from '../auth/auth.guard'
 import { Roles } from '../role/role.decorator'
 import { UserRole } from '../user/enum/user'
-import { QueryPictureDto, PartialQueryPictureDto } from './dto/query-picture.dto'
-import { PictureVo } from './vo/picture.vo'
+import {
+    QueryPictureDto,
+    PartialQueryPictureDto,
+    ReviewPictureDto,
+    UploadPictureUrlDto,
+    EditPictureByBatchDto,
+    DeletePictureDto,
+    UpdatePictureDto,
+    UploadBatchPictureDto,
+    UploadPictureDto
+} from './dto'
 import { ValidationPipe } from '../pipe/validation.pipe'
-import { DeletePictureDto } from './dto/delete-picture.dto'
-import { GetPictureVo } from './vo/get-picture.vo'
-import { DeletePictureVo } from './vo/delete-picture.vo'
-import { UpdatePictureDto } from './dto/update-picture.dto'
-import { UpdatePictureVo } from './vo/update-picture.vo'
-import { TagCategoryListVo } from './vo/tag-category.vo'
-import { UploadBatchPictureDto } from './dto/uploadBatch-picture.dto'
-import { UploadBatchPictureVo } from './vo/uploadBatch-picture.vo'
-import { ReviewPictureDto } from './dto/review-picture.dto'
-import { UploadPictureUrlDto } from './dto/upload-picture-url.dto'
-import { ShowPictureVo } from './vo/show-picture.vo'
 
 @Controller({
     path: 'picture',
@@ -200,6 +207,15 @@ export class PictureController {
     })
     async queryPicture(@Body(new ValidationPipe()) queryPictureDto: PartialQueryPictureDto) {
         const result = await this.pictureService.queryPictureUser(queryPictureDto)
+        return this.responseService.success(result)
+    }
+
+    @Post('/edit/batch')
+    @UseGuards(AuthGuard)
+    @ApiResponse({ type: EditPictureBatchVo })
+    @ApiOperation({ summary: '批量编辑图片' })
+    async editPictureByBatch(@Body() editPictureByBatchDto: EditPictureByBatchDto, @Req() req: Request) {
+        const result = await this.pictureService.editPictureBatch(editPictureByBatchDto, req)
         return this.responseService.success(result)
     }
 }

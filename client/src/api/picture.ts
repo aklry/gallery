@@ -26,6 +26,21 @@ export async function pictureControllerEditPictureV1(body: API.UpdatePictureDto,
     })
 }
 
+/** 批量编辑图片 POST /api/v1/picture/edit/batch */
+export async function pictureControllerEditPictureByBatchV1(
+    body: API.EditPictureByBatchDto,
+    options?: { [key: string]: any }
+) {
+    return ryRequest.request<API.EditPictureBatchVo>('/api/v1/picture/edit/batch', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        data: body,
+        ...(options || {})
+    })
+}
+
 /** 根据id获取图片(管理员) GET /api/v1/picture/get/${param0} */
 export async function pictureControllerGetByIdV1(
     // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
