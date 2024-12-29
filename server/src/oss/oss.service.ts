@@ -61,6 +61,11 @@ export class OssService {
                 }
             } else {
                 ext = extname(filename)
+                try {
+                    filename = Buffer.from(filename, 'latin1').toString('utf8')
+                } catch (error) {
+                    throw new BusinessException('文件名包含非法字符', BusinessStatus.OPERATION_ERROR.code)
+                }
             }
             // 生成唯一的文件名
             const uniqueId = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`
@@ -69,7 +74,7 @@ export class OssService {
             // 上传原始图片
             const result = await this.ossClient.put(uploadFileName, fileBuffer, {
                 headers: {
-                    'Content-Disposition': `attachment; filename="${isUrl ? uploadFileName.split('/').pop() : filename}"`
+                    'Content-Disposition': `attachment;filename*=UTF-8''${isUrl ? uploadFileName.split('/').pop() : uploadFileName}`
                 }
             })
 
@@ -116,6 +121,7 @@ export class OssService {
                 color: rgb
             } as UploadPictureVoModel
         } catch (error) {
+            console.log(error)
             throw new BusinessException(BusinessStatus.OPERATION_ERROR.message, BusinessStatus.OPERATION_ERROR.code)
         }
     }

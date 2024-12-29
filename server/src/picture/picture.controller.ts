@@ -42,6 +42,8 @@ import {
     UploadPictureDto
 } from './dto'
 import { ValidationPipe } from '../pipe/validation.pipe'
+import { diskStorage } from 'multer'
+import { extname, basename } from 'path'
 
 @Controller({
     path: 'picture',

@@ -478,7 +478,7 @@ export class PictureService {
             throw new BusinessException('图片不能为空', BusinessStatus.OPERATION_ERROR.code)
         }
         const ext = extname(file.originalname)
-        if (ext !== '.jpg' && ext !== '.png' && ext !== '.jpeg' && ext !== 'webp') {
+        if (ext !== '.jpg' && ext !== '.png' && ext !== '.jpeg' && ext !== '.webp') {
             throw new BusinessException('图片格式错误', BusinessStatus.OPERATION_ERROR.code)
         }
         const maxSize = 2 * 1024 * 1024 // 2MB in bytes

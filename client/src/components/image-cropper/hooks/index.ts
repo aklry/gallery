@@ -36,9 +36,11 @@ export const useImageCropper = (props: ImageCropperProps) => {
     }
     const handleSaveCropPicture = () => {
         cropper.value?.getCropBlob((blob: Blob) => {
-            const ext = ['.png', '.jpg', '.webp', '.jpeg']
-            const name = props.picture?.filename
-            const filename = ext.some(extension => name?.endsWith(extension)) ? name : `${name}${props.picture?.format}`
+            const ext = blob.type.split('/')[1]
+            let filename = `${props.picture?.filename}.${ext}`
+            if (!props.picture?.filename?.endsWith(ext)) {
+                filename = `${props.picture?.filename}.${ext}`
+            }
             const file = new File([blob], filename as string, { type: blob.type })
             handleUploadPicture({ file })
         })
