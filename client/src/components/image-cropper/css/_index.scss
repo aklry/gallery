@@ -1,0 +1,7 @@
+.image-cropper {
+    @apply text-center;
+
+    .vue-cropper {
+        @apply h-[400px];
+    }
+}

@@ -22,6 +22,7 @@ const useAddPicture = () => {
     const spaceId = route.query?.spaceId as string
     const picture = ref<API.UploadPictureVoModel>()
     const url = ref<string>('')
+    const openCropperModal = ref(false)
     const handleUploadSuccess = (result: API.UploadPictureVoModel) => {
         picture.value = result
         pictureInfo.name = result.filename
@@ -96,6 +97,24 @@ const useAddPicture = () => {
         }
     }
 
+    const handleCropSuccess = (cropPicture: API.UploadPictureVoModel) => {
+        pictureInfo.name = cropPicture.filename
+        pictureInfo.id = cropPicture.id
+        picture.value = {
+            id: cropPicture.id,
+            url: cropPicture.url,
+            filename: cropPicture.filename,
+            picScale: cropPicture.picScale,
+            width: cropPicture.width,
+            height: cropPicture.height,
+            fileSize: cropPicture.fileSize,
+            format: cropPicture.format,
+            thumbnailUrl: cropPicture.thumbnailUrl,
+            color: cropPicture.color
+        }
+        openCropperModal.value = false
+    }
+
     onMounted(async () => {
         if (id) {
             try {
@@ -138,7 +157,9 @@ const useAddPicture = () => {
         id,
         spaceId,
         uploadLoading,
-        handleUploadPictureByUrl
+        openCropperModal,
+        handleUploadPictureByUrl,
+        handleCropSuccess
     }
 }
 

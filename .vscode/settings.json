@@ -52,6 +52,7 @@
     "aliyuncs",
     "appenders",
     "autoincrement",
+    "colorpicker",
     "commitlint",
     "cuid",
     "datasource",

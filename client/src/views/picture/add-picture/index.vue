@@ -31,15 +31,24 @@
                 </a-form-item>
                 <a-form-item>
                     <a-button :loading="loading" type="primary" block @click="handleUpdatePicture">创建</a-button>
+                    <a-button @click="openCropperModal = true" class="mt-2" block>编辑</a-button>
                 </a-form-item>
             </a-form>
         </a-card>
+        <image-cropper
+            v-model:visible="openCropperModal"
+            :imageUrl="picture?.url || ''"
+            :picture="picture"
+            :spaceId="spaceId"
+            :onSuccess="handleCropSuccess"
+        />
     </div>
 </template>
 
 <script setup lang="ts">
 import PictureUpload from '@/components/picture-upload/index.vue'
 import useAddPicture from './hooks'
+import ImageCropper from '@/components/image-cropper/index.vue'
 
 const {
     pictureInfo,
@@ -52,7 +61,9 @@ const {
     id,
     spaceId,
     uploadLoading,
-    handleUploadPictureByUrl
+    handleUploadPictureByUrl,
+    openCropperModal,
+    handleCropSuccess
 } = useAddPicture()
 </script>
 
