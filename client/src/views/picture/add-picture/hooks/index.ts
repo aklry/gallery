@@ -23,6 +23,7 @@ const useAddPicture = () => {
     const picture = ref<API.UploadPictureVoModel>()
     const url = ref<string>('')
     const openCropperModal = ref(false)
+    const openExpandModal = ref(false)
     const handleUploadSuccess = (result: API.UploadPictureVoModel) => {
         picture.value = result
         pictureInfo.name = result.filename
@@ -114,6 +115,9 @@ const useAddPicture = () => {
         }
         openCropperModal.value = false
     }
+    const handleExpandSuccess = (url: string) => {
+        console.log(url)
+    }
 
     onMounted(async () => {
         if (id) {
@@ -159,7 +163,9 @@ const useAddPicture = () => {
         uploadLoading,
         openCropperModal,
         handleUploadPictureByUrl,
-        handleCropSuccess
+        handleCropSuccess,
+        handleExpandSuccess,
+        openExpandModal
     }
 }
 

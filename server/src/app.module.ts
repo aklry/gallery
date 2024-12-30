@@ -17,6 +17,7 @@ import { CleanModule } from './clean/clean.module'
 import { ScheduleModule } from '@nestjs/schedule'
 import { RedisCacheModule } from './cache/cache.module'
 import { SpaceModule } from './space/space.module'
+import { AiExpandPictureModule } from './ai-expand-picture/ai-expand-picture.module'
 
 @Module({
     imports: [
@@ -31,7 +32,8 @@ import { SpaceModule } from './space/space.module'
         CleanModule,
         ScheduleModule.forRoot(),
         RedisCacheModule,
-        SpaceModule
+        SpaceModule,
+        AiExpandPictureModule
     ],
     controllers: [AppController],
     providers: [AppService]

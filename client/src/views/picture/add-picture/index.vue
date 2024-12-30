@@ -32,6 +32,7 @@
                 <a-form-item>
                     <a-button :loading="loading" type="primary" block @click="handleUpdatePicture">创建</a-button>
                     <a-button @click="openCropperModal = true" class="mt-2" block>编辑</a-button>
+                    <a-button @click="openExpandModal = true" class="mt-2" block>扩图</a-button>
                 </a-form-item>
             </a-form>
         </a-card>
@@ -42,6 +43,7 @@
             :spaceId="spaceId"
             :onSuccess="handleCropSuccess"
         />
+        <image-expand v-model:visible="openExpandModal" :picture="picture" :onSuccess="handleExpandSuccess" />
     </div>
 </template>
 
@@ -49,6 +51,7 @@
 import PictureUpload from '@/components/picture-upload/index.vue'
 import useAddPicture from './hooks'
 import ImageCropper from '@/components/image-cropper/index.vue'
+import ImageExpand from '@/components/image-expand/index.vue'
 
 const {
     pictureInfo,
@@ -63,7 +66,9 @@ const {
     uploadLoading,
     handleUploadPictureByUrl,
     openCropperModal,
-    handleCropSuccess
+    handleCropSuccess,
+    handleExpandSuccess,
+    openExpandModal
 } = useAddPicture()
 </script>
 

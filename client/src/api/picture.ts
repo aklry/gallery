@@ -2,6 +2,36 @@
 /* eslint-disable */
 import ryRequest from '../services'
 
+/** 创建扩图任务 POST /api/v1/picture/ai/expand/create_task */
+export async function pictureControllerCreateAiExpandPictureTaskV1(
+    body: API.AiExpandPictureDto,
+    options?: { [key: string]: any }
+) {
+    return ryRequest.request<API.AiExpandCreatePictureVo>('/api/v1/picture/ai/expand/create_task', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        data: body,
+        ...(options || {})
+    })
+}
+
+/** 获取扩图任务 GET /api/v1/picture/ai/expand/get_task */
+export async function pictureControllerGetAiExpandPictureTaskV1(
+    // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
+    params: API.PictureControllerGetAiExpandPictureTaskV1Params,
+    options?: { [key: string]: any }
+) {
+    return ryRequest.request<API.AiExpandQueryPictureVo>('/api/v1/picture/ai/expand/get_task', {
+        method: 'GET',
+        params: {
+            ...params
+        },
+        ...(options || {})
+    })
+}
+
 /** 删除图片(管理员) POST /api/v1/picture/delete */
 export async function pictureControllerDeletePictureV1(body: API.DeletePictureDto, options?: { [key: string]: any }) {
     return ryRequest.request<API.DeletePictureVo>('/api/v1/picture/delete', {

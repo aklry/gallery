@@ -23,7 +23,9 @@ import {
     DeletePictureVo,
     UpdatePictureVo,
     TagCategoryListVo,
-    EditPictureBatchVo
+    EditPictureBatchVo,
+    AiExpandCreatePictureVo,
+    AiExpandQueryPictureVo
 } from './vo'
 import { ResponseService } from '../response/response.service'
 import { version } from '../config'
@@ -39,7 +41,8 @@ import {
     DeletePictureDto,
     UpdatePictureDto,
     UploadBatchPictureDto,
-    UploadPictureDto
+    UploadPictureDto,
+    AiExpandPictureDto
 } from './dto'
 import { ValidationPipe } from '../pipe/validation.pipe'
 import { diskStorage } from 'multer'
@@ -217,6 +220,27 @@ export class PictureController {
     @ApiOperation({ summary: '批量编辑图片' })
     async editPictureByBatch(@Body() editPictureByBatchDto: EditPictureByBatchDto, @Req() req: Request) {
         const result = await this.pictureService.editPictureBatch(editPictureByBatchDto, req)
+        return this.responseService.success(result)
+    }
+
+    @Post('/ai/expand/create_task')
+    @UseGuards(AuthGuard)
+    @ApiResponse({ type: AiExpandCreatePictureVo })
+    @ApiOperation({ summary: '创建扩图任务' })
+    async createAiExpandPictureTask(
+        @Body(new ValidationPipe()) aiExpandPictureDto: AiExpandPictureDto,
+        @Req() req: Request
+    ) {
+        const result = await this.pictureService.createAiExpandPictureTask(aiExpandPictureDto, req)
+        return this.responseService.success(result)
+    }
+
+    @Get('/ai/expand/get_task')
+    @UseGuards(AuthGuard)
+    @ApiResponse({ type: AiExpandQueryPictureVo })
+    @ApiOperation({ summary: '获取扩图任务' })
+    async getAiExpandPictureTask(@Query('taskId') taskId: string) {
+        const result = await this.pictureService.getAiExpandPictureTask(taskId)
         return this.responseService.success(result)
     }
 }

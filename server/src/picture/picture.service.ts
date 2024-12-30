@@ -24,8 +24,10 @@ import {
     UploadPictureDto,
     DeletePictureDto,
     ReviewPictureDto,
-    UploadPictureUrlDto
+    UploadPictureUrlDto,
+    AiExpandPictureDto
 } from './dto'
+import { AiExpandPictureService } from '../ai-expand-picture/ai-expand-picture.service'
 
 @Injectable()
 export class PictureService {
@@ -33,7 +35,8 @@ export class PictureService {
         private readonly prismaService: PrismaService,
         private readonly ossService: OssService,
         private readonly redisCacheService: RedisCacheService,
-        private readonly spaceService: SpaceService
+        private readonly spaceService: SpaceService,
+        private readonly aiExpandPictureService: AiExpandPictureService
     ) {}
 
     async getPictureByPage(queryPictureDto: QueryPictureDto) {
@@ -819,5 +822,25 @@ export class PictureService {
     }
     generateFileName(rule: string, index: number) {
         return rule.replace(/{index}/g, index.toString())
+    }
+
+    // 创建扩图任务
+    async createAiExpandPictureTask(aiExpandPictureDto: AiExpandPictureDto, req: Request) {
+        const user = req.session.user
+        const { pictureId, aiExpandPictureCreateDto } = aiExpandPictureDto
+        if (!pictureId || !aiExpandPictureCreateDto) {
+            throw new BusinessException('参数错误', BusinessStatus.PARAMS_ERROR.code)
+        }
+        const picture = await this.getById(pictureId)
+        if (!picture) {
+            throw new BusinessException('图片不存在', BusinessStatus.PARAMS_ERROR.code)
+        }
+        this.checkPictureAuth(user, picture)
+        return await this.aiExpandPictureService.createOutPaintingTask(aiExpandPictureCreateDto)
+    }
+
+    // 获取扩图任务
+    async getAiExpandPictureTask(taskId: string) {
+        return await this.aiExpandPictureService.getOutPaintingTask(taskId)
     }
 }

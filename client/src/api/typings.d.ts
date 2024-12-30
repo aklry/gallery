@@ -12,6 +12,61 @@ declare namespace API {
         path: string
     }
 
+    type AiExpandCreatePictureVo = {
+        /** 状态码 */
+        code: number
+        /** 消息 */
+        message: string
+        /** 数据 */
+        data: AiExpandPictureCreatePictureVo
+        /** 时间戳 */
+        timestamp: string
+        /** 路径 */
+        path: string
+    }
+
+    type AiExpandPictureCreatePictureVo = {
+        output: Output
+        request_id: string
+        code: string
+        message: string
+    }
+
+    type AiExpandPictureCreateTaskDto = {
+        /** 图片url */
+        url: string
+        /** 扩图比例 */
+        xScale: number
+        /** 扩图比例 */
+        yScale: number
+    }
+
+    type AiExpandPictureDto = {
+        /** 图片ID */
+        pictureId: string
+        /** 扩图任务创建参数 */
+        aiExpandPictureCreateDto: AiExpandPictureCreateTaskDto
+    }
+
+    type AiExpandPictureQueryPictureVo = {
+        request_id: string
+        output: QueryOutput
+        usage?: Usage
+    }
+
+    type AiExpandQueryPictureVo = {
+        /** 状态码 */
+        code: number
+        /** 消息 */
+        message: string
+        /** 数据 */
+        data: AiExpandPictureQueryPictureVo
+        /** 时间戳 */
+        timestamp: string
+        /** 路径 */
+        path: string
+    }
+
     type CreateSpaceDto = {
         /** 空间名称 */
         spaceName: string
@@ -251,6 +306,15 @@ declare namespace API {
         total: number
     }
 
+    type Output = {
+        task_status: string
+        task_id: string
+    }
+
+    type PictureControllerGetAiExpandPictureTaskV1Params = {
+        taskId: string
+    }
+
     type PictureControllerGetByIdV1Params = {
         id: string
     }
@@ -321,6 +385,18 @@ declare namespace API {
         list: PictureVoModel[]
         /** 总数 */
         total: number
+    }
+
+    type QueryOutput = {
+        task_id: string
+        task_status: string
+        submit_time?: string
+        scheduled_time?: string
+        end_time?: string
+        output_image_url?: string
+        task_metrics?: TaskMetrics
+        code?: string
+        message?: string
     }
 
     type QueryPictureDto = {
@@ -571,6 +647,12 @@ declare namespace API {
         path: string
     }
 
+    type TaskMetrics = {
+        TOTAL: number
+        SUCCEEDED: number
+        FAILED: number
+    }
+
     type UpdatePictureDto = {
         /** 图片id */
         id: string
@@ -723,6 +805,10 @@ declare namespace API {
         thumbnailUrl: string
         /** 空间id */
         spaceId?: string
+    }
+
+    type Usage = {
+        image_count: number
     }
 
     type User = {
