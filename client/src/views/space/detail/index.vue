@@ -4,6 +4,7 @@ import { PlusOutlined, EditOutlined } from '@ant-design/icons-vue'
 import PictureCard from '@/components/picture-card/index.vue'
 import QueryForm from './component/query-form/index.vue'
 import EditBatchModal from './component/edit-batch-modal/index.vue'
+
 const {
     spaceDetail,
     handleCreateImage,
@@ -53,7 +54,7 @@ const {
         <edit-batch-modal
             v-model:visible="editBatchModalVisible"
             :pictureList="privatePictureList"
-            @ok="handleEditBatchPicture"
+            :on-ok="handleEditBatchPicture"
         />
     </div>
 </template>

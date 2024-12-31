@@ -556,6 +556,37 @@ declare namespace API {
         total: number
     }
 
+    type SpaceCategoryAnalyzeDto = {
+        /** 空间id */
+        spaceId?: string
+        /** 是否查询公开图库 */
+        queryPublic?: boolean
+        /** 全空间分析 */
+        queryAll?: boolean
+    }
+
+    type SpaceCategoryAnalyzeModelVo = {
+        /** 图片分类 */
+        category: string
+        /** 图片数量 */
+        count: number
+        /** 分类图片总大小 */
+        totalSize: number
+    }
+
+    type SpaceCategoryAnalyzeVo = {
+        /** 状态码 */
+        code: number
+        /** 消息 */
+        message: string
+        /** 图片分类统计数据 */
+        data: SpaceCategoryAnalyzeModelVo
+        /** 时间戳 */
+        timestamp: string
+        /** 路径 */
+        path: string
+    }
+
     type SpaceLevelVo = {
         /** 状态码 */
         code: number
@@ -605,6 +636,56 @@ declare namespace API {
         updateTime: string
         /** 用户信息 */
         user: UserVoModel
+    }
+
+    type SpaceTagAnalyzeVo = {
+        /** 状态码 */
+        code: number
+        /** 消息 */
+        message: string
+        /** 标签分析数据 */
+        data: Record<string, any>
+        /** 时间戳 */
+        timestamp: string
+        /** 路径 */
+        path: string
+    }
+
+    type SpaceUsageAnalyzeDto = {
+        /** 空间id */
+        spaceId?: string
+        /** 是否查询公开图库 */
+        queryPublic?: boolean
+        /** 全空间分析 */
+        queryAll?: boolean
+    }
+
+    type SpaceUsageAnalyzeModelVo = {
+        /** 已使用空间大小 */
+        usedSize: number
+        /** 总大小 */
+        maxSize: number
+        /** 空间使用比例 */
+        sizeUsageRatio: number
+        /** 当前图片数量 */
+        usedCount: number
+        /** 图片总数量 */
+        maxCount: number
+        /** 图片使用比例 */
+        countUsageRatio: number
+    }
+
+    type SpaceUsageAnalyzeVo = {
+        /** 状态码 */
+        code: number
+        /** 消息 */
+        message: string
+        /** 返回数据 */
+        data: SpaceUsageAnalyzeModelVo
+        /** 时间戳 */
+        timestamp: string
+        /** 路径 */
+        path: string
     }
 
     type SpaceVo = {

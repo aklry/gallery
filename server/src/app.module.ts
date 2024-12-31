@@ -18,6 +18,7 @@ import { ScheduleModule } from '@nestjs/schedule'
 import { RedisCacheModule } from './cache/cache.module'
 import { SpaceModule } from './space/space.module'
 import { AiExpandPictureModule } from './ai-expand-picture/ai-expand-picture.module'
+import { AnalyzeModule } from './analyze/analyze.module'
 
 @Module({
     imports: [
@@ -33,7 +34,8 @@ import { AiExpandPictureModule } from './ai-expand-picture/ai-expand-picture.mod
         ScheduleModule.forRoot(),
         RedisCacheModule,
         SpaceModule,
-        AiExpandPictureModule
+        AiExpandPictureModule,
+        AnalyzeModule
     ],
     controllers: [AppController],
     providers: [AppService]

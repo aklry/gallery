@@ -7,10 +7,12 @@ import * as user from './user'
 import * as picture from './picture'
 import * as space from './space'
 import * as message from './message'
+import * as analyze from './analyze'
 export default {
     app,
     user,
     picture,
     space,
-    message
+    message,
+    analyze
 }

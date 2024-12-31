@@ -14,9 +14,12 @@ import { QuerySpaceDto } from './dto/query-space.dto'
 import { Prisma } from '@prisma/client'
 import { PictureVoModel } from 'src/picture/vo/picture.vo'
 import { SpaceModelVo } from './vo/space.vo'
+import { LoginVoModel } from '../user/vo'
+
 @Injectable()
 export class SpaceService {
     constructor(private readonly prismaService: PrismaService) {}
+
     // 空间管理员使用
     async updateSpace(updateSpaceDto: UpdateSpaceDto) {
         if (updateSpaceDto === null || updateSpaceDto.id === null) {
@@ -53,6 +56,7 @@ export class SpaceService {
         }
         return true
     }
+
     // 创建空间
     async addSpace(createSpaceDto: CreateSpaceDto, req: Request) {
         const user = req.session.user
@@ -100,6 +104,7 @@ export class SpaceService {
         }
         return lock
     }
+
     async getById(id: string) {
         const result = await this.prismaService.space.findUnique({
             where: {
@@ -111,6 +116,7 @@ export class SpaceService {
         }
         return result
     }
+
     async deleteSpace(deleteSpaceDto: DeleteSpaceDto, req: Request) {
         const { id } = deleteSpaceDto
         const user = req.session.user
@@ -141,6 +147,7 @@ export class SpaceService {
         }
         return true
     }
+
     async getSpaceByPage(query: QuerySpaceDto) {
         const { current, pageSize, spaceName, spaceLevel, userId, id } = query
         const where: Prisma.spaceWhereInput = {}
@@ -202,6 +209,7 @@ export class SpaceService {
             total
         }
     }
+
     // 空间创建人使用
     async editSpace(editSpaceDto: EditSpaceDto, req: Request) {
         const { id, spaceName } = editSpaceDto
@@ -227,6 +235,7 @@ export class SpaceService {
         }
         return true
     }
+
     validateSpace(space: Space, add: boolean) {
         if (space === null) {
             throw new BusinessException(BusinessStatus.PARAMS_ERROR.message, BusinessStatus.PARAMS_ERROR.code)
@@ -251,6 +260,7 @@ export class SpaceService {
             throw new BusinessException('空间名称不能超过30个字符', BusinessStatus.PARAMS_ERROR.code)
         }
     }
+
     fillSpaceBySpaceLevel(space: Space) {
         const spaceLevelEnum = getEnumByValue(space.spaceLevel)
         if (spaceLevelEnum !== null) {
@@ -262,6 +272,12 @@ export class SpaceService {
             if (space.maxCount === null || space.maxCount === undefined) {
                 space.maxCount = maxCount
             }
+        }
+    }
+
+    checkSpaceAuth(space: Space, user: LoginVoModel) {
+        if (space.userId !== user.id && user.userRole !== UserRole.ADMIN) {
+            throw new BusinessException('无权访问空间', BusinessStatus.NOT_AUTH_ERROR.code)
         }
     }
 }
