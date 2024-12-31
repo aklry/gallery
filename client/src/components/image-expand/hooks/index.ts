@@ -29,7 +29,15 @@ export const useImageExpand = (props: ImageExpandProps) => {
                         resultImageUrl.value = taskOutput.output_image_url as string
                         clear()
                     } else if (taskOutput.task_status === 'FAILED') {
-                        message.error('扩图任务失败')
+                        const errorMessage = res.data.output.message
+                        if (
+                            (errorMessage?.includes('size') && errorMessage?.includes('small')) ||
+                            errorMessage?.includes('large')
+                        ) {
+                            message.error('图片尺寸小于512*512或大于4096*4096,无法扩图')
+                        } else {
+                            message.error(res.data.output.message)
+                        }
                         clear()
                     }
                 }

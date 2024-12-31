@@ -115,8 +115,10 @@ const useAddPicture = () => {
         }
         openCropperModal.value = false
     }
-    const handleExpandSuccess = (url: string) => {
-        console.log(url)
+    const handleExpandSuccess = async (expandPictureUrl: string) => {
+        url.value = expandPictureUrl
+        await handleUploadPictureByUrl()
+        openExpandModal.value = false
     }
 
     onMounted(async () => {

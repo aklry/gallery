@@ -15,7 +15,6 @@ export class AiExpandPictureService {
         `https://dashscope.aliyuncs.com/api/v1/tasks/${taskId}`
 
     async createOutPaintingTask(input: AiExpandPictureCreateTaskDto) {
-        console.log(input.url)
         try {
             const res = await axios({
                 url: AiExpandPictureService.CREATE_OUT_PAINTING_TASK_URL,
@@ -61,6 +60,7 @@ export class AiExpandPictureService {
             }
             return res.data as AiExpandPictureQueryPictureVo
         } catch (error) {
+            console.log(error.response.data)
             throw new BusinessException('获取扩图任务失败', BusinessStatus.OPERATION_ERROR.code)
         }
     }
