@@ -8,7 +8,7 @@ export class SpaceSizeModelVo {
     count: number
 }
 
-export class SpaceSizeAnalyzeVo extends ResponseVo<SpaceSizeModelVo> {
-    @ApiProperty({ description: '图片大小分析结果', required: true })
-    data: SpaceSizeModelVo
+export class SpaceSizeAnalyzeVo extends ResponseVo<SpaceSizeModelVo[]> {
+    @ApiProperty({ description: '图片大小分析结果', required: true, type: [SpaceSizeModelVo] })
+    data: SpaceSizeModelVo[]
 }

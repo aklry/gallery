@@ -110,9 +110,13 @@ export const useSpaceDetail = () => {
         await fetchPrivatePicture()
     }
 
-    onMounted(() => {
-        fetchSpaceDetail()
-        fetchPrivatePicture()
+    const handleGoToSpaceAnalyze = () => {
+        router.push(`/space/analyze?spaceId=${spaceId}`)
+    }
+
+    onMounted(async () => {
+        await fetchSpaceDetail()
+        await fetchPrivatePicture()
     })
 
     return {
@@ -127,6 +131,7 @@ export const useSpaceDetail = () => {
         handleEditPrivatePicture,
         handleSearch,
         handleReset,
-        handleEditBatchPicture
+        handleEditBatchPicture,
+        handleGoToSpaceAnalyze
     }
 }

@@ -10,7 +10,7 @@ export class SpaceCategoryAnalyzeModelVo {
     totalSize: bigint
 }
 
-export class SpaceCategoryAnalyzeVo extends ResponseVo<SpaceCategoryAnalyzeModelVo> {
-    @ApiProperty({ description: '图片分类统计数据', required: true, type: SpaceCategoryAnalyzeModelVo })
-    data: SpaceCategoryAnalyzeModelVo
+export class SpaceCategoryAnalyzeVo extends ResponseVo<SpaceCategoryAnalyzeModelVo[]> {
+    @ApiProperty({ description: '图片分类统计数据', required: true, type: [SpaceCategoryAnalyzeModelVo] })
+    data: SpaceCategoryAnalyzeModelVo[]
 }

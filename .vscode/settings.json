@@ -57,6 +57,7 @@
     "commitlint",
     "cuid",
     "datasource",
+    "echarts",
     "genid",
     "hoverable",
     "huayunjian",
@@ -68,6 +69,7 @@
     "sider",
     "tencentcdb",
     "umijs",
-    "vite"
+    "vite",
+    "wordcloud"
   ]
 }

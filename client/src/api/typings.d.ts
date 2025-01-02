@@ -580,7 +580,7 @@ declare namespace API {
         /** 消息 */
         message: string
         /** 图片分类统计数据 */
-        data: SpaceCategoryAnalyzeModelVo
+        data: SpaceCategoryAnalyzeModelVo[]
         /** 时间戳 */
         timestamp: string
         /** 路径 */
@@ -638,13 +638,78 @@ declare namespace API {
         user: UserVoModel
     }
 
+    type SpaceRankAnalyzeDto = {
+        /** 排名前几的数量 */
+        topN?: number
+    }
+
+    type SpaceRankAnalyzeModelVo = {
+        /** 空间id */
+        id: string
+        /** 空间名称 */
+        spaceName: string
+        /** 空间大小 */
+        totalSize: number
+        /** 用户id */
+        userId: string
+    }
+
+    type SpaceRankAnalyzeVo = {
+        /** 状态码 */
+        code: number
+        /** 消息 */
+        message: string
+        /** 空间排行 */
+        data: SpaceRankAnalyzeModelVo[]
+        /** 时间戳 */
+        timestamp: string
+        /** 路径 */
+        path: string
+    }
+
+    type SpaceSizeAnalyzeDto = {
+        /** 空间id */
+        spaceId?: string
+        /** 是否查询公开图库 */
+        queryPublic?: boolean
+        /** 全空间分析 */
+        queryAll?: boolean
+    }
+
+    type SpaceSizeAnalyzeVo = {
+        /** 状态码 */
+        code: number
+        /** 消息 */
+        message: string
+        /** 图片大小分析结果 */
+        data: SpaceSizeModelVo[]
+        /** 时间戳 */
+        timestamp: string
+        /** 路径 */
+        path: string
+    }
+
+    type SpaceSizeModelVo = {
+        /** 图片大小范围 */
+        sizeRange: string
+        /** 图片数量 */
+        count: number
+    }
+
+    type SpaceTagAnalyzeModelVo = {
+        /** 标签 */
+        tag: string
+        /** 标签使用数量 */
+        count: number
+    }
+
     type SpaceTagAnalyzeVo = {
         /** 状态码 */
         code: number
         /** 消息 */
         message: string
         /** 标签分析数据 */
-        data: Record<string, any>
+        data: SpaceTagAnalyzeModelVo[]
         /** 时间戳 */
         timestamp: string
         /** 路径 */
@@ -682,6 +747,39 @@ declare namespace API {
         message: string
         /** 返回数据 */
         data: SpaceUsageAnalyzeModelVo
+        /** 时间戳 */
+        timestamp: string
+        /** 路径 */
+        path: string
+    }
+
+    type SpaceUserAnalyzeDto = {
+        /** 空间id */
+        spaceId?: string
+        /** 是否查询公开图库 */
+        queryPublic?: boolean
+        /** 全空间分析 */
+        queryAll?: boolean
+        /** 用户id */
+        userId: string
+        /** 时间维度 */
+        timeDimension: string
+    }
+
+    type SpaceUserAnalyzeModelVo = {
+        /** 时间维度 */
+        period: string
+        /** 图片数量 */
+        count: number
+    }
+
+    type SpaceUserAnalyzeVo = {
+        /** 状态码 */
+        code: number
+        /** 消息 */
+        message: string
+        /** 用户上传分析结构 */
+        data: SpaceUserAnalyzeModelVo[]
         /** 时间戳 */
         timestamp: string
         /** 路径 */

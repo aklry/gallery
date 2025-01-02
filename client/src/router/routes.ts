@@ -92,5 +92,10 @@ export const routes: RouteRecordRaw[] = [
         name: 'space-detail',
         component: () => import('@/views/space/detail/index.vue'),
         props: true
+    },
+    {
+        path: '/space/analyze',
+        name: 'space-analyze',
+        component: () => import('@/views/space/analyze/index.vue')
     }
 ]

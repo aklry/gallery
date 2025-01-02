@@ -71,7 +71,6 @@ export class AnalyzeService {
     }
 
     fillAnalyzeConditionByQuery(spaceAnalyzeDto: SpaceAnalyzeDto) {
-        console.log(spaceAnalyzeDto)
         const { spaceId, queryPublic, queryAll } = spaceAnalyzeDto
         if (queryAll) {
             return ''

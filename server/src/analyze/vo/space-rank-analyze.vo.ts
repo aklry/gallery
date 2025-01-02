@@ -12,7 +12,7 @@ export class SpaceRankAnalyzeModelVo {
     userId: string
 }
 
-export class SpaceRankAnalyzeVo extends ResponseVo<SpaceRankAnalyzeModelVo> {
-    @ApiProperty({ description: '空间排行', required: true })
-    data: SpaceRankAnalyzeModelVo
+export class SpaceRankAnalyzeVo extends ResponseVo<SpaceRankAnalyzeModelVo[]> {
+    @ApiProperty({ description: '空间排行', required: true, type: [SpaceRankAnalyzeModelVo] })
+    data: SpaceRankAnalyzeModelVo[]
 }

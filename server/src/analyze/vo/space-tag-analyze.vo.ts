@@ -8,7 +8,7 @@ export class SpaceTagAnalyzeModelVo {
     count: number
 }
 
-export class SpaceTagAnalyzeVo extends ResponseVo<SpaceTagAnalyzeModelVo> {
-    @ApiProperty({ description: '标签分析数据', required: true })
-    data: SpaceTagAnalyzeModelVo
+export class SpaceTagAnalyzeVo extends ResponseVo<SpaceTagAnalyzeModelVo[]> {
+    @ApiProperty({ description: '标签分析数据', required: true, type: [SpaceTagAnalyzeModelVo] })
+    data: SpaceTagAnalyzeModelVo[]
 }

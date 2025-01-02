@@ -1,0 +1,7 @@
+.space-analyze {
+    @apply h-full overflow-y-scroll;
+}
+
+::-webkit-scrollbar {
+    display: none;
+}

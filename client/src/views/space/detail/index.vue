@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { useSpaceDetail } from './hooks'
-import { PlusOutlined, EditOutlined } from '@ant-design/icons-vue'
+import { PlusOutlined, EditOutlined, BarChartOutlined } from '@ant-design/icons-vue'
 import PictureCard from '@/components/picture-card/index.vue'
 import QueryForm from './component/query-form/index.vue'
 import EditBatchModal from './component/edit-batch-modal/index.vue'
+import { h } from 'vue'
 
 const {
     spaceDetail,
@@ -17,7 +18,8 @@ const {
     editBatchModalVisible,
     handleSearch,
     handleReset,
-    handleEditBatchPicture
+    handleEditBatchPicture,
+    handleGoToSpaceAnalyze
 } = useSpaceDetail()
 </script>
 <template>
@@ -32,6 +34,9 @@ const {
                         创建图片
                         <PlusOutlined />
                     </div>
+                </a-button>
+                <a-button type="primary" ghost :icon="h(BarChartOutlined)" @click="handleGoToSpaceAnalyze">
+                    空间分析
                 </a-button>
                 <a-button type="primary" @click="editBatchModalVisible = true">
                     <div class="flex items-center">

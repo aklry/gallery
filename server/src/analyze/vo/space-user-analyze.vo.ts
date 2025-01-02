@@ -8,7 +8,7 @@ export class SpaceUserAnalyzeModelVo {
     count: number
 }
 
-export class SpaceUserAnalyzeVo extends ResponseVo<SpaceUserAnalyzeModelVo> {
-    @ApiProperty({ description: '用户上传分析结构', required: true })
-    data: SpaceUserAnalyzeModelVo
+export class SpaceUserAnalyzeVo extends ResponseVo<SpaceUserAnalyzeModelVo[]> {
+    @ApiProperty({ description: '用户上传分析结构', required: true, type: [SpaceUserAnalyzeModelVo] })
+    data: SpaceUserAnalyzeModelVo[]
 }
