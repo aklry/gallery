@@ -1,0 +1,11 @@
+POST http://localhost:3000/api/v1/analyze/user
+Content-Type: application/json
+Cookie: connect.sid=s%3Auser%3A1735788252510.XRKBGRNEZEPIS392TG9K%2BjuZvQWJKS9%2BFFURiS8mIfU
+
+{
+    "userId": "cm527g09f0000v5gcrz64hymh",
+    "timeDimension": "month",
+    "queryAll": false,
+    "queryPublic": false,
+    "spaceId": "cm527jphc0003v5gc2u96qrge"
+}

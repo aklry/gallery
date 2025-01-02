@@ -1,5 +1,13 @@
 import { Injectable } from '@nestjs/common'
-import { SpaceAnalyzeDto, SpaceCategoryAnalyzeDto, SpaceUsageAnalyzeDto, SpaceTagAnalyzeDto } from './dto'
+import {
+    SpaceAnalyzeDto,
+    SpaceCategoryAnalyzeDto,
+    SpaceUsageAnalyzeDto,
+    SpaceTagAnalyzeDto,
+    SpaceSizeAnalyzeDto,
+    SpaceUserAnalyzeDto,
+    SpaceRankAnalyzeDto
+} from './dto'
 import { UserRole } from '../user/enum/user'
 import { BusinessException } from '../custom-exception'
 import { BusinessStatus } from '../config'
@@ -7,7 +15,14 @@ import { SpaceService } from '../space/space.service'
 import { Prisma } from '@prisma/client'
 import { LoginVoModel } from '../user/vo'
 import { PrismaService } from '../prisma/prisma.service'
-import { SpaceUsageAnalyzeModelVo, SpaceCategoryAnalyzeModelVo, SpaceTagAnalyzeModelVo } from './vo'
+import {
+    SpaceUsageAnalyzeModelVo,
+    SpaceCategoryAnalyzeModelVo,
+    SpaceTagAnalyzeModelVo,
+    SpaceSizeModelVo,
+    SpaceUserAnalyzeModelVo,
+    SpaceRankAnalyzeModelVo
+} from './vo'
 
 @Injectable()
 export class AnalyzeService {
@@ -25,7 +40,7 @@ export class AnalyzeService {
         } else {
             const spaceId = spaceAnalyzeDto.spaceId
             if (!spaceId) {
-                throw new BusinessException('参数错误', BusinessStatus.PARAMS_ERROR.code)
+                throw new BusinessException('spaceId不能为空', BusinessStatus.PARAMS_ERROR.code)
             }
             const space = await this.spaceService.getById(spaceId)
             if (!space) {
@@ -51,6 +66,21 @@ export class AnalyzeService {
                 equals: spaceId
             }
             return
+        }
+        throw new BusinessException('未指定查询范围', BusinessStatus.PARAMS_ERROR.code)
+    }
+
+    fillAnalyzeConditionByQuery(spaceAnalyzeDto: SpaceAnalyzeDto) {
+        console.log(spaceAnalyzeDto)
+        const { spaceId, queryPublic, queryAll } = spaceAnalyzeDto
+        if (queryAll) {
+            return ''
+        }
+        if (queryPublic) {
+            return ' and spaceId is null'
+        }
+        if (spaceId) {
+            return ` and spaceId = '${spaceId}'`
         }
         throw new BusinessException('未指定查询范围', BusinessStatus.PARAMS_ERROR.code)
     }
@@ -166,5 +196,93 @@ export class AnalyzeService {
                 } as SpaceTagAnalyzeModelVo
             })
             .sort((a, b) => b.count - a.count) as SpaceTagAnalyzeModelVo[]
+    }
+
+    async getSpaceSizeAnalyze(spaceSizeAnalyzeDto: SpaceSizeAnalyzeDto, user: LoginVoModel) {
+        await this.checkSpaceAnalyzeAuth(spaceSizeAnalyzeDto, user)
+        const where: Prisma.pictureWhereInput = {}
+        this.fillAnalyzeCondition(spaceSizeAnalyzeDto, where)
+        const picSizeList = await this.prismaService.picture.findMany({
+            select: {
+                picSize: true
+            },
+            where
+        })
+        const result = picSizeList.map(item => item.picSize)
+        const map = new Map<string, number>()
+        map.set('<100KB', result.filter(item => item < 100 * 1024).length)
+        map.set('100kb-500KB', result.filter(item => item >= 100 * 1024 && item < 500 * 1024).length)
+        map.set('500kb-1MB', result.filter(item => item >= 500 * 1024 && item < 1024 * 1024).length)
+        map.set('>1MB', result.filter(item => item >= 1024 * 1024).length)
+        return Array.from(map).map(item => {
+            const [key, value] = item
+            return {
+                sizeRange: key,
+                count: value
+            } as SpaceSizeModelVo
+        })
+    }
+
+    async getSpaceUserAnalyze(spaceUserAnalyzeDto: SpaceUserAnalyzeDto, user: LoginVoModel) {
+        const { userId, timeDimension } = spaceUserAnalyzeDto
+        await this.checkSpaceAnalyzeAuth(spaceUserAnalyzeDto, user)
+        let query = ''
+        const queryCondition = this.fillAnalyzeConditionByQuery(spaceUserAnalyzeDto)
+        switch (timeDimension) {
+            case 'day':
+                query = `
+                    SELECT DATE_FORMAT(createTime, '%Y-%m-%d') AS period, COUNT(*) AS count
+                    FROM picture
+                    WHERE userId = '${userId}' ${queryCondition}
+                    GROUP BY period
+                    ORDER BY period ASC
+                `
+                break
+            case 'month':
+                query = `
+                    SELECT DATE_FORMAT(createTime, '%Y-%m') AS period, COUNT(*) AS count
+                    FROM picture
+                    WHERE userId = '${userId}' ${queryCondition}
+                    group by period
+                    ORDER BY period ASC
+                `
+                break
+            case 'week':
+                query = `
+                    select YEARWEEK(createTime) AS period, COUNT(*) AS count
+                    from picture
+                    where userId = '${userId}' ${queryCondition}
+                    group by period
+                    order by period asc
+                `
+                break
+            default:
+                throw new BusinessException('不支持的时间维度', BusinessStatus.PARAMS_ERROR.code)
+        }
+        const result = (await this.prismaService.$queryRawUnsafe(query)) as Array<{ period: string; count: bigint }>
+        return result.map(item => ({
+            period: item.period,
+            count: Number(item.count)
+        })) as SpaceUserAnalyzeModelVo[]
+    }
+
+    async getSpaceRankAnalyze(spaceRankAnalyzeDto: SpaceRankAnalyzeDto, user: LoginVoModel) {
+        const { topN } = spaceRankAnalyzeDto
+        if (user.userRole !== UserRole.ADMIN) {
+            throw new BusinessException('无权查看空间排行', BusinessStatus.NOT_AUTH_ERROR.code)
+        }
+        const result = await this.prismaService.space.findMany({
+            select: {
+                id: true,
+                spaceName: true,
+                userId: true,
+                totalSize: true
+            },
+            take: topN,
+            orderBy: {
+                totalSize: 'desc'
+            }
+        })
+        return result as SpaceRankAnalyzeModelVo[]
     }
 }

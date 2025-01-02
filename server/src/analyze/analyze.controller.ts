@@ -2,12 +2,27 @@ import { Body, Controller, Post, Req, UseGuards } from '@nestjs/common'
 import { version } from '../config'
 import { AnalyzeService } from './analyze.service'
 import { ResponseService } from '../response/response.service'
-import { SpaceCategoryAnalyzeDto, SpaceUsageAnalyzeDto } from './dto'
+import {
+    SpaceCategoryAnalyzeDto,
+    SpaceRankAnalyzeDto,
+    SpaceSizeAnalyzeDto,
+    SpaceUsageAnalyzeDto,
+    SpaceUserAnalyzeDto
+} from './dto'
 import { ValidationPipe } from '../pipe/validation.pipe'
 import type { Request } from 'express'
 import { ApiOperation, ApiResponse } from '@nestjs/swagger'
-import { SpaceCategoryAnalyzeVo, SpaceTagAnalyzeVo, SpaceUsageAnalyzeVo } from './vo'
-import { AuthGuard } from '../auth/auth.guard'
+import {
+    SpaceCategoryAnalyzeVo,
+    SpaceRankAnalyzeVo,
+    SpaceSizeAnalyzeVo,
+    SpaceTagAnalyzeVo,
+    SpaceUsageAnalyzeVo,
+    SpaceUserAnalyzeVo
+} from './vo'
+import { AuthGuard, RoleGuard } from '../auth/auth.guard'
+import { Roles } from '../role/role.decorator'
+import { UserRole } from '../user/enum/user'
 
 @Controller({
     path: 'analyze',
@@ -55,6 +70,40 @@ export class AnalyzeController {
     ) {
         const user = req.session.user
         const result = await this.analyzeService.getSpaceTagAnalyze(spaceTagAnalyzeDto, user)
+        return this.responseService.success(result)
+    }
+
+    @Post('/size')
+    @ApiOperation({ summary: '获取空间大小分析' })
+    @ApiResponse({ type: SpaceSizeAnalyzeVo })
+    @UseGuards(AuthGuard)
+    async getSpaceSizeAnalyze(
+        @Body(new ValidationPipe()) spaceSizeAnalyzeDto: SpaceSizeAnalyzeDto,
+        @Req() req: Request
+    ) {
+        const user = req.session.user
+        const result = await this.analyzeService.getSpaceSizeAnalyze(spaceSizeAnalyzeDto, user)
+        return this.responseService.success(result)
+    }
+
+    @Post('/user')
+    @ApiOperation({ summary: '获取用户空间使用分析' })
+    @ApiResponse({ type: SpaceUserAnalyzeVo })
+    @UseGuards(AuthGuard)
+    async getUserAnalyze(@Body() spaceUserAnalyzeDto: SpaceUserAnalyzeDto, @Req() req: Request) {
+        const user = req.session.user
+        const result = await this.analyzeService.getSpaceUserAnalyze(spaceUserAnalyzeDto, user)
+        return this.responseService.success(result)
+    }
+
+    @Post('/rank')
+    @ApiOperation({ summary: '获取空间排行' })
+    @ApiResponse({ type: SpaceRankAnalyzeVo })
+    @Roles([UserRole.ADMIN])
+    @UseGuards(AuthGuard, RoleGuard)
+    async getSpaceRankAnalyze(@Body() spaceRankAnalyzeDto: SpaceRankAnalyzeDto, @Req() req: Request) {
+        const user = req.session.user
+        const result = await this.analyzeService.getSpaceRankAnalyze(spaceRankAnalyzeDto, user)
         return this.responseService.success(result)
     }
 }

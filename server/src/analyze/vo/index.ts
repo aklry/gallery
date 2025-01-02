@@ -1,3 +1,6 @@
 export * from './space-usage-analyze.vo'
 export * from './space-category-analyze.vo'
 export * from './space-tag-analyze.vo'
+export * from './space-size-analyze.vo'
+export * from './space-user-analyze.vo'
+export * from './space-rank-analyze.vo'
