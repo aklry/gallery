@@ -18,7 +18,7 @@ const useAddPicture = () => {
     const { loginUser } = storeToRefs(userStore)
     const route = useRoute()
     const router = useRouter()
-    const id = route.query?.id
+    const id = route.query?.id as string
     const spaceId = route.query?.spaceId as string
     const picture = ref<API.UploadPictureVoModel>()
     const url = ref<string>('')
@@ -68,7 +68,7 @@ const useAddPicture = () => {
             return
         }
         try {
-            const res = await pictureControllerUploadFileByUrlV1({ url: url.value, spaceId })
+            const res = await pictureControllerUploadFileByUrlV1({ url: url.value, spaceId, id })
             if (res.code === 1) {
                 message.success('上传成功')
                 pictureInfo.name = res.data.filename
