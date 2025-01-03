@@ -14,13 +14,21 @@ const {
     openEditDialog,
     editRecord,
     handleEditConfirm,
-    handleQuery
+    handleQuery,
+    handleAnalyzePublic,
+    handleAnalyzeAll
 } = useSpaceHooks()
 </script>
 <template>
     <div class="space-admin">
         <a-card title="空间管理">
             <query-form :searchParams="searchParams" :query="handleQuery" />
+            <template #extra>
+                <a-space>
+                    <a-button type="primary" @click="handleAnalyzePublic">分析公共图库</a-button>
+                    <a-button type="primary" ghost danger @click="handleAnalyzeAll">分析全空间</a-button>
+                </a-space>
+            </template>
             <a-table
                 :columns="columns"
                 :data-source="spaceList"

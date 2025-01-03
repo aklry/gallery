@@ -8,7 +8,7 @@ const { loading, options } = useSpaceSize(props)
 </script>
 <template>
     <div class="space-size">
-        <data-analyze :options="options" :loading="loading" />
+        <data-analyze :title="title" :options="options" :loading="loading" />
     </div>
 </template>
 <style scoped lang="scss"></style>

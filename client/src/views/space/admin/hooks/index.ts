@@ -2,12 +2,14 @@ import { spaceControllerDeleteSpaceV1, spaceControllerListSpaceV1, spaceControll
 import { transformSize } from '@/utils'
 import { message, Modal, TableColumnProps } from 'ant-design-vue'
 import { reactive, ref, watchEffect } from 'vue'
+import { useRouter } from 'vue-router'
 
 const useSpaceAdminHooks = () => {
     const searchParams = reactive<API.QuerySpaceDto>({
         current: '1',
         pageSize: '10'
     })
+    const router = useRouter()
     const spaceList = ref<API.SpaceModelVo[]>([])
     const total = ref<number>(0)
     const fetchSpaceList = async () => {
@@ -118,6 +120,12 @@ const useSpaceAdminHooks = () => {
         searchParams.spaceName = queryParams.spaceName
         searchParams.spaceLevel = queryParams.spaceLevel
     }
+    const handleAnalyzePublic = () => {
+        router.push('/space/analyze?public=1')
+    }
+    const handleAnalyzeAll = () => {
+        router.push('/space/analyze?all=1')
+    }
     watchEffect(() => {
         fetchSpaceList()
     })
@@ -131,7 +139,9 @@ const useSpaceAdminHooks = () => {
         openEditDialog,
         editRecord,
         handleEditConfirm,
-        handleQuery
+        handleQuery,
+        handleAnalyzePublic,
+        handleAnalyzeAll
     }
 }
 

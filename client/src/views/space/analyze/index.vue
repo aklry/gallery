@@ -5,6 +5,8 @@ import SpaceCategory from './components/space-category/index.vue'
 import SpaceTag from './components/space-tag/index.vue'
 import SpaceSize from './components/space-size/index.vue'
 import SpaceUser from './components/space-user/index.vue'
+import SpaceRank from './components/space-rank/index.vue'
+
 const { spaceId, queryAll, queryPublic } = useSpaceAnalyzeHooks()
 </script>
 
@@ -38,6 +40,9 @@ const { spaceId, queryAll, queryPublic } = useSpaceAnalyzeHooks()
             </a-col>
             <a-col :xs="24" :md="12">
                 <space-user :queryAll="queryAll" :queryPublic="queryPublic" :spaceId="spaceId" />
+            </a-col>
+            <a-col :xs="24" :md="12">
+                <space-rank title="空间排行" />
             </a-col>
         </a-row>
     </div>

@@ -25,7 +25,7 @@ const { spaceUsageData } = useSpaceAnalyze(props)
                     <div class="h-[320px] text-center">
                         <h3>
                             {{ spaceUsageData?.usedCount }} /
-                            {{ spaceUsageData?.usedCount ? spaceUsageData?.maxCount : '无限制' }}
+                            {{ spaceUsageData?.maxCount ? spaceUsageData?.maxCount : '无限制' }}
                         </h3>
                         <a-progress type="dashboard" :percent="spaceUsageData?.countUsageRatio ?? 0" />
                     </div>

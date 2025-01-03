@@ -270,18 +270,17 @@ export class AnalyzeService {
         if (user.userRole !== UserRole.ADMIN) {
             throw new BusinessException('无权查看空间排行', BusinessStatus.NOT_AUTH_ERROR.code)
         }
-        const result = await this.prismaService.space.findMany({
-            select: {
-                id: true,
-                spaceName: true,
-                userId: true,
-                totalSize: true
-            },
-            take: topN,
-            orderBy: {
-                totalSize: 'desc'
-            }
-        })
-        return result as SpaceRankAnalyzeModelVo[]
+        try {
+            const result = await this.prismaService.space.findMany({
+                take: topN,
+                orderBy: {
+                    totalSize: 'desc'
+                }
+            })
+            return result as SpaceRankAnalyzeModelVo[]
+        } catch (error) {
+            console.log(error)
+            throw new BusinessException('获取空间排行失败', BusinessStatus.SYSTEM_ERROR.code)
+        }
     }
 }
