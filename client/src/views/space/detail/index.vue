@@ -53,6 +53,7 @@ const {
         <picture-card
             :picture="privatePictureList"
             :loading="loading"
+            :spaceId="spaceId"
             @deletePicture="handleDeletePrivatePicture"
             @editPicture="handleEditPrivatePicture"
         />

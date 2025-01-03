@@ -1,13 +1,15 @@
 import { message, Modal } from 'ant-design-vue'
 import { computed, onMounted, ref } from 'vue'
 import { pictureControllerGetByIdVoV1, pictureControllerDeletePictureV1 } from '@/api/picture'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useUserStore } from '@/store/modules/user'
 import { downloadPicture as download } from '@/utils'
 const usePictureDetail = (id: string) => {
     const picture = ref<API.GetPictureVoModel>()
     const router = useRouter()
+    const route = useRoute()
     const userStore = useUserStore()
+    const spaceId = route.query.spaceId as string
     const canEditOrDelete = computed(() => {
         const user = userStore.loginUser
         if (!user || !user.id) return false
@@ -50,14 +52,14 @@ const usePictureDetail = (id: string) => {
             message.error('您没有权限编辑这张图片')
             return
         }
-        router.push(`/picture/add?id=${id}`)
+        router.push(`/picture/add?id=${id}&spaceId=${spaceId}`)
     }
     const downloadPicture = (url?: string, filename?: string) => {
         console.log(url, filename)
         download(url, filename)
     }
-    onMounted(() => {
-        getPictureDetail()
+    onMounted(async () => {
+        await getPictureDetail()
     })
     return {
         picture,

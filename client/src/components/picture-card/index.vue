@@ -2,9 +2,10 @@
 import { EditOutlined, DeleteOutlined } from '@ant-design/icons-vue'
 import { useRouter } from 'vue-router'
 const router = useRouter()
-defineProps<{
+const props = defineProps<{
     picture: API.ShowPictureModelVo[]
     loading: boolean
+    spaceId?: string
 }>()
 const emit = defineEmits(['deletePicture', 'editPicture'])
 const handleDeletePrivatePicture = (id: string, e: MouseEvent) => {
@@ -16,7 +17,7 @@ const handleEditPicture = (id: string, e: MouseEvent) => {
     emit('editPicture', id)
 }
 const goToPictureDetail = (id: string) => {
-    router.push(`/picture/${id}`)
+    router.push(`/picture/${id}?spaceId=${props.spaceId}`)
 }
 </script>
 <template>

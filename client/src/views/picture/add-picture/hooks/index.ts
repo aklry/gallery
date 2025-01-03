@@ -28,9 +28,6 @@ const useAddPicture = () => {
         picture.value = result
         pictureInfo.name = result.filename
         pictureInfo.id = result.id
-        if (result.spaceId) {
-            pictureInfo.spaceId = result.spaceId
-        }
     }
     const loading = ref<boolean>(false)
     const uploadLoading = ref<boolean>(false)
@@ -39,8 +36,7 @@ const useAddPicture = () => {
         introduction: '',
         name: '',
         category: '',
-        tags: [],
-        spaceId
+        tags: []
     })
     const handleUpdatePicture = async () => {
         try {
@@ -49,6 +45,7 @@ const useAddPicture = () => {
             if (loginUser.value?.userRole === UserRole.ADMIN) {
                 res = await pictureControllerUpdatePictureV1(pictureInfo)
             } else {
+                console.log(pictureInfo)
                 res = await pictureControllerEditPictureV1(pictureInfo)
             }
             if (res.data) {
@@ -71,11 +68,13 @@ const useAddPicture = () => {
             return
         }
         try {
-            const res = await pictureControllerUploadFileByUrlV1({ url: url.value })
+            const res = await pictureControllerUploadFileByUrlV1({ url: url.value, spaceId })
             if (res.code === 1) {
                 message.success('上传成功')
                 pictureInfo.name = res.data.filename
                 pictureInfo.id = res.data.id
+                pictureInfo.url = res.data.url
+                pictureInfo.thumbnailUrl = res.data.thumbnailUrl
                 picture.value = {
                     id: res.data.id,
                     url: res.data.url,

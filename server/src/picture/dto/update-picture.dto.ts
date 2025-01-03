@@ -7,10 +7,6 @@ export class UpdatePictureDto {
     @ApiProperty({ description: '图片id', required: true })
     id: string
     @IsString()
-    @IsOptional()
-    @ApiProperty({ description: '空间id', required: false })
-    spaceId?: string
-    @IsString()
     @IsNotEmpty()
     @ApiProperty({ description: '图片名称', required: true })
     name: string
@@ -26,4 +22,12 @@ export class UpdatePictureDto {
     @IsNotEmpty()
     @ApiProperty({ description: '图片标签', required: true })
     tags: string[]
+    @ApiProperty({ description: '图片url', required: false })
+    @IsString()
+    @IsOptional()
+    url?: string
+    @ApiProperty({ description: '缩略图url', required: false })
+    @IsString()
+    @IsOptional()
+    thumbnailUrl?: string
 }

@@ -11,7 +11,7 @@ import { message, Modal } from 'ant-design-vue'
 export const useSpaceDetail = () => {
     const route = useRoute()
     const router = useRouter()
-    const spaceId = route.params.id
+    const spaceId = route.params.id as string
     const spaceDetail = ref<API.SpaceModelVo>()
     const privatePictureList = ref<API.ShowPictureModelVo[]>([])
     const loading = ref(false)
@@ -96,7 +96,7 @@ export const useSpaceDetail = () => {
             if (res.code === 1) {
                 message.success('编辑图片成功')
                 editBatchModalVisible.value = false
-                fetchPrivatePicture()
+                await fetchPrivatePicture()
                 callback?.()
             } else {
                 message.error(res.message)

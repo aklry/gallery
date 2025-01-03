@@ -516,12 +516,13 @@ export class PictureService {
     // 修改图片信息(用户使用)
     async edit(updatePictureDto: UpdatePictureDto, req: Request) {
         const { id, ...rest } = updatePictureDto
+        console.log(rest)
         const user = req.session.user
         const oldPicture = await this.getById(id)
         this.validPicture(oldPicture)
         this.checkPictureAuth(user, oldPicture)
         const result = await this.prismaService.picture.update({
-            where: { id, spaceId: rest.spaceId },
+            where: { id },
             data: {
                 ...rest,
                 tags: JSON.stringify(rest.tags),
@@ -820,6 +821,7 @@ export class PictureService {
             return true
         })
     }
+
     generateFileName(rule: string, index: number) {
         return rule.replace(/{index}/g, index.toString())
     }

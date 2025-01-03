@@ -835,8 +835,6 @@ declare namespace API {
     type UpdatePictureDto = {
         /** 图片id */
         id: string
-        /** 空间id */
-        spaceId?: string
         /** 图片名称 */
         name: string
         /** 图片介绍 */
@@ -845,6 +843,10 @@ declare namespace API {
         category: string
         /** 图片标签 */
         tags: string[]
+        /** 图片url */
+        url?: string
+        /** 缩略图url */
+        thumbnailUrl?: string
     }
 
     type UpdatePictureVo = {
