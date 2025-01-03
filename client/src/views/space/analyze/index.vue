@@ -7,7 +7,7 @@ import SpaceSize from './components/space-size/index.vue'
 import SpaceUser from './components/space-user/index.vue'
 import SpaceRank from './components/space-rank/index.vue'
 
-const { spaceId, queryAll, queryPublic } = useSpaceAnalyzeHooks()
+const { spaceId, queryAll, queryPublic, isAdmin } = useSpaceAnalyzeHooks()
 </script>
 
 <template>
@@ -42,7 +42,7 @@ const { spaceId, queryAll, queryPublic } = useSpaceAnalyzeHooks()
                 <space-user :queryAll="queryAll" :queryPublic="queryPublic" :spaceId="spaceId" />
             </a-col>
             <a-col :xs="24" :md="12">
-                <space-rank title="空间排行" />
+                <space-rank title="空间排行" v-if="isAdmin" />
             </a-col>
         </a-row>
     </div>
