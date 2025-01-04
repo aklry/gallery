@@ -442,18 +442,26 @@ export class PictureService {
             throw new BusinessException('图片上传失败', BusinessStatus.OPERATION_ERROR.code)
         }
         if (spaceId) {
+            const oldSpace = await this.prismaService.space.findUnique({ where: { id: spaceId } })
+            if (!oldSpace) {
+                throw new BusinessException('空间不存在', BusinessStatus.PARAMS_ERROR.code)
+            }
             await this.prismaService.$transaction(async prisma => {
                 const space = await prisma.space.update({
                     where: {
                         id: spaceId
                     },
                     data: {
-                        totalCount: {
-                            increment: 1
-                        },
-                        totalSize: {
-                            increment: BigInt(picture.picSize)
-                        }
+                        totalCount: pictureId
+                            ? oldSpace.totalCount
+                            : {
+                                  increment: 1
+                              },
+                        totalSize: pictureId
+                            ? oldSpace.totalSize
+                            : {
+                                  increment: BigInt(picture.picSize)
+                              }
                     }
                 })
                 if (!space) {
