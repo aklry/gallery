@@ -368,27 +368,28 @@ export class PictureService {
             }
         }
         let pictureId: string | undefined = undefined
+        let oldPicture: Picture | undefined = undefined
         if (uploadPictureDto && uploadPictureDto.id) {
             pictureId = uploadPictureDto.id
             // 判断图片是否存在
-            const picture = await this.prismaService.picture.findUnique({
+            oldPicture = await this.prismaService.picture.findUnique({
                 where: {
                     id: pictureId
                 }
             })
-            if (!picture) {
+            if (!oldPicture) {
                 throw new BusinessException('图片不存在', BusinessStatus.OPERATION_ERROR.code)
             }
             if (!spaceId) {
-                if (picture.spaceId) {
-                    spaceId = picture.spaceId
+                if (oldPicture.spaceId) {
+                    spaceId = oldPicture.spaceId
                 }
             } else {
-                if (picture.spaceId !== spaceId) {
+                if (oldPicture.spaceId !== spaceId) {
                     throw new BusinessException('图片空间不匹配', BusinessStatus.OPERATION_ERROR.code)
                 }
             }
-            if (picture.userId !== user.id && user.userRole !== UserRole.ADMIN) {
+            if (oldPicture.userId !== user.id && user.userRole !== UserRole.ADMIN) {
                 throw new BusinessException('仅限本人或管理员修改', BusinessStatus.OPERATION_ERROR.code)
             }
         }
@@ -458,7 +459,9 @@ export class PictureService {
                                   increment: 1
                               },
                         totalSize: pictureId
-                            ? oldSpace.totalSize
+                            ? {
+                                  set: oldSpace.totalSize - BigInt(oldPicture.picSize) + BigInt(picture.picSize)
+                              }
                             : {
                                   increment: BigInt(picture.picSize)
                               }
@@ -524,7 +527,6 @@ export class PictureService {
     // 修改图片信息(用户使用)
     async edit(updatePictureDto: UpdatePictureDto, req: Request) {
         const { id, ...rest } = updatePictureDto
-        console.log(rest)
         const user = req.session.user
         const oldPicture = await this.getById(id)
         this.validPicture(oldPicture)
@@ -596,12 +598,13 @@ export class PictureService {
                 name: item.filename,
                 userId: user.id,
                 introduction: '',
-                category: '',
-                tags: '',
+                category: '默认',
+                tags: '["默认"]',
                 picSize: BigInt(item.fileSize),
                 picWidth: Number(item.width),
                 picHeight: Number(item.height),
                 picScale: item.picScale,
+                picColor: item.color,
                 picFormat: item.format,
                 reviewStatus: 1,
                 reviewTime: new Date(),
@@ -809,7 +812,7 @@ export class PictureService {
             // Update pictures one by one to increment count
             const result = await Promise.all(
                 idList.map(async id => {
-                    const updated = await prisma.picture.update({
+                    return await prisma.picture.update({
                         where: {
                             id,
                             spaceId
@@ -820,7 +823,6 @@ export class PictureService {
                             name: nameRule ? this.generateFileName(nameRule, count++) : undefined
                         }
                     })
-                    return updated
                 })
             )
             if (!result) {

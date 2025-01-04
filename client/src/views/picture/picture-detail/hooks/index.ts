@@ -4,6 +4,7 @@ import { pictureControllerGetByIdVoV1, pictureControllerDeletePictureV1 } from '
 import { useRouter, useRoute } from 'vue-router'
 import { useUserStore } from '@/store/modules/user'
 import { downloadPicture as download } from '@/utils'
+
 const usePictureDetail = (id: string) => {
     const picture = ref<API.GetPictureVoModel>()
     const router = useRouter()
@@ -52,7 +53,11 @@ const usePictureDetail = (id: string) => {
             message.error('您没有权限编辑这张图片')
             return
         }
-        router.push(`/picture/add?id=${id}&spaceId=${spaceId}`)
+        if (spaceId) {
+            router.push(`/picture/add?id=${id}&spaceId=${spaceId}`)
+        } else {
+            router.push(`/picture/add?id=${id}`)
+        }
     }
     const downloadPicture = (url?: string, filename?: string) => {
         console.log(url, filename)
