@@ -2,7 +2,7 @@ import { UpdateSpaceDto } from './dto/update-space.dto'
 import { Injectable } from '@nestjs/common'
 import { BusinessException } from '../custom-exception'
 import { BusinessStatus } from '../config'
-import { getEnumByValue, SpaceLevelEnum } from './enum'
+import { getSpaceLevelEnumByValue, getSpaceTypeEnumByValue, SpaceLevelEnum, SpaceTypeEnum } from './enum'
 import { Space } from './entities/space.entity'
 import { PrismaService } from '../prisma/prisma.service'
 import { CreateSpaceDto } from './dto/create-space.dto'
@@ -149,7 +149,7 @@ export class SpaceService {
     }
 
     async getSpaceByPage(query: QuerySpaceDto) {
-        const { current, pageSize, spaceName, spaceLevel, userId, id } = query
+        const { current, pageSize, spaceName, spaceLevel, userId, id, spaceType } = query
         const where: Prisma.spaceWhereInput = {}
         if (spaceName) {
             where.spaceName = {
@@ -161,6 +161,9 @@ export class SpaceService {
         }
         if (userId) {
             where.userId = userId
+        }
+        if (spaceType) {
+            where.spaceType = spaceType
         }
         if (id) {
             where.id = id
@@ -188,6 +191,7 @@ export class SpaceService {
                     maxCount: item.maxCount,
                     totalSize: item.totalSize,
                     totalCount: item.totalCount,
+                    spaceType: item.spaceType,
                     userId: item.userId,
                     createTime: item.createTime,
                     editTime: item.editTime,
@@ -236,13 +240,76 @@ export class SpaceService {
         return true
     }
 
+    // 创建团队空间
+    // 创建空间
+    async addTeamSpace(createSpaceDto: CreateSpaceDto, req: Request) {
+        const user = req.session.user
+        const space = new Space()
+        space.spaceName = createSpaceDto.spaceName
+        space.spaceLevel = createSpaceDto.spaceLevel
+        space.userId = user.id
+        if (user === null || user === undefined) {
+            throw new BusinessException('用户未登录', BusinessStatus.PARAMS_ERROR.code)
+        }
+        if (!createSpaceDto.spaceName) {
+            space.spaceName = '默认空间'
+        }
+        if (!createSpaceDto.spaceLevel) {
+            space.spaceLevel = SpaceLevelEnum.FREE
+        }
+        if (!createSpaceDto.spaceType) {
+            space.spaceType = SpaceTypeEnum.TEAM
+        }
+        this.validateSpace(space, true)
+        this.fillSpaceBySpaceLevel(space)
+        // 权限校验
+        if (SpaceLevelEnum.FREE !== space.spaceLevel && user.role !== UserRole.ADMIN) {
+            throw new BusinessException('无权限创建指定级别的空间', BusinessStatus.NOT_AUTH_ERROR.code)
+        }
+        // 针对用户进行加锁
+        const lock = await this.prismaService.$transaction(async prisma => {
+            // 查询用户是否已创建过空间
+            const existSpace = await prisma.space.findFirst({
+                where: {
+                    userId: user.id as string,
+                    spaceType: {
+                        equals: SpaceTypeEnum.TEAM
+                    }
+                }
+            })
+            if (existSpace) {
+                throw new BusinessException('每个用户只能创建一个空间', BusinessStatus.PARAMS_ERROR.code)
+            }
+            // 创建空间
+            const result = await prisma.space.create({
+                data: {
+                    spaceName: space.spaceName,
+                    spaceLevel: space.spaceLevel,
+                    maxSize: space.maxSize,
+                    maxCount: space.maxCount,
+                    userId: space.userId,
+                    spaceType: space.spaceType
+                }
+            })
+            if (!result) {
+                throw new BusinessException('创建空间失败', BusinessStatus.OPERATION_ERROR.code)
+            }
+            return result.id
+        })
+        if (lock === null || lock === undefined) {
+            throw new BusinessException('创建空间失败', BusinessStatus.OPERATION_ERROR.code)
+        }
+        return lock
+    }
+
     validateSpace(space: Space, add: boolean) {
         if (space === null) {
             throw new BusinessException(BusinessStatus.PARAMS_ERROR.message, BusinessStatus.PARAMS_ERROR.code)
         }
         const spaceName = space.spaceName
         const spaceLevel = space.spaceLevel
-        const spaceLevelEnum = getEnumByValue(space.spaceLevel)
+        const spaceLevelEnum = getSpaceLevelEnumByValue(space.spaceLevel)
+        const spaceTypeEnum = getSpaceTypeEnumByValue(space.spaceType)
         // 创建空间
         if (add) {
             if (spaceName === null || spaceName === undefined) {
@@ -259,10 +326,13 @@ export class SpaceService {
         if (spaceName !== null && spaceName !== undefined && spaceName.length > 30) {
             throw new BusinessException('空间名称不能超过30个字符', BusinessStatus.PARAMS_ERROR.code)
         }
+        if (space.spaceType !== null && spaceTypeEnum === null) {
+            throw new BusinessException('空间类型不存在', BusinessStatus.PARAMS_ERROR.code)
+        }
     }
 
     fillSpaceBySpaceLevel(space: Space) {
-        const spaceLevelEnum = getEnumByValue(space.spaceLevel)
+        const spaceLevelEnum = getSpaceLevelEnumByValue(space.spaceLevel)
         if (spaceLevelEnum !== null) {
             const maxSize = spaceLevelEnum.maxSize
             const maxCount = spaceLevelEnum.maxCount

@@ -18,6 +18,8 @@ export class Space {
     totalCount?: bigint
     @ApiProperty({ description: '用户ID' })
     userId: string
+    @ApiProperty({ description: '空间类型' })
+    spaceType: number
     @ApiProperty({ description: '创建时间' })
     createTime: Date
     @ApiProperty({ description: '编辑时间' })

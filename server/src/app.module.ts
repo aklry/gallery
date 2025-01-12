@@ -19,6 +19,7 @@ import { RedisCacheModule } from './cache/cache.module'
 import { SpaceModule } from './space/space.module'
 import { AiExpandPictureModule } from './ai-expand-picture/ai-expand-picture.module'
 import { AnalyzeModule } from './analyze/analyze.module'
+import { SpaceUserModule } from './space-user/space-user.module'
 
 @Module({
     imports: [
@@ -35,7 +36,8 @@ import { AnalyzeModule } from './analyze/analyze.module'
         RedisCacheModule,
         SpaceModule,
         AiExpandPictureModule,
-        AnalyzeModule
+        AnalyzeModule,
+        SpaceUserModule
     ],
     controllers: [AppController],
     providers: [AppService]

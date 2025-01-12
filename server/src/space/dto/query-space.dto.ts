@@ -11,4 +11,6 @@ export class QuerySpaceDto extends PageRequest {
     spaceName?: string
     @ApiProperty({ description: '空间等级', required: false, enum: SpaceLevelEnum })
     spaceLevel?: SpaceLevelEnum
+    @ApiProperty({ description: '空间类型', required: false, type: Number })
+    spaceType?: number
 }

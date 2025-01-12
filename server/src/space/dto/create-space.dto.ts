@@ -6,4 +6,6 @@ export class CreateSpaceDto {
     spaceName: string
     @ApiProperty({ description: '空间等级', required: true, enum: SpaceLevelEnum })
     spaceLevel: SpaceLevelEnum
+    @ApiProperty({ description: '空间类型', required: true, type: Number })
+    spaceType: number
 }

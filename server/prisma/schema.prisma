@@ -85,6 +85,7 @@ model space {
     maxCount   BigInt?  @default(0)
     totalSize  BigInt?  @default(0)
     totalCount BigInt?  @default(0)
+    spaceType  Int      @default(0)
     userId     String   @db.VarChar(256)
     createTime DateTime @default(now()) @db.DateTime(0)
     editTime   DateTime @default(now()) @db.DateTime(0)
@@ -94,4 +95,24 @@ model space {
     @@index([userId], map: "idx_userId")
     @@index([spaceName], map: "idx_spaceName")
     @@index([spaceLevel], map: "idx_spaceLevel")
+    @@index([spaceType], map: "idx_spaceType")
+}
+
+enum SpaceRole {
+    viewer
+    editor
+    admin
+}
+
+model space_user {
+    id         String   @id @default(cuid())
+    spaceId    String    @db.VarChar(256)
+    userId     String   @db.VarChar(256)
+    spaceRole  SpaceRole @default(viewer)
+    createTime DateTime @default(now()) @db.DateTime(0)
+    updateTime DateTime @default(now()) @db.DateTime(0)
+
+    @@unique([spaceId, userId], map: "uk_spaceId_userId")
+    @@index([spaceId], map: "idx_spaceId")
+    @@index([userId], map: "idx_userId")
 }

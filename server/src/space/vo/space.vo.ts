@@ -18,6 +18,8 @@ export class SpaceModelVo {
     totalSize: bigint
     @ApiProperty({ description: '总数量', required: true, type: BigInt })
     totalCount: bigint
+    @ApiProperty({ description: '空间类型', required: true, type: Number })
+    spaceType: number
     @ApiProperty({ description: '用户ID', required: true })
     userId: string
     @ApiProperty({ description: '创建时间', required: true })

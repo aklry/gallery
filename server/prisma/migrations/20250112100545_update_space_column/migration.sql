@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE `space` ADD COLUMN `spaceType` INTEGER NOT NULL DEFAULT 0;
