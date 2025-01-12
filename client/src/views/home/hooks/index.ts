@@ -43,6 +43,7 @@ const useHomeHooks = () => {
             total.value = res.data.total
         } catch (error) {
             message.error('获取图片失败')
+            loading.value = false
         } finally {
             if (!loaded) {
                 loading.value = false
