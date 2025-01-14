@@ -1,0 +1,5 @@
+export * from './create-space.dto'
+export * from './delete-space.dto'
+export * from './edit-space.dto'
+export * from './query-space.dto'
+export * from './update-space.dto'

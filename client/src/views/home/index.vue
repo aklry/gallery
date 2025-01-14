@@ -1,3 +1,15 @@
+<script setup lang="ts">
+import useHomeHooks from './hooks'
+import Tabs from './components/tabs/index.vue'
+import { storeToRefs } from 'pinia'
+import usePictureStore from '@/store/modules/picture'
+import TagBars from './components/tag-bars/index.vue'
+
+const pictureStore = usePictureStore()
+const { tag_category } = storeToRefs(pictureStore)
+const { dataList, changeTabs, changeTags, clickPicture, handleSearchPicture, fetchData, searchParams, loading } =
+    useHomeHooks()
+</script>
 <template>
     <div class="home h-full overflow-scroll">
         <div class="input-search">
@@ -39,18 +51,6 @@
         </div>
     </div>
 </template>
-
-<script setup lang="ts">
-import useHomeHooks from './hooks'
-import Tabs from './components/tabs/index.vue'
-import { storeToRefs } from 'pinia'
-import usePictureStore from '@/store/modules/picture'
-import TagBars from './components/tag-bars/index.vue'
-const pictureStore = usePictureStore()
-const { tag_category } = storeToRefs(pictureStore)
-const { dataList, changeTabs, changeTags, clickPicture, handleSearchPicture, fetchData, searchParams, loading } =
-    useHomeHooks()
-</script>
 
 <style scoped lang="scss">
 @use './css/index' as *;

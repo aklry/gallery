@@ -49,7 +49,7 @@ const {
                 </a-tooltip>
             </a-space>
         </div>
-        <query-form :onSuccess="handleSearch" :spaceId="spaceId as string" :onReset="handleReset" />
+        <query-form :onSuccess="handleSearch" :spaceId="spaceId" :onReset="handleReset" />
         <picture-card
             :picture="privatePictureList"
             :loading="loading"

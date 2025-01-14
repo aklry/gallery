@@ -1,3 +1,13 @@
+<script setup lang="ts">
+import usePictureDetail from './hooks'
+import { formatTime, formatSize, toHexColor } from '@/utils'
+
+const props = defineProps<{
+    id: string
+}>()
+
+const { picture, deletePicture, canEditOrDelete, editPicture, downloadPicture } = usePictureDetail(props.id)
+</script>
 <template>
     <div class="picture-detail">
         <a-row :gutter="[16, 16]">
@@ -26,9 +36,9 @@
                         <a-descriptions-item label="高度">{{ picture?.picHeight }}</a-descriptions-item>
                         <a-descriptions-item label="宽高比">{{ picture?.picScale }}</a-descriptions-item>
                         <a-descriptions-item label="大小">{{ formatSize(picture?.picSize) }}</a-descriptions-item>
-                        <a-descriptions-item label="上传时间">{{
-                            formatTime(picture?.createTime)
-                        }}</a-descriptions-item>
+                        <a-descriptions-item label="上传时间"
+                            >{{ formatTime(picture?.createTime) }}
+                        </a-descriptions-item>
                         <a-descriptions-item label="主色调">
                             <a-space>
                                 {{ toHexColor(picture?.picColor) || '暂无主色调' }}
@@ -48,14 +58,14 @@
                                     size="small"
                                     v-if="canEditOrDelete"
                                     @click="deletePicture"
-                                    >删除</a-button
-                                >
+                                    >删除
+                                </a-button>
                                 <a-button
                                     type="primary"
                                     size="small"
                                     @click="downloadPicture(picture?.url, picture?.name)"
-                                    >下载</a-button
-                                >
+                                    >下载
+                                </a-button>
                             </a-space>
                         </a-descriptions-item>
                     </a-descriptions>
@@ -64,16 +74,6 @@
         </a-row>
     </div>
 </template>
-<script setup lang="ts">
-import usePictureDetail from './hooks'
-import { formatTime, formatSize, toHexColor } from '@/utils'
-
-const props = defineProps<{
-    id: string
-}>()
-
-const { picture, deletePicture, canEditOrDelete, editPicture, downloadPicture } = usePictureDetail(props.id)
-</script>
 
 <style scoped lang="scss">
 @use './css/index.scss' as *;

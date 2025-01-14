@@ -1,3 +1,27 @@
+<script setup lang="ts">
+import PictureUpload from '@/components/picture-upload/index.vue'
+import useAddPicture from './hooks'
+import ImageCropper from '@/components/image-cropper/index.vue'
+import ImageExpand from '@/components/image-expand/index.vue'
+
+const {
+    pictureInfo,
+    picture,
+    url,
+    handleUploadSuccess,
+    handleUpdatePicture,
+    loading,
+    tag_category,
+    id,
+    spaceId,
+    uploadLoading,
+    handleUploadPictureByUrl,
+    openCropperModal,
+    handleCropSuccess,
+    handleExpandSuccess,
+    openExpandModal
+} = useAddPicture()
+</script>
 <template>
     <div class="add-picture">
         <h2 class="text-xl">{{ id ? '修改图片' : '创建图片' }}</h2>
@@ -46,31 +70,6 @@
         <image-expand v-model:visible="openExpandModal" :picture="picture" :onSuccess="handleExpandSuccess" />
     </div>
 </template>
-
-<script setup lang="ts">
-import PictureUpload from '@/components/picture-upload/index.vue'
-import useAddPicture from './hooks'
-import ImageCropper from '@/components/image-cropper/index.vue'
-import ImageExpand from '@/components/image-expand/index.vue'
-
-const {
-    pictureInfo,
-    picture,
-    url,
-    handleUploadSuccess,
-    handleUpdatePicture,
-    loading,
-    tag_category,
-    id,
-    spaceId,
-    uploadLoading,
-    handleUploadPictureByUrl,
-    openCropperModal,
-    handleCropSuccess,
-    handleExpandSuccess,
-    openExpandModal
-} = useAddPicture()
-</script>
 
 <style scoped lang="scss">
 @use './css/index' as *;

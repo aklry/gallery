@@ -1,3 +1,8 @@
+<script lang="ts" setup>
+import usePictureBatchHook from './hooks'
+
+const { formState, handleSubmit, loading } = usePictureBatchHook()
+</script>
 <template>
     <div class="picture-batch">
         <a-card title="批量添加图片">
@@ -15,11 +20,6 @@
         </a-card>
     </div>
 </template>
-
-<script lang="ts" setup>
-import usePictureBatchHook from './hooks'
-const { formState, handleSubmit, loading } = usePictureBatchHook()
-</script>
 
 <style lang="scss" scoped>
 @use './css' as *;

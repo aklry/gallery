@@ -1,19 +1,14 @@
-import { UpdateSpaceDto } from './dto/update-space.dto'
+import { UpdateSpaceDto, CreateSpaceDto, EditSpaceDto, QuerySpaceDto, DeleteSpaceDto } from './dto'
 import { Injectable } from '@nestjs/common'
 import { BusinessException } from '../custom-exception'
 import { BusinessStatus } from '../config'
 import { getSpaceLevelEnumByValue, getSpaceTypeEnumByValue, SpaceLevelEnum, SpaceTypeEnum } from './enum'
 import { Space } from './entities/space.entity'
 import { PrismaService } from '../prisma/prisma.service'
-import { CreateSpaceDto } from './dto/create-space.dto'
 import { type Request } from 'express'
 import { UserRole } from '../user/enum/user'
-import { DeleteSpaceDto } from './dto/delete-space.dto'
-import { EditSpaceDto } from './dto/edit-space.dto'
-import { QuerySpaceDto } from './dto/query-space.dto'
 import { Prisma } from '@prisma/client'
-import { PictureVoModel } from 'src/picture/vo/picture.vo'
-import { SpaceModelVo } from './vo/space.vo'
+import { SpaceModelVo } from './vo'
 import { LoginVoModel } from '../user/vo'
 
 @Injectable()
@@ -248,7 +243,7 @@ export class SpaceService {
         space.spaceName = createSpaceDto.spaceName
         space.spaceLevel = createSpaceDto.spaceLevel
         space.userId = user.id
-        if (user === null || user === undefined) {
+        if (!user) {
             throw new BusinessException('用户未登录', BusinessStatus.PARAMS_ERROR.code)
         }
         if (!createSpaceDto.spaceName) {
