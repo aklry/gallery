@@ -183,6 +183,27 @@ export class UserService {
         return user
     }
 
+    async getUserByIds(ids: string[]) {
+        const users = await this.prismaService.user.findMany({
+            where: {
+                id: {
+                    in: ids
+                }
+            }
+        })
+        return users.map(
+            user =>
+                ({
+                    id: user.id,
+                    userAccount: user.userAccount,
+                    userAvatar: user.userAvatar,
+                    userName: user.userName,
+                    userProfile: user.userProfile,
+                    userRole: user.userRole
+                }) as UserVoModel
+        )
+    }
+
     async getUserVoById(id: string) {
         const user = await this.prismaService.user.findUnique({
             where: {

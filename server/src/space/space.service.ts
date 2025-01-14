@@ -112,6 +112,33 @@ export class SpaceService {
         return result
     }
 
+    async getByIds(ids: string[]) {
+        const result = await this.prismaService.space.findMany({
+            where: {
+                id: {
+                    in: ids
+                }
+            }
+        })
+        return result.map(
+            item =>
+                ({
+                    id: item.id,
+                    spaceName: item.spaceName,
+                    spaceLevel: item.spaceLevel,
+                    maxSize: item.maxSize,
+                    maxCount: item.maxCount,
+                    totalSize: item.totalSize,
+                    totalCount: item.totalCount,
+                    spaceType: item.spaceType,
+                    userId: item.userId,
+                    createTime: item.createTime,
+                    editTime: item.editTime,
+                    updateTime: item.updateTime
+                }) as SpaceModelVo
+        )
+    }
+
     async deleteSpace(deleteSpaceDto: DeleteSpaceDto, req: Request) {
         const { id } = deleteSpaceDto
         const user = req.session.user
@@ -253,7 +280,7 @@ export class SpaceService {
             space.spaceLevel = SpaceLevelEnum.FREE
         }
         if (!createSpaceDto.spaceType) {
-            space.spaceType = SpaceTypeEnum.TEAM
+            space.spaceType = SpaceTypeEnum.PRIVATE
         }
         this.validateSpace(space, true)
         this.fillSpaceBySpaceLevel(space)
@@ -268,7 +295,7 @@ export class SpaceService {
                 where: {
                     userId: user.id as string,
                     spaceType: {
-                        equals: SpaceTypeEnum.TEAM
+                        equals: createSpaceDto.spaceType
                     }
                 }
             })
@@ -307,11 +334,14 @@ export class SpaceService {
         const spaceTypeEnum = getSpaceTypeEnumByValue(space.spaceType)
         // 创建空间
         if (add) {
-            if (spaceName === null || spaceName === undefined) {
+            if (!spaceName) {
                 throw new BusinessException('空间名称不能为空', BusinessStatus.PARAMS_ERROR.code)
             }
             if (spaceLevel === null) {
                 throw new BusinessException('空间等级不能为空', BusinessStatus.PARAMS_ERROR.code)
+            }
+            if (!space.spaceType) {
+                throw new BusinessException('空间类型不能为空', BusinessStatus.PARAMS_ERROR.code)
             }
         }
         // 修改空间

@@ -1,6 +1,6 @@
 import { SpaceRole } from '@prisma/client'
 import { SpaceModelVo } from '../../space/vo'
-import { LoginVoModel } from '../../user/vo'
+import { UserVoModel } from '../../user/vo'
 import { ApiProperty } from '@nestjs/swagger'
 import { ResponseVo } from '../../common/response.vo'
 export class SpaceUserModelVo {
@@ -16,10 +16,10 @@ export class SpaceUserModelVo {
     createTime: Date
     @ApiProperty({ description: '更新时间' })
     updateTime: Date
-    @ApiProperty({ description: '用户信息', type: LoginVoModel })
-    user: LoginVoModel
+    @ApiProperty({ description: '用户信息', type: UserVoModel })
+    user: UserVoModel | null
     @ApiProperty({ description: '空间信息', type: SpaceModelVo })
-    space: SpaceModelVo
+    space: SpaceModelVo | null
 }
 export class SpaceUserVo extends ResponseVo<SpaceUserModelVo> {
     @ApiProperty({ description: '空间用户信息', type: SpaceUserModelVo })
