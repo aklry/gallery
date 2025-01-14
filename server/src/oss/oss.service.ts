@@ -3,16 +3,16 @@ import * as OSS from 'ali-oss'
 import { getOssConfig, isValidUrl } from '../utils'
 import { extname } from 'node:path'
 import {
-    OSS_PUBLIC_PICTURE_PATH,
     BusinessStatus,
-    OSS_PICTURE_PATH,
     OSS_IMAGE_DOMAIN,
+    OSS_PICTURE_PATH,
     OSS_PREVIOUS_IMAGE_DOMAIN,
-    OSS_SPACE_PICTURE_PATH
+    OSS_PUBLIC_PICTURE_PATH
 } from '../config'
 import { BusinessException } from '../custom-exception'
-import { UploadPictureVoModel } from '../picture/vo/upload-picture.vo'
+import { UploadPictureVoModel } from '../picture/vo'
 import axios from 'axios'
+
 interface ImageInfo {
     ImageWidth: {
         value: number

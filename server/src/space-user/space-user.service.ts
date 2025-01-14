@@ -32,7 +32,7 @@ export class SpaceUserService {
     }
 
     // 校验空间成员对象
-    async validateSpaceUser(spaceUser: SpaceUser, add: boolean = true) {
+    validateSpaceUser(spaceUser: SpaceUser, add: boolean = true) {
         if (!spaceUser) {
             throw new BusinessException('空间成员对象不能为空', BusinessStatus.PARAMS_ERROR.code)
         }
@@ -42,14 +42,16 @@ export class SpaceUserService {
             if (!userId || !spaceId || !spaceRole) {
                 throw new BusinessException('空间成员对象参数不能为空', BusinessStatus.PARAMS_ERROR.code)
             }
-            const user = await this.userService.getUserById(userId)
-            if (!user) {
-                throw new BusinessException('用户不存在', BusinessStatus.PARAMS_ERROR.code)
-            }
-            const space = await this.spaceService.getById(spaceId)
-            if (!space) {
-                throw new BusinessException('空间不存在', BusinessStatus.PARAMS_ERROR.code)
-            }
+            this.userService.getUserById(userId).then(user => {
+                if (!user) {
+                    throw new BusinessException('用户不存在', BusinessStatus.PARAMS_ERROR.code)
+                }
+            })
+            this.spaceService.getById(spaceId).then(space => {
+                if (!space) {
+                    throw new BusinessException('空间不存在', BusinessStatus.PARAMS_ERROR.code)
+                }
+            })
         }
         const spaceRoleEnum = SpaceRoleHelper.getEnumByValue(spaceRole)
         if (spaceRole !== null && !spaceRoleEnum) {
