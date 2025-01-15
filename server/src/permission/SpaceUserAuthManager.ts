@@ -1,7 +1,9 @@
 import { SpaceUserAuthConfig } from './SpaceUserAuthConfig'
 import * as fs from 'node:fs'
 import * as path from 'node:path'
+import { Injectable } from '@nestjs/common'
 
+@Injectable()
 export class SpaceUserAuthManager {
     static spaceAuthConfig: SpaceUserAuthConfig
     static {

@@ -20,6 +20,7 @@ import { SpaceModule } from './space/space.module'
 import { AiExpandPictureModule } from './ai-expand-picture/ai-expand-picture.module'
 import { AnalyzeModule } from './analyze/analyze.module'
 import { SpaceUserModule } from './space-user/space-user.module'
+import { PermissionModule } from './permission/permission.module'
 
 @Module({
     imports: [
@@ -37,7 +38,8 @@ import { SpaceUserModule } from './space-user/space-user.module'
         SpaceModule,
         AiExpandPictureModule,
         AnalyzeModule,
-        SpaceUserModule
+        SpaceUserModule,
+        PermissionModule
     ],
     controllers: [AppController],
     providers: [AppService]
