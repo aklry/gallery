@@ -31,6 +31,7 @@ import { ResponseService } from '../response/response.service'
 import { version } from '../config'
 import { AuthGuard, RoleGuard } from '../auth/auth.guard'
 import { Roles } from '../role/role.decorator'
+import { Permission } from '../permission/permission.decorator'
 import { UserRole } from '../user/enum/user'
 import {
     AiExpandPictureDto,
@@ -45,6 +46,8 @@ import {
     UploadPictureUrlDto
 } from './dto'
 import { ValidationPipe } from '../pipe/validation.pipe'
+import { SpaceUserPermissionConstant } from 'src/permission/SpaceUserPermissionConstant'
+import { PermissionGuard } from '../permission/permission.guard'
 
 @Controller({
     path: 'picture',
@@ -108,6 +111,8 @@ export class PictureController {
 
     @Post('/delete')
     @ApiResponse({ type: DeletePictureVo })
+    @Permission(SpaceUserPermissionConstant.PICTURE_DELETE)
+    @UseGuards(AuthGuard, PermissionGuard)
     @ApiOperation({ summary: '删除图片(管理员)' })
     async deletePicture(@Body(new ValidationPipe()) deletePictureDto: DeletePictureDto, @Req() req: Request) {
         const data = await this.pictureService.delete(deletePictureDto, req)
@@ -115,6 +120,8 @@ export class PictureController {
     }
 
     @Post('/upload')
+    @Permission(SpaceUserPermissionConstant.PICTURE_UPLOAD)
+    @UseGuards(AuthGuard, PermissionGuard)
     @UseInterceptors(FileInterceptor('file'))
     @ApiConsumes('multipart/form-data')
     @ApiResponse({ type: UploadPictureVo })
@@ -140,6 +147,8 @@ export class PictureController {
     }
 
     @Post('/upload/url')
+    @Permission(SpaceUserPermissionConstant.PICTURE_UPLOAD)
+    @UseGuards(AuthGuard, PermissionGuard)
     @ApiResponse({ type: UploadPictureVo })
     @ApiOperation({ summary: '上传图片(url)' })
     async uploadFileByUrl(@Req() req: Request, @Body(new ValidationPipe()) uploadPictureUrlDto?: UploadPictureUrlDto) {
@@ -158,6 +167,8 @@ export class PictureController {
     }
 
     @Post('/edit')
+    @Permission(SpaceUserPermissionConstant.PICTURE_EDIT)
+    @UseGuards(AuthGuard, PermissionGuard)
     @ApiResponse({ type: UpdatePictureVo })
     @ApiOperation({ summary: '更新图片(非管理员)' })
     async editPicture(@Body(new ValidationPipe()) updatePictureDto: UpdatePictureDto, @Req() req: Request) {
@@ -213,8 +224,9 @@ export class PictureController {
     }
 
     @Post('/edit/batch')
-    @UseGuards(AuthGuard)
     @ApiResponse({ type: EditPictureBatchVo })
+    @Permission(SpaceUserPermissionConstant.PICTURE_EDIT)
+    @UseGuards(AuthGuard, PermissionGuard)
     @ApiOperation({ summary: '批量编辑图片' })
     async editPictureByBatch(@Body() editPictureByBatchDto: EditPictureByBatchDto, @Req() req: Request) {
         const result = await this.pictureService.editPictureBatch(editPictureByBatchDto, req)
@@ -222,9 +234,10 @@ export class PictureController {
     }
 
     @Post('/ai/expand/create_task')
-    @UseGuards(AuthGuard)
     @ApiResponse({ type: AiExpandCreatePictureVo })
     @ApiOperation({ summary: '创建扩图任务' })
+    @Permission(SpaceUserPermissionConstant.PICTURE_EDIT)
+    @UseGuards(AuthGuard, PermissionGuard)
     async createAiExpandPictureTask(
         @Body(new ValidationPipe()) aiExpandPictureDto: AiExpandPictureDto,
         @Req() req: Request

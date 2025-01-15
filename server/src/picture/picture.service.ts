@@ -357,9 +357,9 @@ export class PictureService {
             if (!space) {
                 throw new BusinessException('空间不存在', BusinessStatus.PARAMS_ERROR.code)
             }
-            if (space.userId !== user.id) {
-                throw new BusinessException('仅限本人空间使用', BusinessStatus.NOT_AUTH_ERROR.code)
-            }
+            // if (space.userId !== user.id) {
+            //     throw new BusinessException('仅限本人空间使用', BusinessStatus.NOT_AUTH_ERROR.code)
+            // }
             if (space.totalCount >= space.maxCount) {
                 throw new BusinessException('空间已满', BusinessStatus.OPERATION_ERROR.code)
             }
@@ -389,9 +389,9 @@ export class PictureService {
                     throw new BusinessException('图片空间不匹配', BusinessStatus.OPERATION_ERROR.code)
                 }
             }
-            if (oldPicture.userId !== user.id && user.userRole !== UserRole.ADMIN) {
-                throw new BusinessException('仅限本人或管理员修改', BusinessStatus.OPERATION_ERROR.code)
-            }
+            // if (oldPicture.userId !== user.id && user.userRole !== UserRole.ADMIN) {
+            //     throw new BusinessException('仅限本人或管理员修改', BusinessStatus.OPERATION_ERROR.code)
+            // }
         }
         // 上传图片
         const name = typeof file === 'string' ? file : file.originalname
