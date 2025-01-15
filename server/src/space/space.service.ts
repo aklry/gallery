@@ -10,6 +10,7 @@ import { UserRole } from '../user/enum/user'
 import { Prisma } from '@prisma/client'
 import { SpaceModelVo } from './vo'
 import { LoginVoModel } from '../user/vo'
+import { SpaceRoleMap } from '../space-user/enum/space-role'
 
 @Injectable()
 export class SpaceService {
@@ -55,15 +56,23 @@ export class SpaceService {
     // 创建空间
     async addSpace(createSpaceDto: CreateSpaceDto, req: Request) {
         const user = req.session.user
+        const space = new Space()
         if (user === null || user === undefined) {
             throw new BusinessException('用户未登录', BusinessStatus.PARAMS_ERROR.code)
         }
-        const space = new Space()
-        space.spaceName = createSpaceDto.spaceName
-        space.spaceLevel = createSpaceDto.spaceLevel
-        space.userId = user.id
-        this.validateSpace(space, true)
+        if (!createSpaceDto.spaceName) {
+            space.spaceName = '默认空间'
+        }
+        if (!createSpaceDto.spaceLevel) {
+            space.spaceLevel = SpaceLevelEnum.FREE
+        }
+        if (!createSpaceDto.spaceType) {
+            space.spaceType = SpaceTypeEnum.PRIVATE
+        }
+        Object.assign(space, createSpaceDto)
         this.fillSpaceBySpaceLevel(space)
+        this.validateSpace(space, true)
+        space.userId = user.id
         // 权限校验
         if (SpaceLevelEnum.FREE !== space.spaceLevel && user.role !== UserRole.ADMIN) {
             throw new BusinessException('无权限创建指定级别的空间', BusinessStatus.NOT_AUTH_ERROR.code)
@@ -81,16 +90,23 @@ export class SpaceService {
             }
             // 创建空间
             const result = await prisma.space.create({
-                data: {
-                    spaceName: space.spaceName,
-                    spaceLevel: space.spaceLevel,
-                    maxSize: space.maxSize,
-                    maxCount: space.maxCount,
-                    userId: space.userId
-                }
+                data: space
             })
             if (!result) {
                 throw new BusinessException('创建空间失败', BusinessStatus.OPERATION_ERROR.code)
+            }
+            // 如果是团队空间,关联新增团队成员记录
+            if (SpaceTypeEnum.TEAM === createSpaceDto.spaceType) {
+                const spaceUser = await prisma.space_user.create({
+                    data: {
+                        spaceId: result.id,
+                        userId: user.id,
+                        spaceRole: SpaceRoleMap.admin.value
+                    }
+                })
+                if (!spaceUser) {
+                    throw new BusinessException('创建空间成员失败', BusinessStatus.OPERATION_ERROR.code)
+                }
             }
             return result.id
         })
@@ -260,68 +276,6 @@ export class SpaceService {
             throw new BusinessException('编辑空间失败', BusinessStatus.OPERATION_ERROR.code)
         }
         return true
-    }
-
-    // 创建团队空间
-    // 创建空间
-    async addTeamSpace(createSpaceDto: CreateSpaceDto, req: Request) {
-        const user = req.session.user
-        const space = new Space()
-        space.spaceName = createSpaceDto.spaceName
-        space.spaceLevel = createSpaceDto.spaceLevel
-        space.userId = user.id
-        if (!user) {
-            throw new BusinessException('用户未登录', BusinessStatus.PARAMS_ERROR.code)
-        }
-        if (!createSpaceDto.spaceName) {
-            space.spaceName = '默认空间'
-        }
-        if (!createSpaceDto.spaceLevel) {
-            space.spaceLevel = SpaceLevelEnum.FREE
-        }
-        if (!createSpaceDto.spaceType) {
-            space.spaceType = SpaceTypeEnum.PRIVATE
-        }
-        this.validateSpace(space, true)
-        this.fillSpaceBySpaceLevel(space)
-        // 权限校验
-        if (SpaceLevelEnum.FREE !== space.spaceLevel && user.role !== UserRole.ADMIN) {
-            throw new BusinessException('无权限创建指定级别的空间', BusinessStatus.NOT_AUTH_ERROR.code)
-        }
-        // 针对用户进行加锁
-        const lock = await this.prismaService.$transaction(async prisma => {
-            // 查询用户是否已创建过空间
-            const existSpace = await prisma.space.findFirst({
-                where: {
-                    userId: user.id as string,
-                    spaceType: {
-                        equals: createSpaceDto.spaceType
-                    }
-                }
-            })
-            if (existSpace) {
-                throw new BusinessException('每个用户只能创建一个空间', BusinessStatus.PARAMS_ERROR.code)
-            }
-            // 创建空间
-            const result = await prisma.space.create({
-                data: {
-                    spaceName: space.spaceName,
-                    spaceLevel: space.spaceLevel,
-                    maxSize: space.maxSize,
-                    maxCount: space.maxCount,
-                    userId: space.userId,
-                    spaceType: space.spaceType
-                }
-            })
-            if (!result) {
-                throw new BusinessException('创建空间失败', BusinessStatus.OPERATION_ERROR.code)
-            }
-            return result.id
-        })
-        if (lock === null || lock === undefined) {
-            throw new BusinessException('创建空间失败', BusinessStatus.OPERATION_ERROR.code)
-        }
-        return lock
     }
 
     validateSpace(space: Space, add: boolean) {
