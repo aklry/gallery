@@ -5,13 +5,32 @@ import { PERMISSION_KEY } from './permission.decorator'
 import { SpaceUserAuthManager } from './SpaceUserAuthManager'
 import { BusinessException } from '../custom-exception'
 import { BusinessStatus } from '../config'
+import { PrismaService } from '../prisma/prisma.service'
+
+@Injectable()
+export class PermissionKit {
+    private static spaceUserAuthManager: SpaceUserAuthManager
+
+    static {
+        PermissionKit.spaceUserAuthManager = new SpaceUserAuthManager(new PrismaService())
+    }
+
+    static hasPermission(userRole: string, permission: string): boolean {
+        if (!PermissionKit.spaceUserAuthManager) {
+            throw new Error('PermissionKit not initialized')
+        }
+        const userPermissions = PermissionKit.spaceUserAuthManager.getPermissionsByRole(userRole)
+        return userPermissions.includes(permission)
+    }
+
+    static hasPermissions(userRole: string, permissions: string[]): boolean {
+        return permissions.every(permission => PermissionKit.hasPermission(userRole, permission))
+    }
+}
 
 @Injectable()
 export class PermissionGuard implements CanActivate {
-    constructor(
-        private readonly reflector: Reflector,
-        private readonly spaceUserAuthManager: SpaceUserAuthManager
-    ) {}
+    constructor(private readonly reflector: Reflector) {}
 
     canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
         const requiredPermissions = this.reflector.getAllAndOverride<string[]>(PERMISSION_KEY, [
@@ -28,10 +47,6 @@ export class PermissionGuard implements CanActivate {
         if (!user) {
             throw new BusinessException('未登录', BusinessStatus.NOT_LOGIN_ERROR.code)
         }
-        const userRole = user.userRole
-
-        const userPermissions = this.spaceUserAuthManager.getPermissionsByRole(userRole)
-
-        return requiredPermissions.every(permission => userPermissions.includes(permission))
+        return PermissionKit.hasPermissions(user.userRole, requiredPermissions)
     }
 }

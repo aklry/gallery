@@ -28,6 +28,10 @@ import {
     AiExpandPictureDto
 } from './dto'
 import { AiExpandPictureService } from '../ai-expand-picture/ai-expand-picture.service'
+import { SpaceUserAuthManager } from '../permission/SpaceUserAuthManager'
+import { SpaceUserPermissionConstant } from 'src/permission/SpaceUserPermissionConstant'
+import { Space } from 'src/space/entities/space.entity'
+import { PermissionKit } from 'src/permission/permission.guard'
 
 @Injectable()
 export class PictureService {
@@ -36,7 +40,8 @@ export class PictureService {
         private readonly ossService: OssService,
         private readonly redisCacheService: RedisCacheService,
         private readonly spaceService: SpaceService,
-        private readonly aiExpandPictureService: AiExpandPictureService
+        private readonly aiExpandPictureService: AiExpandPictureService,
+        private readonly spaceUserAuthManager: SpaceUserAuthManager
     ) {}
 
     async getPictureByPage(queryPictureDto: QueryPictureDto) {
@@ -251,7 +256,7 @@ export class PictureService {
         } as GetPictureVoModel
     }
 
-    async getByIdVo(id: string) {
+    async getByIdVo(id: string, req: Request) {
         const result = await this.prismaService.picture.findUnique({
             where: { id }
         })
@@ -261,23 +266,36 @@ export class PictureService {
         const user = await this.prismaService.user.findUnique({
             where: { id: result.userId }
         })
+        // 获取权限列表
+        const loginUser = req.session.user
+        const spaceId = result.spaceId
+        let space: Space | null = null
+        if (spaceId !== null) {
+            const hasPermission = PermissionKit.hasPermission(
+                loginUser.userRole,
+                SpaceUserPermissionConstant.PICTURE_VIEW
+            )
+            if (!hasPermission) {
+                throw new BusinessException('无权限查看', BusinessStatus.NOT_AUTH_ERROR.code)
+            }
+            space = await this.spaceService.getById(result.spaceId)
+        }
+        const permissionList = await this.spaceUserAuthManager.getPermissionList(space, loginUser)
         return {
             id: result.id,
             url: result.url,
             name: result.name,
             introduction: result.introduction,
             category: result.category,
-            tags: result.tags === '' ? '' : JSON.parse(result.tags) || [],
+            tags: result.tags === '' ? [] : JSON.parse(result.tags) || [],
             picSize: Number(result.picSize),
             picWidth: result.picWidth,
             picHeight: result.picHeight,
             picScale: result.picScale,
-            picColor: result.picColor,
             picFormat: result.picFormat,
+            picColor: result.picColor,
             createTime: result.createTime.toISOString(),
-            userId: result.userId,
-            editTime: result.editTime.toISOString(),
-            thumbnailUrl: result.thumbnailUrl,
+            permissions: permissionList,
             user: {
                 id: user?.id,
                 userAccount: user?.userAccount,
@@ -285,7 +303,10 @@ export class PictureService {
                 userAvatar: user?.userAvatar,
                 userProfile: user?.userProfile,
                 userRole: user?.userRole
-            } as LoginVoModel
+            },
+            spaceId: result.spaceId,
+            editTime: result.editTime.toISOString(),
+            thumbnailUrl: result.thumbnailUrl
         } as GetPictureVoModel
     }
 

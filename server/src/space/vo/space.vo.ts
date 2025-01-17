@@ -30,6 +30,8 @@ export class SpaceModelVo {
     updateTime: Date
     @ApiProperty({ description: '用户信息', required: true })
     user: UserVoModel
+    @ApiProperty({ description: '权限列表', required: false, type: [String] })
+    permissions?: string[]
 }
 
 export class SpaceVoType {

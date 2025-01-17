@@ -1,4 +1,4 @@
-import { UpdateSpaceDto, CreateSpaceDto, EditSpaceDto, QuerySpaceDto, DeleteSpaceDto } from './dto'
+import { CreateSpaceDto, DeleteSpaceDto, EditSpaceDto, QuerySpaceDto, UpdateSpaceDto } from './dto'
 import { Injectable } from '@nestjs/common'
 import { BusinessException } from '../custom-exception'
 import { BusinessStatus } from '../config'
@@ -11,10 +11,14 @@ import { Prisma } from '@prisma/client'
 import { SpaceModelVo } from './vo'
 import { LoginVoModel } from '../user/vo'
 import { SpaceRoleMap } from '../space-user/enum/space-role'
+import { SpaceUserAuthManager } from '../permission/SpaceUserAuthManager'
 
 @Injectable()
 export class SpaceService {
-    constructor(private readonly prismaService: PrismaService) {}
+    constructor(
+        private readonly prismaService: PrismaService,
+        private readonly spaceUserAuthManager: SpaceUserAuthManager
+    ) {}
 
     // 空间管理员使用
     async updateSpace(updateSpaceDto: UpdateSpaceDto) {
@@ -276,6 +280,18 @@ export class SpaceService {
             throw new BusinessException('编辑空间失败', BusinessStatus.OPERATION_ERROR.code)
         }
         return true
+    }
+
+    async getSpaceVoById(id: string, req: Request) {
+        const user = req.session.user
+        const space = await this.getById(id)
+        if (space === null) {
+            throw new BusinessException('空间不存在', BusinessStatus.PARAMS_ERROR.code)
+        }
+        const spaceVo = new SpaceModelVo()
+        Object.assign(spaceVo, space)
+        spaceVo.permissions = await this.spaceUserAuthManager.getPermissionList(space, user)
+        return spaceVo
     }
 
     validateSpace(space: Space, add: boolean) {

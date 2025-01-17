@@ -8,6 +8,7 @@ import { PermissionModule } from '../permission/permission.module'
 @Module({
     controllers: [SpaceUserController],
     providers: [SpaceUserService],
+    exports: [SpaceUserService],
     imports: [SpaceModule, UserModule, PermissionModule]
 })
 export class SpaceUserModule {}

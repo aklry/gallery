@@ -104,8 +104,8 @@ export class PictureController {
     @UseGuards(AuthGuard)
     @ApiResponse({ type: GetPictureVo })
     @ApiOperation({ summary: '根据id获取图片(非管理员)' })
-    async getByIdVo(@Param('id') id: string) {
-        const result = await this.pictureService.getByIdVo(id)
+    async getByIdVo(@Param('id') id: string, @Req() req: Request) {
+        const result = await this.pictureService.getByIdVo(id, req)
         return this.responseService.success(result)
     }
 

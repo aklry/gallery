@@ -37,6 +37,8 @@ export class GetPictureVoModel {
     editTime?: string
     @ApiProperty({ description: '缩略图URL' })
     thumbnailUrl?: string
+    @ApiProperty({ description: '权限列表', required: false })
+    permissions?: string[]
 }
 
 export class GetPictureVo extends ResponseVo<GetPictureVoModel> {
