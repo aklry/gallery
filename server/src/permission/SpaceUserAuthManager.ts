@@ -7,8 +7,8 @@ import { Injectable } from '@nestjs/common'
 export class SpaceUserAuthManager {
     static spaceAuthConfig: SpaceUserAuthConfig
     static {
-        const json = fs.readFileSync(path.resolve(process.cwd(), 'spaceUserAuthConfig.json'), 'utf8')
-        this.spaceAuthConfig = JSON.parse(json)
+        const json = fs.readFileSync(path.resolve(process.cwd(), 'src/permission/spaceUserAuthConfig.json'), 'utf8')
+        SpaceUserAuthManager.spaceAuthConfig = JSON.parse(json)
     }
 
     // 根据角色获取权限列表
