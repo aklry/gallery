@@ -31,7 +31,8 @@ import { AiExpandPictureService } from '../ai-expand-picture/ai-expand-picture.s
 import { SpaceUserAuthManager } from '../permission/SpaceUserAuthManager'
 import { SpaceUserPermissionConstant } from 'src/permission/SpaceUserPermissionConstant'
 import { Space } from 'src/space/entities/space.entity'
-import { PermissionKit } from 'src/permission/permission.guard'
+import { PermissionGuard, PermissionKit } from 'src/permission/permission.guard'
+import { PERMISSION_KEY } from '../permission/permission.decorator'
 
 @Injectable()
 export class PictureService {
@@ -271,10 +272,9 @@ export class PictureService {
         const spaceId = result.spaceId
         let space: Space | null = null
         if (spaceId !== null) {
-            const hasPermission = PermissionKit.hasPermission(
-                loginUser.userRole,
+            const hasPermission = await PermissionGuard.hasPermission(loginUser.id, PERMISSION_KEY, req, [
                 SpaceUserPermissionConstant.PICTURE_VIEW
-            )
+            ])
             if (!hasPermission) {
                 throw new BusinessException('无权限查看', BusinessStatus.NOT_AUTH_ERROR.code)
             }

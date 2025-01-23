@@ -40,6 +40,7 @@ import { EditUserDto } from './dto/edit-user.dto'
 import { UploadAvatarDto } from './dto/upload-avatar.dto'
 import { FileInterceptor } from '@nestjs/platform-express'
 import { UploadAvatarVo } from './vo/upload-avatar.vo'
+import { PermissionKit } from '../permission/permission.guard'
 @Controller({
     path: 'user',
     version
@@ -76,6 +77,8 @@ export class UserController {
             return this.responseService.error(null, data.message, data.code)
         }
         req.session.user = data
+        PermissionKit.setSession(data.id, data)
+        PermissionKit.login(data.id)
         return this.responseService.success(data)
     }
 
