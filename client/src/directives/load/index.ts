@@ -13,8 +13,8 @@ const vLoad: Directive<CustomElement, any> = {
             entries => {
                 if (entries[0].intersectionRatio > 0) {
                     sessionCache.setCache('loaded', true)
-                    current++
                     binding.value(current.toString())
+                    current++
                 }
             },
             {
