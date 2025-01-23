@@ -37,6 +37,10 @@ export class PermissionKit {
     static getSpaceUserAuthManager() {
         return PermissionKit.spaceUserAuthManager
     }
+
+    static getId() {
+        return PermissionKit.id
+    }
 }
 
 @Injectable()
@@ -56,8 +60,7 @@ export class PermissionGuard implements CanActivate {
             return true
         }
         const request = context.switchToHttp().getRequest()
-        const user = request.session.user
-        return this.getPermissionList(user.id, PERMISSION_KEY, request).then(permissions => {
+        return this.getPermissionList(PermissionKit.getId(), PERMISSION_KEY, request).then(permissions => {
             if (permissions.length === 0) {
                 return true
             }
@@ -94,9 +97,8 @@ export class PermissionGuard implements CanActivate {
             if (!spaceUser) {
                 throw new BusinessException('空间用户不存在', BusinessStatus.PARAMS_ERROR.code)
             }
-            const loginSpaceUser = await this.prisma.space_user.findUnique({
+            const loginSpaceUser = await this.prisma.space_user.findFirst({
                 where: {
-                    id: spaceUser.id,
                     userId,
                     spaceId: spaceUser.spaceId
                 }
