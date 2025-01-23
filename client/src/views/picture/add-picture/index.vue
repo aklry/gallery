@@ -67,7 +67,12 @@ const {
             :spaceId="spaceId"
             :onSuccess="handleCropSuccess"
         />
-        <image-expand v-model:visible="openExpandModal" :picture="picture" :onSuccess="handleExpandSuccess" />
+        <image-expand
+            ref="imageExpandRef"
+            v-model:visible="openExpandModal"
+            :picture="picture"
+            :onSuccess="handleExpandSuccess"
+        />
     </div>
 </template>
 

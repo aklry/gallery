@@ -7,7 +7,10 @@ const visible = defineModel('visible', {
     default: false
 })
 const props = defineProps<ImageExpandProps>()
-const { resultImageUrl, handleGenerate, loading, handleApply } = useImageExpand(props)
+const { resultImageUrl, handleGenerate, loading, applyLoading, handleApply, setApplyLoading } = useImageExpand(props)
+defineExpose({
+    setApplyLoading
+})
 </script>
 <template>
     <div class="image-expand">
@@ -25,7 +28,7 @@ const { resultImageUrl, handleGenerate, loading, handleApply } = useImageExpand(
             <div class="mb-4" />
             <a-flex :gap="16" justify="center">
                 <a-button type="primary" :loading="loading" ghost @click="handleGenerate">生成图片</a-button>
-                <a-button type="primary" ghost @click="handleApply">应用结果</a-button>
+                <a-button type="primary" :loading="applyLoading" ghost @click="handleApply">应用结果</a-button>
             </a-flex>
         </a-modal>
     </div>

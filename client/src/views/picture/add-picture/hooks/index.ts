@@ -1,4 +1,4 @@
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, useTemplateRef } from 'vue'
 import {
     pictureControllerUpdatePictureV1,
     pictureControllerEditPictureV1,
@@ -11,9 +11,11 @@ import usePictureStore from '@/store/modules/picture'
 import { useUserStore } from '@/store/modules/user'
 import { storeToRefs } from 'pinia'
 import { UserRole } from '@/constants'
+import ImageExpand from '@/components/image-expand/index.vue'
 const useAddPicture = () => {
     const pictureStore = usePictureStore()
     const { tag_category } = storeToRefs(pictureStore)
+    const imageExpand = useTemplateRef<InstanceType<typeof ImageExpand>>('imageExpandRef')
     const userStore = useUserStore()
     const { loginUser } = storeToRefs(userStore)
     const route = useRoute()
@@ -50,7 +52,7 @@ const useAddPicture = () => {
             }
             if (res.data) {
                 message.success('创建成功')
-                router.push(`/picture/${pictureInfo.id}`)
+                router.replace(`/picture/${pictureInfo.id}`)
             } else {
                 message.error(res.message)
             }
@@ -113,6 +115,7 @@ const useAddPicture = () => {
             color: cropPicture.color
         }
         openCropperModal.value = false
+        imageExpand.value?.setApplyLoading(false)
     }
     const handleExpandSuccess = async (expandPictureUrl: string) => {
         url.value = expandPictureUrl

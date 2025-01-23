@@ -6,6 +6,7 @@ import { message } from 'ant-design-vue'
 export const useImageExpand = (props: ImageExpandProps) => {
     const resultImageUrl = ref('')
     const loading = ref(false)
+    const applyLoading = ref(false)
     const taskId = ref('')
     const { picture } = toRefs(props)
     let pollingTimer: NodeJS.Timeout | null = null
@@ -27,8 +28,10 @@ export const useImageExpand = (props: ImageExpandProps) => {
                     if (taskOutput.task_status === 'SUCCEEDED') {
                         message.success('扩图任务成功')
                         resultImageUrl.value = taskOutput.output_image_url as string
+                        loading.value = false
                         clear()
                     } else if (taskOutput.task_status === 'FAILED') {
+                        loading.value = false
                         const errorMessage = res.data.output.message
                         if (
                             (errorMessage?.includes('size') && errorMessage?.includes('small')) ||
@@ -48,6 +51,7 @@ export const useImageExpand = (props: ImageExpandProps) => {
         }, 3000)
     }
     const handleApply = () => {
+        applyLoading.value = true
         props.onSuccess?.(resultImageUrl.value)
     }
     const handleGenerate = async () => {
@@ -69,15 +73,19 @@ export const useImageExpand = (props: ImageExpandProps) => {
             }
         } catch (error) {
             message.error('生成失败')
-        } finally {
-            loading.value = false
         }
+    }
+
+    const setApplyLoading = (loading: boolean) => {
+        applyLoading.value = loading
     }
 
     return {
         resultImageUrl,
         handleGenerate,
         handleApply,
-        loading
+        applyLoading,
+        loading,
+        setApplyLoading
     }
 }
