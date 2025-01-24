@@ -16,7 +16,7 @@
                     {{ record.userName || '佚名' }}
                 </template>
                 <template v-if="column.dataIndex === 'createTime'">
-                    {{ dayjs(record.createTime).format('YYYY-MM-DD HH:mm:ss') }}
+                    {{ formatTime(record.createTime) }}
                 </template>
                 <template v-if="column.dataIndex === 'userRole'">
                     <a-tag :color="record.userRole === 'admin' ? 'green' : 'blue'">
@@ -36,8 +36,8 @@
 </template>
 
 <script setup lang="ts">
-import dayjs from 'dayjs'
 import useAdmin from './hooks'
+import { formatTime } from '@/utils'
 
 const { columns, dataSource, total, searchParams, handleChange, handleDelete, handlePageChange } = useAdmin()
 </script>
