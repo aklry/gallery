@@ -31,7 +31,7 @@ import { AiExpandPictureService } from '../ai-expand-picture/ai-expand-picture.s
 import { SpaceUserAuthManager } from '../permission/SpaceUserAuthManager'
 import { SpaceUserPermissionConstant } from 'src/permission/SpaceUserPermissionConstant'
 import { Space } from 'src/space/entities/space.entity'
-import { PermissionGuard, PermissionKit } from 'src/permission/permission.guard'
+import { PermissionGuard } from 'src/permission/permission.guard'
 import { PERMISSION_KEY } from '../permission/permission.decorator'
 
 @Injectable()
@@ -42,7 +42,8 @@ export class PictureService {
         private readonly redisCacheService: RedisCacheService,
         private readonly spaceService: SpaceService,
         private readonly aiExpandPictureService: AiExpandPictureService,
-        private readonly spaceUserAuthManager: SpaceUserAuthManager
+        private readonly spaceUserAuthManager: SpaceUserAuthManager,
+        private readonly permissionGuard: PermissionGuard
     ) {}
 
     async getPictureByPage(queryPictureDto: QueryPictureDto) {
@@ -245,6 +246,7 @@ export class PictureService {
             picFormat: result.picFormat,
             createTime: result.createTime.toISOString(),
             userId: result.userId,
+            spaceId: result.spaceId,
             editTime: result.editTime.toISOString(),
             user: {
                 id: user?.id,
@@ -272,7 +274,7 @@ export class PictureService {
         const spaceId = result.spaceId
         let space: Space | null = null
         if (spaceId !== null) {
-            const hasPermission = await PermissionGuard.hasPermission(loginUser.id, PERMISSION_KEY, req, [
+            const hasPermission = await this.permissionGuard.hasPermission(loginUser.id, PERMISSION_KEY, req, [
                 SpaceUserPermissionConstant.PICTURE_VIEW
             ])
             if (!hasPermission) {

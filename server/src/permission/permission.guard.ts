@@ -44,13 +44,11 @@ export class PermissionKit {
 
 @Injectable()
 export class PermissionGuard implements CanActivate {
-    @Inject(PermissionKit)
-    private readonly permissionKit: PermissionKit
-    @Inject(Reflector)
-    private readonly reflector: Reflector
-    @Inject(PrismaService)
-    private readonly prisma: PrismaService
-    constructor() {}
+    constructor(
+        private readonly permissionKit: PermissionKit,
+        private readonly reflector: Reflector,
+        private readonly prisma: PrismaService
+    ) {}
 
     async canActivate(context: ExecutionContext): Promise<boolean> {
         const requiredPermissions = this.reflector.getAllAndOverride<string[]>(PERMISSION_KEY, [
@@ -79,8 +77,7 @@ export class PermissionGuard implements CanActivate {
         if (this.isAllFieldsNull(authContext)) {
             return ADMIN_PERMISSIONS
         }
-        const permissionKit = new PermissionKit()
-        const user = (await permissionKit.getSession(loginId)) as LoginVoModel
+        const user = (await this.permissionKit.getSession(loginId)) as LoginVoModel
         if (!user) {
             throw new BusinessException('用户未登录', BusinessStatus.NOT_LOGIN_ERROR.code)
         }
@@ -175,10 +172,9 @@ export class PermissionGuard implements CanActivate {
         return Object.values(obj).every(field => field === null || field === '' || field === undefined)
     }
 
-    static async hasPermission(loginId: string, loginType: string, request: any, needPermission: string[]) {
-        const permissionGuard = new PermissionGuard()
+    async hasPermission(loginId: string, loginType: string, request: any, needPermission: string[]) {
         // 获取当前用户的权限列表
-        const permissions = await permissionGuard.getPermissionList(loginId, loginType, request)
+        const permissions = await this.getPermissionList(loginId, loginType, request)
         return needPermission.every(permission => permissions.includes(permission))
     }
 }

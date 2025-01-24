@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common'
 import { SpaceUserAuthManager } from './SpaceUserAuthManager'
-import { PermissionKit } from './permission.guard'
+import { PermissionGuard, PermissionKit } from './permission.guard'
 
 @Module({
-    providers: [SpaceUserAuthManager, PermissionKit],
-    exports: [SpaceUserAuthManager, PermissionKit]
+    providers: [SpaceUserAuthManager, PermissionKit, PermissionGuard],
+    exports: [SpaceUserAuthManager, PermissionKit, PermissionGuard]
 })
 export class PermissionModule {}
