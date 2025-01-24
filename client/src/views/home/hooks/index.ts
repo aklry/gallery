@@ -64,7 +64,9 @@ const useHomeHooks = () => {
     const changeTabs = (key: string) => {
         searchParams.current = '1'
         if (flag1) {
-            loading.value = !loading.value
+            if (loading.value) {
+                loading.value = false
+            }
             flag1 = false
         }
         if (key === 'all') {
@@ -77,7 +79,9 @@ const useHomeHooks = () => {
     const changeTags = (tag: string, checked: boolean) => {
         searchParams.current = '1'
         if (flag2) {
-            loading.value = !loading.value
+            if (loading.value) {
+                loading.value = false
+            }
             flag2 = false
         }
         if (!checked) {

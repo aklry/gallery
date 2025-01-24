@@ -48,7 +48,8 @@ import { PermissionKit } from '../permission/permission.guard'
 export class UserController {
     constructor(
         private readonly userService: UserService,
-        private readonly responseService: ResponseService
+        private readonly responseService: ResponseService,
+        private readonly permissionKit: PermissionKit
     ) {}
 
     @Post('/register')
@@ -77,8 +78,8 @@ export class UserController {
             return this.responseService.error(null, data.message, data.code)
         }
         req.session.user = data
-        PermissionKit.setSession(data.id, data)
-        PermissionKit.login(data.id)
+        this.permissionKit.setSession(data.id, data)
+        this.permissionKit.login(data.id)
         return this.responseService.success(data)
     }
 

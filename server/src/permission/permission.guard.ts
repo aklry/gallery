@@ -1,5 +1,4 @@
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common'
-import { Observable } from 'rxjs'
+import { CanActivate, ExecutionContext, Inject, Injectable } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
 import { PERMISSION_KEY } from './permission.decorator'
 import { SpaceUserAuthManager } from './SpaceUserAuthManager'
@@ -11,46 +10,49 @@ import { SpaceUserAuthContext } from './SpaceUserAuthContext'
 import { LoginVoModel } from '../user/vo'
 import { SpaceUserPermissionConstant } from './SpaceUserPermissionConstant'
 import { SpaceTypeEnum, SpaceTypeMap } from '../space/enum'
+import { RedisService } from '../redis/redis.service'
 
 @Injectable()
 export class PermissionKit {
     private static spaceUserAuthManager: SpaceUserAuthManager
-    private static session: { [key: string]: any } = {}
-    private static id: string
-
+    @Inject(RedisService)
+    private redisService: RedisService
     static {
         PermissionKit.spaceUserAuthManager = new SpaceUserAuthManager(new PrismaService())
     }
 
-    static login(id: string) {
-        PermissionKit.id = id
+    login(id: string) {
+        this.redisService.set('id', id)
     }
 
-    static setSession(key: string, value: any) {
-        PermissionKit.session[key] = value
+    setSession(key: string, value: any) {
+        this.redisService.set(key, value)
     }
 
-    static getSession(key: string): any {
-        return PermissionKit.session[key]
+    getSession(key: string): any {
+        return this.redisService.get(key)
     }
 
     static getSpaceUserAuthManager() {
         return PermissionKit.spaceUserAuthManager
     }
 
-    static getId() {
-        return PermissionKit.id
+    getId() {
+        return this.redisService.get('id')
     }
 }
 
 @Injectable()
 export class PermissionGuard implements CanActivate {
-    constructor(
-        private readonly reflector: Reflector,
-        private readonly prisma: PrismaService
-    ) {}
+    @Inject(PermissionKit)
+    private readonly permissionKit: PermissionKit
+    @Inject(Reflector)
+    private readonly reflector: Reflector
+    @Inject(PrismaService)
+    private readonly prisma: PrismaService
+    constructor() {}
 
-    canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
+    async canActivate(context: ExecutionContext): Promise<boolean> {
         const requiredPermissions = this.reflector.getAllAndOverride<string[]>(PERMISSION_KEY, [
             context.getHandler(),
             context.getClass()
@@ -60,12 +62,12 @@ export class PermissionGuard implements CanActivate {
             return true
         }
         const request = context.switchToHttp().getRequest()
-        return this.getPermissionList(PermissionKit.getId(), PERMISSION_KEY, request).then(permissions => {
-            if (permissions.length === 0) {
-                return true
-            }
-            return requiredPermissions.every(permission => permissions.includes(permission))
-        })
+        const id = await this.permissionKit.getId()
+        const permissions = await this.getPermissionList(id, PERMISSION_KEY, request)
+        if (permissions.length === 0) {
+            return true
+        }
+        return requiredPermissions.every(permission => permissions.includes(permission))
     }
 
     async getPermissionList(loginId: string, loginType: string, request: any) {
@@ -77,7 +79,8 @@ export class PermissionGuard implements CanActivate {
         if (this.isAllFieldsNull(authContext)) {
             return ADMIN_PERMISSIONS
         }
-        const user = PermissionKit.getSession(loginId) as LoginVoModel
+        const permissionKit = new PermissionKit()
+        const user = (await permissionKit.getSession(loginId)) as LoginVoModel
         if (!user) {
             throw new BusinessException('用户未登录', BusinessStatus.NOT_LOGIN_ERROR.code)
         }
@@ -173,7 +176,7 @@ export class PermissionGuard implements CanActivate {
     }
 
     static async hasPermission(loginId: string, loginType: string, request: any, needPermission: string[]) {
-        const permissionGuard = new PermissionGuard(new Reflector(), new PrismaService())
+        const permissionGuard = new PermissionGuard()
         // 获取当前用户的权限列表
         const permissions = await permissionGuard.getPermissionList(loginId, loginType, request)
         return needPermission.every(permission => permissions.includes(permission))

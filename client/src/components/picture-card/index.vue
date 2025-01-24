@@ -1,13 +1,9 @@
 <script setup lang="ts">
 import { EditOutlined, DeleteOutlined } from '@ant-design/icons-vue'
-import { useRouter } from 'vue-router'
-const router = useRouter()
-const props = defineProps<{
-    picture: API.ShowPictureModelVo[]
-    loading: boolean
-    spaceId?: string
-}>()
-const emit = defineEmits(['deletePicture', 'editPicture'])
+import { PictureCardEmits, PictureCardProps } from './types'
+import usePictureCard from './hooks'
+const props = defineProps<PictureCardProps>()
+const emit = defineEmits<PictureCardEmits>()
 const handleDeletePrivatePicture = (id: string, e: MouseEvent) => {
     e.stopPropagation()
     emit('deletePicture', id)
@@ -16,23 +12,22 @@ const handleEditPicture = (id: string, e: MouseEvent) => {
     e.stopPropagation()
     emit('editPicture', id)
 }
-const goToPictureDetail = (id: string) => {
-    router.push(`/picture/${id}?spaceId=${props.spaceId}`)
-}
+
+const { goToPictureDetail } = usePictureCard(props)
 </script>
 <template>
     <div class="picture-card">
         <a-list
             :data-source="picture"
             :loading="loading"
-            :grid="{ gutter: 16, xs: 1, sm: 2, md: 3, lg: 4, xl: 5, xxl: 5 }"
+            :grid="{ gutter: 16, xs: 1, sm: 2, md: 3, lg: 4, xl: 4, xxl: 4 }"
         >
             <template #renderItem="{ item: picture }: { item: API.ShowPictureModelVo }">
                 <a-list-item @click="goToPictureDetail(picture.id)">
                     <a-card :hoverable="true">
                         <template #cover>
                             <img
-                                :src="picture.thumbnailUrl ?? picture.url"
+                                :src="picture.thumbnailUrl || picture.url"
                                 :alt="picture.filename"
                                 style="height: 180px; object-fit: cover"
                             />
@@ -67,10 +62,4 @@ const goToPictureDetail = (id: string) => {
         </a-list>
     </div>
 </template>
-<style scoped lang="scss">
-.picture-card {
-    width: 100%;
-    height: 100%;
-    background-color: #fff;
-}
-</style>
+<style scoped lang="scss"></style>

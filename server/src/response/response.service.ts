@@ -3,7 +3,7 @@ import { BusinessStatus } from '../config'
 
 @Injectable()
 export class ResponseService {
-    success(data: any, message?: string) {
+    success<T = any>(data: T, message?: string) {
         return {
             code: BusinessStatus.SUCCESS.code,
             message: message ?? BusinessStatus.SUCCESS.message,
