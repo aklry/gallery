@@ -22,7 +22,10 @@ const usePictureStore = defineStore(
         return { tag_category, getTagCategory }
     },
     {
-        persist: true
+        persist: {
+            storage: sessionStorage,
+            pick: ['tag_category']
+        }
     }
 )
 
