@@ -1,7 +1,6 @@
-import { IDataAnalyzeProps } from '../types'
 import { watchEffect } from 'vue'
 
-export const useDataAnalyze = (props: IDataAnalyzeProps) => {
+export const useDataAnalyze = () => {
     watchEffect(() => {})
     return {}
 }

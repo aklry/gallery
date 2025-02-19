@@ -29,9 +29,9 @@ export const useSpaceUser = (props: ISpaceUserProps) => {
         loading.value = true
         try {
             const res = await analyzeControllerGetUserAnalyzeV1({
-                queryAll: queryAll.value,
-                queryPublic: queryPublic.value,
-                spaceId: spaceId.value,
+                queryAll: queryAll?.value,
+                queryPublic: queryPublic?.value,
+                spaceId: spaceId?.value,
                 userId: userId.value,
                 timeDimension: timeDimension.value
             })

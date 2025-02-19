@@ -5,10 +5,10 @@ import VueCharts from 'vue-echarts'
 import 'echarts'
 import 'echarts-wordcloud'
 
-const props = withDefaults(defineProps<IDataAnalyzeProps>(), {
+withDefaults(defineProps<IDataAnalyzeProps>(), {
     loading: false
 })
-useDataAnalyze(props)
+useDataAnalyze()
 </script>
 
 <template>
