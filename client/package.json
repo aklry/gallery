@@ -38,6 +38,7 @@
         "postcss": "^8.4.49",
         "postcss-html": "^1.7.0",
         "postcss-scss": "^4.0.9",
+        "rollup-plugin-external-globals": "^0.13.0",
         "sass": "^1.82.0",
         "stylelint": "^15.11.0",
         "stylelint-config-prettier": "^9.0.5",
@@ -47,6 +48,8 @@
         "tailwindcss": "^3.4.16",
         "typescript": "~5.6.2",
         "vite": "^6.0.1",
+        "vite-plugin-compression": "^0.5.1",
+        "vite-plugin-html": "^3.2.2",
         "vue-tsc": "^2.1.10"
     }
 }
