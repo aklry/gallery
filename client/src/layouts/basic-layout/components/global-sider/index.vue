@@ -7,7 +7,7 @@ const { siderStyle, handleClick, menuItems, current } = useGlobalSider()
         <a-layout-sider :style="siderStyle">
             <div class="flex items-center pl-[20px] h-[60px]">
                 <a href="http://docs.aklry.com" target="_blank">
-                    <img src="@/assets/images/logo.png" alt="画云间" class="w-[50px]" />
+                    <img src="/logo.svg" alt="画云间" class="w-[50px]" />
                 </a>
                 <div class="text-[24px] font-bold ml-[10px]">画云间</div>
             </div>

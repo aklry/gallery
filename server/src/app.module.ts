@@ -1,4 +1,5 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common'
+import { ConfigModule } from '@nestjs/config'
 import { AppController } from './app.controller'
 import { AppService } from './app.service'
 import { ResponseModule } from './response/response.module'
@@ -39,7 +40,11 @@ import { PermissionModule } from './permission/permission.module'
         AiExpandPictureModule,
         AnalyzeModule,
         SpaceUserModule,
-        PermissionModule
+        PermissionModule,
+        ConfigModule.forRoot({
+            envFilePath: ['.env', '.env.development', '.env.production'],
+            isGlobal: true
+        })
     ],
     controllers: [AppController],
     providers: [AppService]

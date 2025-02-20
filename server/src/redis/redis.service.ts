@@ -9,7 +9,8 @@ export class RedisService implements OnModuleInit {
                 host: 'localhost',
                 port: 6379
             },
-            database: 0
+            database: 0,
+            password: process.env.REDIS_PASSWORD || ''
         })
         this.redisClient.on('error', error => {
             console.error('Redis connection failed', error)

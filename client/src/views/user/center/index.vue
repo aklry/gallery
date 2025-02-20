@@ -5,7 +5,7 @@
                 <a-button type="primary" @click="handleEdit">编辑</a-button>
             </template>
             <div class="flex justify-center mb-4">
-                <a-avatar :src="userInfo.userAvatar || image" :size="100" />
+                <a-avatar :src="userInfo.userAvatar || '/logo.svg'" :size="100" />
             </div>
             <a-descriptions :column="1" class="p-4">
                 <a-descriptions-item label="用户名" class="mb-4">
@@ -48,7 +48,6 @@
 
 <script setup lang="ts">
 import useUserCenter from './hooks'
-import image from '@/assets/images/logo.png'
 import PictureUpload from '@/components/picture-upload/index.vue'
 
 const { userInfo, open, form, handleOk, handleUploadSuccess, picture, handleEdit } = useUserCenter()
