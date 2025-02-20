@@ -3,6 +3,10 @@
     "version": "1.0.0",
     "description": "画云间",
     "main": "index.js",
+    "engines": {
+        "node": ">=18.0.0",
+        "pnpm": "^9.12.1"
+    },
     "scripts": {
         "dev:client": "pnpm -C client dev",
         "dev:server": "pnpm -C server start:dev",
