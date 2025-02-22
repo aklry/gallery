@@ -61,6 +61,12 @@ export default defineConfig({
                 entryFileNames: 'js/entry-[hash].js',
                 manualChunks: (id: string) => {
                     if (id.includes('node_modules')) {
+                        if (id.includes('echarts')) {
+                            return 'echarts'
+                        }
+                        if (id.includes('vue')) {
+                            return 'vue'
+                        }
                         return 'vendor'
                     }
                     return 'index'
