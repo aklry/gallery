@@ -60,7 +60,6 @@ const usePictureDetail = (id: string) => {
         }
     }
     const downloadPicture = (url?: string, filename?: string) => {
-        console.log(url, filename)
         download(url, filename)
     }
     onMounted(async () => {

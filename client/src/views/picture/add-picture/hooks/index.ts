@@ -47,7 +47,6 @@ const useAddPicture = () => {
             if (loginUser.value?.userRole === UserRole.ADMIN) {
                 res = await pictureControllerUpdatePictureV1(pictureInfo)
             } else {
-                console.log(pictureInfo)
                 res = await pictureControllerEditPictureV1(pictureInfo)
             }
             if (res.data) {

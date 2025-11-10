@@ -15,10 +15,7 @@ export class SpaceUserAuthManager {
 
     static spaceAuthConfig: SpaceUserAuthConfig
     static {
-        const json = fs.readFileSync(
-            path.resolve(process.cwd(), 'src', 'permission', 'spaceUserAuthConfig.json'),
-            'utf8'
-        )
+        const json = fs.readFileSync(path.resolve(__dirname, 'spaceUserAuthConfig.json'), 'utf8')
         SpaceUserAuthManager.spaceAuthConfig = JSON.parse(json)
     }
 
