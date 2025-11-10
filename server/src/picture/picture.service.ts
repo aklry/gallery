@@ -29,9 +29,9 @@ import {
 } from './dto'
 import { AiExpandPictureService } from '../ai-expand-picture/ai-expand-picture.service'
 import { SpaceUserAuthManager } from '../permission/SpaceUserAuthManager'
-import { SpaceUserPermissionConstant } from 'src/permission/SpaceUserPermissionConstant'
-import { Space } from 'src/space/entities/space.entity'
-import { PermissionGuard } from 'src/permission/permission.guard'
+import { SpaceUserPermissionConstant } from '../permission/SpaceUserPermissionConstant'
+import { Space } from '../space/entities/space.entity'
+import { PermissionGuard } from '../permission/permission.guard'
 import { PERMISSION_KEY } from '../permission/permission.decorator'
 
 @Injectable()
@@ -741,13 +741,19 @@ export class PictureService {
     // 用户查询图片接口
     async queryPictureUser(queryPictureDto: PartialQueryPictureDto) {
         const { searchText } = queryPictureDto
-        const where: Prisma.pictureWhereInput = {}
+        const where: Prisma.pictureWhereInput = {
+            reviewStatus: ReviewStatus.PASS,
+            spaceId: null
+        }
         if (searchText) {
             where.OR = [{ name: { contains: searchText } }, { introduction: { contains: searchText } }]
         }
         const [data, total] = await Promise.all([
             this.prismaService.picture.findMany({
-                where
+                where,
+                orderBy: {
+                    createTime: 'desc'
+                }
             }),
             this.prismaService.picture.count({ where })
         ])
