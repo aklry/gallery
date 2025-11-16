@@ -1,41 +1,38 @@
-import { ref, reactive, watch, onMounted } from 'vue'
+import { ref, reactive, watch, onMounted, onBeforeUnmount } from 'vue'
 import { pictureControllerGetPictureByPageVoV1, pictureControllerQueryPictureV1 } from '@/api/picture'
 import { useRouter } from 'vue-router'
-import { sessionCache } from '@/utils/cache'
 import { message } from 'ant-design-vue'
+import { debounce } from 'lodash'
 
 const useHomeHooks = () => {
     const router = useRouter()
     const dataList = ref<API.ShowPictureModelVo[]>([])
+    const containerRef = ref<HTMLDivElement | null>(null)
     const total = ref<number>(0)
     let flag1 = true
     let flag2 = true
     const searchParams = reactive<API.QueryPictureDto>({
         current: '1',
-        pageSize: '10',
+        pageSize: '20',
         sortField: 'createTime',
         sortOrder: 'desc'
     })
     const loading = ref(false)
     const fetchData = async (current?: string) => {
-        const loaded = sessionCache.getCache('loaded')
         try {
-            loading.value = true
             if (current) {
                 searchParams.current = current
             }
             const res = await pictureControllerGetPictureByPageVoV1(searchParams)
-            if (dataList.value.length === 0 && !loaded) {
+            if (dataList.value.length === 0) {
                 if (res.data.list.length > 0) {
                     dataList.value = res.data.list
                 } else {
-                    sessionCache.setCache('loaded', false)
                     message.info('没有更多图片了')
                     loading.value = false
                 }
             } else {
                 if (res.data.list.length === 0) {
-                    sessionCache.setCache('loaded', false)
                     message.info('没有更多图片了')
                     loading.value = false
                 } else {
@@ -46,10 +43,6 @@ const useHomeHooks = () => {
         } catch (error) {
             message.error('获取图片失败')
             loading.value = false
-        } finally {
-            if (!loaded) {
-                loading.value = false
-            }
         }
     }
     const fetchDataByClassify = async (category?: string, tags?: string[]) => {
@@ -110,21 +103,48 @@ const useHomeHooks = () => {
         queryPictureBySearchText({ searchText: value })
     }
     onMounted(() => {
-        loading.value = true
+        fetchData()
     })
     watch([() => searchParams.category, () => searchParams.tags], ([category, tags]) => {
         if (category) {
             fetchDataByClassify(category)
+            return
         }
         if (tags) {
             fetchDataByClassify(undefined, tags)
+            return
         }
         if (category === undefined || tags === undefined) {
+            fetchData('1')
             return
+        }
+    })
+    const handleScroll = debounce((e: Event) => {
+        const target = e.target as HTMLElement
+        const { scrollTop, clientHeight, scrollHeight } = target
+        const nearBottom = scrollHeight - (scrollTop + clientHeight) <= 100
+        loading.value = nearBottom
+        const hasMore = dataList.value.length < total.value
+        if (!nearBottom || !hasMore || !loading.value) return
+
+        const newPage = (parseInt(searchParams.current as string, 10) + 1).toString()
+        fetchData(newPage)
+    }, 100)
+
+    onMounted(() => {
+        if (containerRef.value) {
+            containerRef.value.addEventListener('scroll', handleScroll)
+        }
+    })
+
+    onBeforeUnmount(() => {
+        if (containerRef.value) {
+            containerRef.value.removeEventListener('scroll', handleScroll)
         }
     })
     return {
         dataList,
+        containerRef,
         total,
         searchParams,
         loading,

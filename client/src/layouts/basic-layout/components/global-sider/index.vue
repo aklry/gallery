@@ -1,17 +1,41 @@
 <script setup lang="ts">
+import { ref, h } from 'vue'
 import { useGlobalSider } from './hooks'
+import { MenuUnfoldOutlined, MenuFoldOutlined } from '@ant-design/icons-vue'
+
 const { siderStyle, handleClick, menuItems, current } = useGlobalSider()
+const collapsed = ref(true)
+const showToggle = ref(false)
+
+const toggleCollapse = () => {
+    collapsed.value = !collapsed.value
+}
 </script>
 <template>
-    <div class="global-sider">
-        <a-layout-sider :style="siderStyle">
-            <div class="flex items-center pl-[20px] h-[60px]">
+    <div class="global-sider" @mouseenter="showToggle = true" @mouseleave="showToggle = false">
+        <a-layout-sider
+            :style="siderStyle"
+            :collapsed="collapsed"
+            :collapsed-width="64"
+            :width="200"
+            :trigger="null"
+            collapsible
+        >
+            <div v-if="!collapsed" class="sider-header">
                 <a href="http://docs.aklry.com" target="_blank">
-                    <img src="/logo.svg" alt="画云间" class="w-[50px]" />
+                    <img src="/logo.svg" alt="画云间" class="logo-img" />
                 </a>
-                <div class="text-[24px] font-bold ml-[10px]">画云间</div>
+                <div class="logo-text">画云间</div>
             </div>
-            <a-menu :items="menuItems" @click="handleClick" v-model:selectedKeys="current" />
+            <a-menu :items="menuItems" v-model:selectedKeys="current" @click="handleClick" />
+            <a-button
+                v-show="showToggle"
+                class="absolute top-1/2 -right-2 transform -translate-y-1/2"
+                type="button"
+                @click.stop="toggleCollapse"
+                :icon="collapsed ? h(MenuUnfoldOutlined) : h(MenuFoldOutlined)"
+                size="large"
+            />
         </a-layout-sider>
     </div>
 </template>

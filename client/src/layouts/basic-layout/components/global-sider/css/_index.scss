@@ -1,6 +1,17 @@
 .global-sider {
-    width: 200px;
-    height: 100%;
+    @apply h-full relative;
+
+    .sider-header {
+        @apply flex items-center;
+
+        .logo-img {
+            @apply w-12 h-12;
+        }
+
+        .logo-text {
+            @apply ml-2 text-lg font-bold;
+        }
+    }
 }
 
 .ant-layout-sider {
