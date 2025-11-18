@@ -8,7 +8,8 @@ export const useAddSpace = () => {
     const router = useRouter()
     const form = reactive<API.CreateSpaceDto>({
         spaceName: '',
-        spaceLevel: SpaceLevelEnum.FREE
+        spaceLevel: SpaceLevelEnum.FREE,
+        spaceType: 0
     })
     const spaceLevelList = ref<API.SpaceLevelVoModel[]>([])
     const loading = ref(false)
