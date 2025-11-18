@@ -8,11 +8,13 @@ import * as picture from './picture'
 import * as space from './space'
 import * as message from './message'
 import * as analyze from './analyze'
+import * as spaceUser from './spaceUser'
 export default {
     app,
     user,
     picture,
     space,
     message,
-    analyze
+    analyze,
+    spaceUser
 }

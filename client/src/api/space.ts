@@ -38,6 +38,21 @@ export async function spaceControllerEditSpaceV1(body: API.EditSpaceDto, options
     })
 }
 
+/** 获取空间详情信息 GET /api/v1/space/get/vo */
+export async function spaceControllerGetSpaceVoV1(
+    // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
+    params: API.SpaceControllerGetSpaceVoV1Params,
+    options?: { [key: string]: any }
+) {
+    return ryRequest.request<API.SpaceVo>('/api/v1/space/get/vo', {
+        method: 'GET',
+        params: {
+            ...params
+        },
+        ...(options || {})
+    })
+}
+
 /** 获取空间列表 POST /api/v1/space/list */
 export async function spaceControllerListSpaceV1(body: API.QuerySpaceDto, options?: { [key: string]: any }) {
     return ryRequest.request<API.SpaceVo>('/api/v1/space/list', {

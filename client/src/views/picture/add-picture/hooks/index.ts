@@ -12,6 +12,7 @@ import { useUserStore } from '@/store/modules/user'
 import { storeToRefs } from 'pinia'
 import { UserRole } from '@/constants'
 import ImageExpand from '@/components/image-expand/index.vue'
+import { useGenerateImageByAi } from './useGenerateImage'
 const useAddPicture = () => {
     const pictureStore = usePictureStore()
     const { tag_category } = storeToRefs(pictureStore)
@@ -24,6 +25,10 @@ const useAddPicture = () => {
     const spaceId = route.query?.spaceId as string
     const picture = ref<API.UploadPictureVoModel>()
     const url = ref<string>('')
+    const setUrl = (newUrl: string) => {
+        url.value = newUrl
+    }
+    const { handleGenerateImageTaskByAi, text, loading: generateLoading } = useGenerateImageByAi(setUrl)
     const openCropperModal = ref(false)
     const openExpandModal = ref(false)
     const handleUploadSuccess = (result: API.UploadPictureVoModel) => {
@@ -168,7 +173,10 @@ const useAddPicture = () => {
         handleUploadPictureByUrl,
         handleCropSuccess,
         handleExpandSuccess,
-        openExpandModal
+        handleGenerateImageTaskByAi,
+        openExpandModal,
+        text,
+        generateLoading
     }
 }
 

@@ -17,4 +17,12 @@
 #    "reviewMessage": "审核通过"
 #}
 
-GET http://localhost:3000/api/v1/picture/list/color?spaceId=cm527jphc0003v5gc2u96qrge&color=#ff9556
+# GET http://localhost:3000/api/v1/picture/list/color?spaceId=cm527jphc0003v5gc2u96qrge&color=#ff9556
+
+POST http://localhost:3000/api/v1/picture/ai/generate/image
+Content-Type: application/json
+Cookie: connect.sid=s%3Auser%3A1763299396809.1FMy%2B7QY7uMWoQlai9o818Gq0IE73K%2BLbI4u086i1gs
+
+{
+    "text": "a beautiful girl"
+}

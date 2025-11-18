@@ -1,4 +1,26 @@
 declare namespace API {
+    type AddSpaceUserDto = {
+        /** 空间id */
+        spaceId: string
+        /** 用户id */
+        userId: string
+        /** 空间角色 */
+        spaceRole: 'viewer' | 'editor' | 'admin'
+    }
+
+    type AddSpaceUserVo = {
+        /** 状态码 */
+        code: number
+        /** 消息 */
+        message: string
+        /** 添加的空间成员id */
+        data: Record<string, any>
+        /** 时间戳 */
+        timestamp: string
+        /** 路径 */
+        path: string
+    }
+
     type AddSpaceVo = {
         /** 状态码 */
         code: number
@@ -67,11 +89,50 @@ declare namespace API {
         path: string
     }
 
+    type AiGenerateImageCreateTaskVo = {
+        /** 状态码 */
+        code: number
+        /** 消息 */
+        message: string
+        /** 数据 */
+        data: AiGeneratePictureVo
+        /** 时间戳 */
+        timestamp: string
+        /** 路径 */
+        path: string
+    }
+
+    type AiGenerateImageSuccessVo = {
+        /** 状态码 */
+        code: number
+        /** 消息 */
+        message: string
+        /** 数据 */
+        data: AiGeneratePictureSuccessVo
+        /** 时间戳 */
+        timestamp: string
+        /** 路径 */
+        path: string
+    }
+
+    type AiGeneratePictureSuccessVo = {
+        request_id: string
+        output: SuccessOutput
+        usage: Usage
+    }
+
+    type AiGeneratePictureVo = {
+        request_id: string
+        output: Output
+    }
+
     type CreateSpaceDto = {
         /** 空间名称 */
         spaceName: string
         /** 空间等级 */
         spaceLevel: 0 | 1 | 2
+        /** 空间类型 */
+        spaceType: number
     }
 
     type CreateUserDto = {
@@ -113,6 +174,24 @@ declare namespace API {
     type DeleteSpaceDto = {
         /** 空间ID */
         id: string
+    }
+
+    type DeleteSpaceUserDto = {
+        /** 空间成员id */
+        id: string
+    }
+
+    type DeleteSpaceUserVo = {
+        /** 状态码 */
+        code: number
+        /** 消息 */
+        message: string
+        /** 删除结果 */
+        data: Record<string, any>
+        /** 时间戳 */
+        timestamp: string
+        /** 路径 */
+        path: string
     }
 
     type DeleteSpaceVo = {
@@ -159,6 +238,26 @@ declare namespace API {
         id: string
         /** 空间名称 */
         spaceName: string
+    }
+
+    type EditSpaceUserDto = {
+        /** 空间用户id */
+        id: string
+        /** 空间角色 */
+        spaceRole: 'viewer' | 'editor' | 'admin'
+    }
+
+    type EditSpaceUserVo = {
+        /** 状态码 */
+        code: number
+        /** 消息 */
+        message: string
+        /** 更新结果 */
+        data: Record<string, any>
+        /** 时间戳 */
+        timestamp: string
+        /** 路径 */
+        path: string
     }
 
     type EditSpaceVo = {
@@ -256,6 +355,8 @@ declare namespace API {
         editTime: string
         /** 缩略图URL */
         thumbnailUrl: string
+        /** 权限列表 */
+        permissions?: string[]
     }
 
     type LoginVoModel = {
@@ -309,6 +410,10 @@ declare namespace API {
     type Output = {
         task_status: string
         task_id: string
+    }
+
+    type PictureControllerGenerateImageV1Params = {
+        taskId: string
     }
 
     type PictureControllerGetAiExpandPictureTaskV1Params = {
@@ -465,6 +570,19 @@ declare namespace API {
         spaceName?: string
         /** 空间等级 */
         spaceLevel?: 0 | 1 | 2
+        /** 空间类型 */
+        spaceType?: number
+    }
+
+    type QuerySpaceUserDto = {
+        /** 空间用户id */
+        id?: string
+        /** 用户id */
+        userId?: string
+        /** 空间id */
+        spaceId?: string
+        /** 空间角色 */
+        spaceRole?: 'viewer' | 'editor' | 'admin'
     }
 
     type ReadAllMessageVo = {
@@ -496,6 +614,12 @@ declare namespace API {
         timestamp: string
         /** 路径 */
         path: string
+    }
+
+    type Result = {
+        orig_prompt: string
+        actual_prompt: string
+        url: string
     }
 
     type ReviewPictureDto = {
@@ -587,6 +711,10 @@ declare namespace API {
         path: string
     }
 
+    type SpaceControllerGetSpaceVoV1Params = {
+        spaceId: string
+    }
+
     type SpaceLevelVo = {
         /** 状态码 */
         code: number
@@ -626,6 +754,8 @@ declare namespace API {
         totalSize: number
         /** 总数量 */
         totalCount: number
+        /** 空间类型 */
+        spaceType: number
         /** 用户ID */
         userId: string
         /** 创建时间 */
@@ -636,6 +766,8 @@ declare namespace API {
         updateTime: string
         /** 用户信息 */
         user: UserVoModel
+        /** 权限列表 */
+        permissions?: string[]
     }
 
     type SpaceRankAnalyzeDto = {
@@ -786,6 +918,47 @@ declare namespace API {
         path: string
     }
 
+    type SpaceUserEntitiesModelVo = {
+        /** 空间用户id */
+        id: string
+        /** 用户id */
+        userId: string
+        /** 空间id */
+        spaceId: string
+        /** 空间角色 */
+        spaceRole: string
+        /** 创建时间 */
+        createTime: string
+        /** 更新时间 */
+        updateTime: string
+    }
+
+    type SpaceUserEntitiesVo = {
+        /** 状态码 */
+        code: number
+        /** 消息 */
+        message: string
+        /** 空间用户信息 */
+        data: SpaceUserEntitiesModelVo
+        /** 时间戳 */
+        timestamp: string
+        /** 路径 */
+        path: string
+    }
+
+    type SpaceUserListVo = {
+        /** 状态码 */
+        code: number
+        /** 消息 */
+        message: string
+        /** 空间用户信息 */
+        data: any[][]
+        /** 时间戳 */
+        timestamp: string
+        /** 路径 */
+        path: string
+    }
+
     type SpaceVo = {
         /** 状态码 */
         code: number
@@ -804,6 +977,16 @@ declare namespace API {
         list: SpaceModelVo[]
         /** 总数 */
         total: number
+    }
+
+    type SuccessOutput = {
+        task_id: string
+        task_status: string
+        submit_time: string
+        scheduled_time: string
+        end_time: string
+        results: Result[]
+        task_metrics: TaskMetrics
     }
 
     type TagCategoryList = {

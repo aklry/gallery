@@ -28,11 +28,13 @@ import {
     AiExpandPictureDto
 } from './dto'
 import { AiExpandPictureService } from '../ai-expand-picture/ai-expand-picture.service'
+import { AiGeneratePictureService } from '../ai-generate-picture/ai-generate-picture.service'
 import { SpaceUserAuthManager } from '../permission/SpaceUserAuthManager'
 import { SpaceUserPermissionConstant } from '../permission/SpaceUserPermissionConstant'
 import { Space } from '../space/entities/space.entity'
 import { PermissionGuard } from '../permission/permission.guard'
 import { PERMISSION_KEY } from '../permission/permission.decorator'
+import { AiGeneratePictureDto } from '../ai-generate-picture/dto'
 
 @Injectable()
 export class PictureService {
@@ -42,6 +44,7 @@ export class PictureService {
         private readonly redisCacheService: RedisCacheService,
         private readonly spaceService: SpaceService,
         private readonly aiExpandPictureService: AiExpandPictureService,
+        private readonly aiGeneratePictureService: AiGeneratePictureService,
         private readonly spaceUserAuthManager: SpaceUserAuthManager,
         private readonly permissionGuard: PermissionGuard
     ) {}
@@ -883,5 +886,14 @@ export class PictureService {
     // 获取扩图任务
     async getAiExpandPictureTask(taskId: string) {
         return await this.aiExpandPictureService.getOutPaintingTask(taskId)
+    }
+
+    // 获取生成图片任务
+    async getGenerateImageTask(aiGeneratePictureDto: AiGeneratePictureDto) {
+        return await this.aiGeneratePictureService.getGenerateImageTask(aiGeneratePictureDto)
+    }
+
+    async genGenerateImage(taskId: string) {
+        return await this.aiGeneratePictureService.generateImage(taskId)
     }
 }

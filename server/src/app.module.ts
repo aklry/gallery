@@ -22,6 +22,7 @@ import { AiExpandPictureModule } from './ai-expand-picture/ai-expand-picture.mod
 import { AnalyzeModule } from './analyze/analyze.module'
 import { SpaceUserModule } from './space-user/space-user.module'
 import { PermissionModule } from './permission/permission.module'
+import { AiGeneratePictureModule } from './ai-generate-picture/ai-generate-picture.module'
 
 @Module({
     imports: [
@@ -44,7 +45,8 @@ import { PermissionModule } from './permission/permission.module'
         ConfigModule.forRoot({
             envFilePath: ['.env', '.env.development', '.env.production'],
             isGlobal: true
-        })
+        }),
+        AiGeneratePictureModule
     ],
     controllers: [AppController],
     providers: [AppService]

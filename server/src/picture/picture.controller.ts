@@ -25,7 +25,9 @@ import {
     TagCategoryListVo,
     UpdatePictureVo,
     UploadBatchPictureVo,
-    UploadPictureVo
+    UploadPictureVo,
+    AiGenerateImageCreateTaskVo,
+    AiGenerateImageSuccessVo
 } from './vo'
 import { ResponseService } from '../response/response.service'
 import { version } from '../config'
@@ -48,6 +50,7 @@ import {
 import { ValidationPipe } from '../pipe/validation.pipe'
 import { SpaceUserPermissionConstant } from 'src/permission/SpaceUserPermissionConstant'
 import { PermissionGuard } from '../permission/permission.guard'
+import { AiGeneratePictureDto } from '../ai-generate-picture/dto'
 
 @Controller({
     path: 'picture',
@@ -252,6 +255,33 @@ export class PictureController {
     @ApiOperation({ summary: '获取扩图任务' })
     async getAiExpandPictureTask(@Query('taskId') taskId: string) {
         const result = await this.pictureService.getAiExpandPictureTask(taskId)
+        return this.responseService.success(result)
+    }
+
+    @Post('/ai/generate/image_task')
+    @UseGuards(AuthGuard)
+    @ApiResponse({ type: AiGenerateImageCreateTaskVo })
+    @ApiOperation({ summary: '获取生成图片的任务' })
+    @ApiBody({
+        description: '获取生成图片的任务',
+        schema: {
+            type: 'object',
+            properties: {
+                text: { type: 'string' }
+            }
+        }
+    })
+    async getGenerateImageTask(@Body(new ValidationPipe()) aiGeneratePictureDto: AiGeneratePictureDto) {
+        const result = await this.pictureService.getGenerateImageTask(aiGeneratePictureDto)
+        return this.responseService.success(result)
+    }
+
+    @Get('/ai/generate/image/:taskId')
+    @UseGuards(AuthGuard)
+    @ApiResponse({ type: AiGenerateImageSuccessVo })
+    @ApiOperation({ summary: '生成图片' })
+    async generateImage(@Param('taskId') taskId: string) {
+        const result = await this.pictureService.genGenerateImage(taskId)
         return this.responseService.success(result)
     }
 }

@@ -1,10 +1,159 @@
 @use '@/assets/styles/mixins' as *;
 
+// CSS 变量定义
+$spacing-xs: 0.5rem;
+$spacing-sm: 1rem;
+$spacing-md: 1.5rem;
+$spacing-lg: 2rem;
+$border-radius: 8px;
+
 .add-picture {
     @include screen-center;
-    @apply overflow-y-scroll h-full;
+    @apply h-full overflow-y-scroll py-6 px-4;
+
+    &__header {
+        @apply mb-8 flex flex-col gap-2;
+    }
+
+    &__title {
+        @apply text-3xl font-bold text-gray-900;
+    }
+
+    &__subtitle {
+        @apply text-sm text-gray-500;
+    }
+
+    // 主面板网格布局
+    &__panels {
+        @apply grid gap-6;
+
+        grid-template-columns: 1fr;
+
+        @media (width >= 1024px) {
+            grid-template-columns: 2fr 1fr;
+        }
+    }
+
+    &__panel {
+        @apply shadow-sm rounded-lg overflow-hidden transition-shadow duration-200 hover:shadow-md;
+
+        &-header {
+            @apply flex flex-col gap-1;
+        }
+
+        &-tip {
+            @apply text-xs text-gray-400 font-normal;
+        }
+
+        &--info {
+            @apply sticky top-6 h-fit;
+
+            .ant-card-body {
+                @apply pt-6;
+            }
+        }
+    }
+
+    // 标签页样式
+    &__tabs {
+        .ant-tabs-nav {
+            @apply mb-6 border-b border-gray-200;
+        }
+
+        .ant-tabs-tab {
+            @apply font-medium transition-colors;
+
+            &:hover {
+                @apply text-blue-600;
+            }
+        }
+    }
+
+    // URL 上传输入区
+    &__url-upload {
+        @apply flex gap-3 flex-col;
+
+        @media (width >= 768px) {
+            @apply flex-row items-end;
+        }
+
+        .ant-input,
+        .ant-input-textarea {
+            @apply flex-1 rounded-lg border-gray-300;
+
+            min-height: 40px;
+        }
+
+        .ant-btn {
+            @apply font-medium transition-all;
+
+            min-width: 100px;
+
+            @media (width >= 768px) {
+                @apply min-w-[100px];
+            }
+        }
+    }
+
+    // 表单样式
+    &__form {
+        @apply flex flex-col gap-5;
+
+        .ant-form-item {
+            @apply mb-0;
+
+            .ant-form-item-label {
+                @apply pb-2;
+
+                label {
+                    @apply font-medium text-gray-700;
+                }
+            }
+
+            .ant-input,
+            .ant-select,
+            .ant-auto-complete {
+                @apply rounded-lg border-gray-300;
+            }
+        }
+    }
+
+    // 操作按钮组
+    &__actions {
+        @apply flex flex-col gap-3 pt-2;
+
+        @media (width >= 768px) {
+            @apply flex-row;
+        }
+
+        .ant-btn {
+            @apply font-medium transition-all;
+
+            flex: 1;
+
+            &:hover {
+                @apply shadow-md;
+            }
+        }
+    }
+
+    // AI 图片预览
+    &__ai-image-preview {
+        @apply fixed bottom-6 right-6 bg-white rounded-lg shadow-lg p-4 border border-gray-200;
+
+        z-index: 100;
+
+        @media (width <= 768px) {
+            @apply fixed bottom-4 right-4 p-3;
+        }
+
+        img {
+            @apply rounded-md;
+        }
+    }
 }
 
+// 滚动条隐藏
 ::-webkit-scrollbar {
     display: none;
     width: 0;
