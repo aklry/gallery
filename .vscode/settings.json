@@ -71,5 +71,6 @@
     "umijs",
     "vite",
     "wordcloud"
-  ]
+  ],
+  "prisma.pinToPrisma6": true
 }
