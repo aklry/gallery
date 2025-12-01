@@ -4,6 +4,7 @@ import { SetResponseDataInterceptor } from './interceptors'
 import { VersioningType } from '@nestjs/common'
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger'
 import { HttpExceptionFilter, BusinessExceptionFilter } from './filters'
+import { ApiValidateMiddleware } from './middlewares/api-validate.middleware'
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule)
@@ -19,6 +20,9 @@ async function bootstrap() {
     app.useGlobalInterceptors(new SetResponseDataInterceptor())
     // 注册全局异常过滤器
     app.useGlobalFilters(new HttpExceptionFilter(), new BusinessExceptionFilter())
+    // 注册全局中间件
+    const apiValidateMiddleware = new ApiValidateMiddleware()
+    app.use(apiValidateMiddleware.use)
     // 注册swagger
     if (process.env.ENV === 'development') {
         const config = new DocumentBuilder().setTitle('接口文档').setVersion('1.0').setDescription('源空间').build()

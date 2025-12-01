@@ -9,5 +9,6 @@ export const BusinessStatus = {
     FORBIDDEN_ERROR: { code: 40300, message: '禁止访问' },
     SYSTEM_ERROR: { code: 50000, message: '系统错误' },
     OPERATION_ERROR: { code: 50001, message: '操作失败' },
-    IMAGE_TYPE_ERROR: { code: 50002, message: '图片格式错误' }
+    IMAGE_TYPE_ERROR: { code: 50002, message: '图片格式错误' },
+    API_SIGN_VALIDATE_ERROR: { code: 50003, message: '接口签名验证失败' }
 }

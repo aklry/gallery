@@ -1,6 +1,7 @@
 import RYRequest from './request'
 import { URL, TIME_OUT } from './config'
 import { message } from 'ant-design-vue'
+import md5 from 'md5'
 const ryRequest = new RYRequest({
     baseURL: URL,
     timeout: TIME_OUT,
@@ -17,6 +18,15 @@ const ryRequest = new RYRequest({
                 }
             }
             return res.data
+        },
+        requestSuccess(config) {
+            const signKey = 'aklry'
+            const st = Date.now()
+            if (config.headers) {
+                config.headers['s_t'] = st
+                config.headers['s_sign'] = md5(`${signKey}_${st}`)
+            }
+            return config
         }
     }
 })

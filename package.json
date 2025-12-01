@@ -49,6 +49,7 @@
         "@commitlint/cli": "^19.6.0",
         "@commitlint/config-conventional": "^19.6.0",
         "@types/crypto-js": "^4.2.2",
+        "@types/md5": "^2.3.6",
         "@types/node": "^20.3.1",
         "@typescript-eslint/eslint-plugin": "^8.0.0",
         "@typescript-eslint/parser": "^8.0.0",
@@ -66,6 +67,7 @@
     },
     "dependencies": {
         "axios": "^1.7.9",
-        "crypto-js": "^4.2.0"
+        "crypto-js": "^4.2.0",
+        "md5": "^2.3.0"
     }
 }
