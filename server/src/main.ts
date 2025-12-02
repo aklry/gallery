@@ -3,7 +3,7 @@ import { AppModule } from './app.module'
 import { SetResponseDataInterceptor } from './interceptors'
 import { VersioningType } from '@nestjs/common'
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger'
-import { HttpExceptionFilter, BusinessExceptionFilter } from './filters'
+import { HttpExceptionFilter, BusinessExceptionFilter, AllExceptionsFilter } from './filters'
 import { ApiValidateMiddleware } from './middlewares/api-validate.middleware'
 
 async function bootstrap() {
@@ -19,7 +19,7 @@ async function bootstrap() {
     // 注册全局响应拦截器
     app.useGlobalInterceptors(new SetResponseDataInterceptor())
     // 注册全局异常过滤器
-    app.useGlobalFilters(new HttpExceptionFilter(), new BusinessExceptionFilter())
+    app.useGlobalFilters(new AllExceptionsFilter(), new HttpExceptionFilter(), new BusinessExceptionFilter())
     // 注册全局中间件
     const apiValidateMiddleware = new ApiValidateMiddleware()
     app.use(apiValidateMiddleware.use)
@@ -29,7 +29,7 @@ async function bootstrap() {
         const document = SwaggerModule.createDocument(app, config)
         SwaggerModule.setup('docs', app, document)
         // 提供 Swagger JSON 数据
-        app.getHttpAdapter().get('/swagger-json', (req, res) => {
+        app.getHttpAdapter().get('/swagger-json', (_req, res) => {
             res.send(document)
         })
     }
