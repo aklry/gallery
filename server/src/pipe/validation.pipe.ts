@@ -1,7 +1,8 @@
-import { ArgumentMetadata, Injectable, PipeTransform, BadGatewayException, BadRequestException } from '@nestjs/common'
+import { ArgumentMetadata, Injectable, PipeTransform } from '@nestjs/common'
 import { validate } from 'class-validator'
 import { plainToClass } from 'class-transformer'
 import { BusinessStatus } from '../config'
+import { BusinessException } from '../custom-exception'
 
 @Injectable()
 export class ValidationPipe implements PipeTransform<any> {
@@ -13,11 +14,10 @@ export class ValidationPipe implements PipeTransform<any> {
         const errors = await validate(object)
         if (errors.length > 0) {
             const formattedErrors = this.formatErrors(errors)
-            throw new BadRequestException({
-                statusCode: BusinessStatus.PARAMS_VALIDATION_ERROR.code,
-                message: BusinessStatus.PARAMS_VALIDATION_ERROR.message,
-                errors: formattedErrors
-            })
+            throw new BusinessException(
+                BusinessStatus.PARAMS_VALIDATION_ERROR.message + ': ' + formattedErrors,
+                BusinessStatus.PARAMS_VALIDATION_ERROR.code
+            )
         }
         return value
     }
@@ -27,10 +27,7 @@ export class ValidationPipe implements PipeTransform<any> {
         return !types.includes(metatype)
     }
 
-    private formatErrors(errors: any[]): any[] {
-        return errors.map(error => ({
-            field: error.property,
-            constraints: Object.values(error.constraints || {})
-        }))
+    private formatErrors(errors: any[]): string {
+        return errors.map(error => Object.values(error.constraints || {}).join(', ')).join('; ')
     }
 }

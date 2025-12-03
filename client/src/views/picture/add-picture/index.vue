@@ -101,8 +101,10 @@ const {
                         <a-select v-model:value="pictureInfo.tags" :options="tag_category?.tagList" mode="tags" />
                     </a-form-item>
                     <a-form-item class="add-picture__actions">
-                        <a-button :loading="loading" type="primary" @click="handleUpdatePicture">创建</a-button>
-                        <a-button @click="openCropperModal = true">编辑</a-button>
+                        <a-button :loading="loading" type="primary" @click="handleUpdatePicture" class="mr-2">
+                            创建
+                        </a-button>
+                        <a-button @click="openCropperModal = true" class="mr-2">编辑</a-button>
                         <a-button @click="openExpandModal = true">扩图</a-button>
                     </a-form-item>
                 </a-form>
