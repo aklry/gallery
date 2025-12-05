@@ -37,8 +37,13 @@ const usePictureDetail = (id: string) => {
                         message.error('您没有权限删除这张图片')
                         return
                     }
-                    await pictureControllerDeletePictureV1({ id })
-                    message.success('删除图片成功')
+                    const res = await pictureControllerDeletePictureV1({ id })
+                    if (res.code === 1) {
+                        message.success('删除图片成功')
+                    } else {
+                        message.error(res.message || '删除图片失败')
+                        return
+                    }
                     setTimeout(() => {
                         router.push('/')
                     }, 1000)

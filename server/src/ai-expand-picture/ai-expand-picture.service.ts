@@ -28,7 +28,8 @@ export class AiExpandPictureService {
                         x_scale: input.xScale,
                         y_scale: input.yScale,
                         best_quantity: false,
-                        limit_image_size: true
+                        limit_image_size: true,
+                        add_watermark: false
                     }
                 },
                 headers: {

@@ -82,16 +82,18 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
                         args.where = { ...args.where, isDelete: 0 }
                         return query(args)
                     },
-                    async delete({ model, args }) {
+                    delete: async ({ model, args }) => {
                         // 转换为 update 操作
-                        return (this as any)[model].update({
+                        const modelName = model.charAt(0).toLowerCase() + model.slice(1)
+                        return (this as any)[modelName].update({
                             ...args,
                             data: { isDelete: 1 }
                         })
                     },
-                    async deleteMany({ model, args }) {
+                    deleteMany: async ({ model, args }) => {
                         // 转换为 updateMany 操作
-                        return (this as any)[model].updateMany({
+                        const modelName = model.charAt(0).toLowerCase() + model.slice(1)
+                        return (this as any)[modelName].updateMany({
                             ...args,
                             data: { isDelete: 1 }
                         })
