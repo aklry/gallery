@@ -1,4 +1,12 @@
-import { CreateUserDto } from './dto/create-user.dto'
+import {
+    CreateUserDto,
+    UserRegisterDto,
+    UserLoginDto,
+    FindUserDto,
+    UpdateUserDto,
+    EditUserDto,
+    UploadAvatarDto
+} from './dto'
 import {
     Controller,
     Get,
@@ -29,15 +37,9 @@ import { ApiBody, ApiConsumes, ApiOperation, ApiResponse } from '@nestjs/swagger
 import { Request } from 'express'
 import { AuthGuard, RoleGuard } from '../auth/auth.guard'
 import { User } from './entities/user.entity'
-import { UserRegisterDto } from './dto/user-register.dto'
-import { UserLoginDto } from './dto/user-login.dto'
 import { Roles } from '../role/role.decorator'
 import { UserRole } from './enum/user'
-import { FindUserDto } from './dto/find-user.dto'
 import { DeleteRequest } from '../common/delete.dto'
-import { UpdateUserDto } from './dto/update-user.dto'
-import { EditUserDto } from './dto/edit-user.dto'
-import { UploadAvatarDto } from './dto/upload-avatar.dto'
 import { FileInterceptor } from '@nestjs/platform-express'
 import { UploadAvatarVo } from './vo/upload-avatar.vo'
 import { PermissionKit } from '../permission/permission.guard'

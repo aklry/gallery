@@ -1,21 +1,23 @@
 import { Injectable } from '@nestjs/common'
-import { UpdateUserDto } from './dto/update-user.dto'
 import { PrismaService } from '../prisma/prisma.service'
 import { ResponseService } from '../response/response.service'
 import { BusinessStatus } from '../config'
 import { UserRole } from './enum/user'
 import * as bcrypt from 'bcrypt'
-import { LoginVoModel } from './vo'
+import { LoginVoModel, UserVoModel } from './vo'
 import { Request } from 'express'
-import { UserRegisterDto } from './dto/user-register.dto'
-import { UserLoginDto } from './dto/user-login.dto'
-import { FindUserDto } from './dto/find-user.dto'
-import { UserVoModel } from './vo/user.vo'
-import { CreateUserDto } from './dto/create-user.dto'
 import { DeleteRequest } from '../common/delete.dto'
-import { EditUserDto } from './dto/edit-user.dto'
+import {
+    CreateUserDto,
+    EditUserDto,
+    FindUserDto,
+    UpdateUserDto,
+    UploadAvatarDto,
+    UserLoginDto,
+    UserRegisterDto
+} from './dto'
 import { OssService } from '../oss/oss.service'
-import { UploadAvatarDto } from './dto/upload-avatar.dto'
+
 @Injectable()
 export class UserService {
     constructor(
@@ -23,6 +25,7 @@ export class UserService {
         private readonly responseService: ResponseService,
         private readonly ossService: OssService
     ) {}
+
     async userRegister(userRegisterDto: UserRegisterDto) {
         const { userAccount, userPassword, checkedPassword } = userRegisterDto
         if (userPassword !== checkedPassword) {
@@ -47,6 +50,7 @@ export class UserService {
         })
         return newUser.id
     }
+
     async getLoginUser(req: Request) {
         const user = req.session.user
         if (!user) {
@@ -175,12 +179,11 @@ export class UserService {
     }
 
     async getUserById(id: string) {
-        const user = await this.prismaService.user.findUnique({
+        return await this.prismaService.user.findUnique({
             where: {
                 id
             }
         })
-        return user
     }
 
     async getUserByIds(ids: string[]) {
@@ -248,8 +251,7 @@ export class UserService {
 
     async encryptPassword(password: string) {
         const salt = await bcrypt.genSalt()
-        const hashedPassword = await bcrypt.hash(password, salt)
-        return hashedPassword
+        return await bcrypt.hash(password, salt)
     }
 
     async editUser(editUserDto: EditUserDto) {
@@ -265,8 +267,7 @@ export class UserService {
             data.userProfile = userProfile
         }
         if (userPassword) {
-            const hashedPassword = await this.encryptPassword(userPassword)
-            data.userPassword = hashedPassword
+            data.userPassword = await this.encryptPassword(userPassword)
         }
         await this.prismaService.user.update({
             where: { id },
@@ -274,9 +275,9 @@ export class UserService {
         })
         return true
     }
+
     async uploadUserAvatar(file: Express.Multer.File, uploadAvatarDto: UploadAvatarDto) {
         const { prefix } = uploadAvatarDto
-        const fileBuffer = await this.ossService.uploadFile(file.originalname, file.buffer, prefix)
-        return fileBuffer
+        return await this.ossService.uploadFile(file.originalname, file.buffer, prefix)
     }
 }
