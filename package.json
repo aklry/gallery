@@ -7,6 +7,7 @@
         "node": ">=18.0.0",
         "pnpm": ">=9.12.1 < 10.0.0"
     },
+    "packageManager": "pnpm@9.12.1",
     "scripts": {
         "dev:client": "pnpm -C client dev",
         "dev:server": "pnpm -C server start:dev",

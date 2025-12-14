@@ -1,18 +1,21 @@
 import { Injectable } from '@nestjs/common'
-import { getApiLey } from '../utils'
 import { AiExpandPictureCreateTaskDto } from './dto'
 import { AI_MODEL, BusinessStatus } from '../config'
 import { AiExpandPictureCreatePictureVo, AiExpandPictureQueryPictureVo } from './vo'
 import { BusinessException } from '../custom-exception'
 import axios from 'axios'
+import { ConfigService } from '@nestjs/config'
 
 @Injectable()
 export class AiExpandPictureService {
-    private readonly apiKey: string = getApiLey()
-    public static readonly CREATE_OUT_PAINTING_TASK_URL =
+    private static readonly CREATE_OUT_PAINTING_TASK_URL =
         'https://dashscope.aliyuncs.com/api/v1/services/aigc/image2image/out-painting'
-    public static readonly GET_OUT_PAINTING_TASK_URL = (taskId: string) =>
+    private static readonly GET_OUT_PAINTING_TASK_URL = (taskId: string) =>
         `https://dashscope.aliyuncs.com/api/v1/tasks/${taskId}`
+    private readonly apiKey: string
+    constructor(private readonly configService: ConfigService) {
+        this.apiKey = this.configService.get<string>('bailian.apiKey')
+    }
 
     async createOutPaintingTask(input: AiExpandPictureCreateTaskDto) {
         try {

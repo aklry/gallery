@@ -23,6 +23,10 @@ import { AnalyzeModule } from './analyze/analyze.module'
 import { SpaceUserModule } from './space-user/space-user.module'
 import { PermissionModule } from './permission/permission.module'
 import { AiGeneratePictureModule } from './ai-generate-picture/ai-generate-picture.module'
+import { load } from 'js-yaml'
+import * as fs from 'node:fs'
+import * as path from 'node:path'
+import type { YamlOssConfig } from './types'
 
 @Module({
     imports: [
@@ -44,7 +48,8 @@ import { AiGeneratePictureModule } from './ai-generate-picture/ai-generate-pictu
         PermissionModule,
         ConfigModule.forRoot({
             envFilePath: ['.env', '.env.development', '.env.production'],
-            isGlobal: true
+            isGlobal: true,
+            load: [() => load(fs.readFileSync(path.resolve(process.cwd(), 'config.yaml'), 'utf8')) as YamlOssConfig]
         }),
         AiGeneratePictureModule
     ],

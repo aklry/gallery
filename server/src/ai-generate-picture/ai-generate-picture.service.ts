@@ -1,18 +1,22 @@
 import { Injectable } from '@nestjs/common'
-import { getApiLey } from '../utils'
 import { BusinessException } from '../custom-exception'
 import { AI_MODEL_GENERATION, BusinessStatus } from '../config'
 import { AiGeneratePictureDto } from './dto'
 import axios, { AxiosResponse } from 'axios'
 import { AiGeneratePictureVo, AiGeneratePictureSuccessVo } from './vo'
+import { ConfigService } from '@nestjs/config'
 
 @Injectable()
 export class AiGeneratePictureService {
-    private readonly apiKey: string = getApiLey()
-    public static readonly GET_GENERATION_IMAGE_TASK_URL =
+    private static readonly GET_GENERATION_IMAGE_TASK_URL =
         'https://dashscope.aliyuncs.com/api/v1/services/aigc/text2image/image-synthesis'
-    public static readonly GENERATION_IMAGE_URL = (taskId: string) =>
+    private static readonly GENERATION_IMAGE_URL = (taskId: string) =>
         `https://dashscope.aliyuncs.com/api/v1/tasks/${taskId}`
+    private readonly apiKey: string
+
+    constructor(private readonly configService: ConfigService) {
+        this.apiKey = this.configService.get<string>('bailian.apiKey')
+    }
     async getGenerateImageTask(input: AiGeneratePictureDto) {
         try {
             const res: AxiosResponse<AiGeneratePictureVo> = await axios({

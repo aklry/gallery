@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import * as OSS from 'ali-oss'
-import { getOssConfig, isValidUrl } from '../utils'
+import { isValidUrl } from '../utils'
 import { extname } from 'node:path'
 import {
     BusinessStatus,
@@ -12,6 +12,8 @@ import {
 import { BusinessException } from '../custom-exception'
 import { UploadPictureVoModel } from '../picture/vo'
 import axios from 'axios'
+import { ConfigService } from '@nestjs/config'
+import type { OssConfig } from '../types'
 
 interface ImageInfo {
     ImageWidth: {
@@ -33,8 +35,8 @@ interface PaletteInfo {
 @Injectable()
 export class OssService {
     private readonly ossClient: OSS
-    constructor() {
-        const config = getOssConfig()
+    constructor(private readonly configService: ConfigService) {
+        const config = this.configService.get<OssConfig>('oss')
         this.ossClient = new OSS({
             region: config.region,
             accessKeyId: config.accessKeyId,
