@@ -11,7 +11,6 @@ import {
 } from '../config'
 import { BusinessException } from '../custom-exception'
 import { UploadPictureVoModel } from '../picture/vo'
-import axios from 'axios'
 import { ConfigService } from '@nestjs/config'
 import type { OssConfig } from '../types'
 
@@ -49,10 +48,11 @@ export class OssService {
             let ext = ''
             const isUrl = isValidUrl(filename)
             if (isUrl) {
-                const response = await axios.get(filename, { responseType: 'arraybuffer' })
-                fileBuffer = Buffer.from(response.data, 'binary')
+                const response = await fetch(filename)
+                const arrayBuffer = await response.arrayBuffer()
+                fileBuffer = Buffer.from(arrayBuffer)
                 // Get content type from response headers
-                const contentType = response.headers['content-type']
+                const contentType = response.headers.get('content-type')
                 if (contentType) {
                     const extension = contentType.split('/')[1]
                     if (['jpeg', 'jpg', 'png', 'webp'].includes(extension)) {

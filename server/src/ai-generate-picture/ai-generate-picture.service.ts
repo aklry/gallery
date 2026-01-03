@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common'
 import { BusinessException } from '../custom-exception'
 import { AI_MODEL_GENERATION, BusinessStatus } from '../config'
 import { AiGeneratePictureDto } from './dto'
-import axios, { AxiosResponse } from 'axios'
 import { AiGeneratePictureVo, AiGeneratePictureSuccessVo } from './vo'
 import { ConfigService } from '@nestjs/config'
 
@@ -17,12 +16,11 @@ export class AiGeneratePictureService {
     constructor(private readonly configService: ConfigService) {
         this.apiKey = this.configService.get<string>('bailian.apiKey')
     }
-    async getGenerateImageTask(input: AiGeneratePictureDto) {
+    async getGenerateImageTask(input: AiGeneratePictureDto): Promise<AiGeneratePictureVo> {
         try {
-            const res: AxiosResponse<AiGeneratePictureVo> = await axios({
-                url: AiGeneratePictureService.GET_GENERATION_IMAGE_TASK_URL,
+            const data = await fetch(AiGeneratePictureService.GET_GENERATION_IMAGE_TASK_URL, {
                 method: 'POST',
-                data: {
+                body: JSON.stringify({
                     model: AI_MODEL_GENERATION,
                     input: {
                         prompt: input.text
@@ -31,36 +29,37 @@ export class AiGeneratePictureService {
                         size: '1024*1024',
                         n: 1
                     }
-                },
+                }),
                 headers: {
                     Authorization: `Bearer ${this.apiKey}`,
                     'Content-Type': 'application/json',
                     'X-DashScope-Async': 'enable'
                 }
             })
-            if (res.status !== 200) {
+            const res: AiGeneratePictureVo = await data.json()
+            if (res.output.task_status === 'FAILED') {
                 throw new BusinessException('生成图片失败', BusinessStatus.OPERATION_ERROR.code)
             }
-            return res.data
+            return res
         } catch (error: any) {
             console.log(error)
             throw new BusinessException(error.message, BusinessStatus.OPERATION_ERROR.code)
         }
     }
 
-    async generateImage(taskId: string) {
+    async generateImage(taskId: string): Promise<AiGeneratePictureSuccessVo> {
         try {
-            const res: AxiosResponse<AiGeneratePictureSuccessVo> = await axios({
-                url: AiGeneratePictureService.GENERATION_IMAGE_URL(taskId),
+            const response = await fetch(AiGeneratePictureService.GENERATION_IMAGE_URL(taskId), {
                 method: 'GET',
                 headers: {
                     Authorization: `Bearer ${this.apiKey}`
                 }
             })
-            if (res.status !== 200) {
+            if (!response.ok) {
                 throw new BusinessException('生成图片失败', BusinessStatus.OPERATION_ERROR.code)
             }
-            return res.data
+            const res: AiGeneratePictureSuccessVo = await response.json()
+            return res
         } catch (error: any) {
             console.log(error)
             throw new BusinessException(error.message, BusinessStatus.OPERATION_ERROR.code)

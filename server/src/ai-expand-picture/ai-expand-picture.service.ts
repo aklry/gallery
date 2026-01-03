@@ -3,7 +3,6 @@ import { AiExpandPictureCreateTaskDto } from './dto'
 import { AI_MODEL, BusinessStatus } from '../config'
 import { AiExpandPictureCreatePictureVo, AiExpandPictureQueryPictureVo } from './vo'
 import { BusinessException } from '../custom-exception'
-import axios from 'axios'
 import { ConfigService } from '@nestjs/config'
 
 @Injectable()
@@ -17,12 +16,11 @@ export class AiExpandPictureService {
         this.apiKey = this.configService.get<string>('bailian.apiKey')
     }
 
-    async createOutPaintingTask(input: AiExpandPictureCreateTaskDto) {
+    async createOutPaintingTask(input: AiExpandPictureCreateTaskDto): Promise<AiExpandPictureCreatePictureVo> {
         try {
-            const res = await axios({
-                url: AiExpandPictureService.CREATE_OUT_PAINTING_TASK_URL,
+            const res = await fetch(AiExpandPictureService.CREATE_OUT_PAINTING_TASK_URL, {
                 method: 'POST',
-                data: {
+                body: JSON.stringify({
                     model: AI_MODEL,
                     input: {
                         image_url: input.url
@@ -34,35 +32,34 @@ export class AiExpandPictureService {
                         limit_image_size: true,
                         add_watermark: false
                     }
-                },
+                }),
                 headers: {
                     Authorization: `Bearer ${this.apiKey}`,
                     'X-DashScope-Async': 'enable',
                     'Content-Type': 'application/json'
                 }
             })
-            if (res.status !== 200) {
+            const data: AiExpandPictureCreatePictureVo = await res.json()
+            if (data.output.task_status === 'FAILED') {
                 throw new BusinessException('创建扩图任务失败', BusinessStatus.OPERATION_ERROR.code)
             }
-            return res.data as AiExpandPictureCreatePictureVo
+            return data
         } catch (error) {
-            console.log(error.response.data)
             throw new BusinessException('创建扩图任务失败', BusinessStatus.OPERATION_ERROR.code)
         }
     }
 
-    async getOutPaintingTask(taskId: string) {
+    async getOutPaintingTask(taskId: string): Promise<AiExpandPictureQueryPictureVo> {
         try {
             const url = AiExpandPictureService.GET_OUT_PAINTING_TASK_URL(taskId)
-            const res = await axios.get(url, {
+            const data = await fetch(url, {
+                method: 'GET',
                 headers: {
                     Authorization: `Bearer ${this.apiKey}`
                 }
             })
-            if (res.status !== 200) {
-                throw new BusinessException('获取扩图任务失败', BusinessStatus.OPERATION_ERROR.code)
-            }
-            return res.data as AiExpandPictureQueryPictureVo
+            const res: AiExpandPictureQueryPictureVo = await data.json()
+            return res
         } catch (error) {
             console.log(error.response.data)
             throw new BusinessException('获取扩图任务失败', BusinessStatus.OPERATION_ERROR.code)

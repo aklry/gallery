@@ -1,12 +1,11 @@
 import { Injectable } from '@nestjs/common'
 import * as cheerio from 'cheerio'
-import axios from 'axios'
 
 @Injectable()
 export class ExtractService {
-    async fetchHtml(url: string) {
-        const response = await axios.get(url)
-        return response.data
+    async fetchHtml(url: string): Promise<string> {
+        const response = await fetch(url)
+        return response.text()
     }
 
     async extractImage(html: string, count: number) {

@@ -13,7 +13,6 @@ import { MessageStatus, Prisma } from '@prisma/client'
 import { ShowPictureModelVo, PictureVoModel, GetPictureVoModel, UploadPictureVoModel } from './vo'
 import { RedisCacheService } from '../cache/cache.service'
 import { SpaceService } from '../space/space.service'
-import axios from 'axios'
 import { hexToRgb, euclideanDistance, normalizeDistance } from '../utils'
 import {
     EditPictureByBatchDto,
@@ -708,10 +707,11 @@ export class PictureService {
     }
 
     async getPictureByKeywords(keywords: string, count: number) {
-        const url = `https://images.baidu.com/search/acjson?tn=resultjson_com&word=${keywords}&pn=${count}`
-        const res = await axios.get(url)
+        const url = `https://image.baidu.com/search/acjson?tn=resultjson_com&word=${keywords}&pn=${count}`
+        const response = await fetch(url)
+        const res = await response.json()
         let imageUrl: string[] = []
-        res.data.data.forEach((item: any) => {
+        res.data.forEach((item: any) => {
             imageUrl.push(item.thumbURL)
         })
         if (imageUrl.length === 0) {
