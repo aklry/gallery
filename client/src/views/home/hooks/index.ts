@@ -1,13 +1,14 @@
-import { ref, reactive, watch, onMounted, onBeforeUnmount } from 'vue'
-import { pictureControllerGetPictureByPageVoV1, pictureControllerQueryPictureV1 } from '@/api/picture'
-import { useRouter } from 'vue-router'
+import { ref, reactive, watch, onMounted, onBeforeUnmount, type Ref } from 'vue'
+import {
+    pictureControllerGetPictureByPageVoV1,
+    pictureControllerQueryPictureV1,
+    pictureControllerGetByIdVoV1
+} from '@/api/picture'
 import { message } from 'ant-design-vue'
 import { debounce } from 'lodash'
 
-const useHomeHooks = () => {
-    const router = useRouter()
+const useHomeHooks = (containerRef: Ref<HTMLDivElement | null>) => {
     const dataList = ref<API.ShowPictureModelVo[]>([])
-    const containerRef = ref<HTMLDivElement | null>(null)
     const total = ref<number>(0)
     let flag1 = true
     let flag2 = true
@@ -84,10 +85,20 @@ const useHomeHooks = () => {
             searchParams.tags = [tag]
         }
     }
-    const clickPicture = (id: string) => {
-        router.push({
-            path: `/picture/${id}`
-        })
+    const detailVisible = ref(false)
+    const detailPicture = ref<API.GetPictureVoModel | null>(null)
+    const detailLoading = ref(false)
+    const clickPicture = async (id: string) => {
+        detailVisible.value = true
+        detailLoading.value = true
+        try {
+            const res = await pictureControllerGetByIdVoV1({ id })
+            detailPicture.value = res.data
+        } catch {
+            message.error('获取图片详情失败')
+        } finally {
+            detailLoading.value = false
+        }
     }
     const queryPictureBySearchText = async (queryPictureDto: Partial<API.QueryPictureDto>) => {
         const res = await pictureControllerQueryPictureV1(queryPictureDto)
@@ -152,7 +163,10 @@ const useHomeHooks = () => {
         changeTags,
         clickPicture,
         fetchData,
-        handleSearchPicture
+        handleSearchPicture,
+        detailVisible,
+        detailPicture,
+        detailLoading
     }
 }
 export default useHomeHooks

@@ -7,3 +7,59 @@
 ::-webkit-scrollbar {
     display: none;
 }
+
+.picture-card {
+    @apply rounded-xl overflow-hidden cursor-pointer;
+
+    background: #fff;
+    box-shadow: 0 1px 4px rgb(0 0 0 / 8%);
+    transition:
+        transform 0.25s ease,
+        box-shadow 0.25s ease;
+
+    &:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 6px 20px rgb(0 0 0 / 12%);
+    }
+
+    &__cover {
+        @apply overflow-hidden;
+
+        img {
+            @apply w-full block;
+
+            transition: transform 0.3s ease;
+        }
+
+        &:hover img {
+            transform: scale(1.03);
+        }
+    }
+
+    &__body {
+        @apply px-3 py-2.5;
+    }
+
+    &__title {
+        @apply text-sm font-medium truncate;
+
+        color: #1a1a1a;
+        line-height: 1.4;
+    }
+
+    &__tags {
+        @apply flex flex-wrap gap-1.5 mt-1.5;
+
+        .tag {
+            @apply text-xs px-2 py-0.5 rounded-full;
+
+            background: #f0f0f0;
+            color: #595959;
+
+            &--category {
+                background: #e6f7e6;
+                color: #389e0d;
+            }
+        }
+    }
+}

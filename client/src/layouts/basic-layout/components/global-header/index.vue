@@ -20,14 +20,6 @@
                     <template #overlay>
                         <a-menu>
                             <a-menu-item>
-                                <a-menu-item @click="changeRoute({ key: '/user/center' })">
-                                    <UserOutlined class="mr-[10px]" />
-                                    <span>个人中心</span>
-                                </a-menu-item>
-                                <a-menu-item @click="changeRoute({ key: '/user/message' })">
-                                    <MessageOutlined class="mr-[10px]" />
-                                    <span>我的消息</span>
-                                </a-menu-item>
                                 <a-menu-item @click="handleLogout">
                                     <LogoutOutlined class="mr-[10px]" />
                                     <span>退出登录</span>

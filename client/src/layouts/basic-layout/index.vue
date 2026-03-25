@@ -1,7 +1,7 @@
 <template>
-    <a-layout class="layout h-[100vh] overflow-hidden">
+    <div class="layout flex h-[100vh] overflow-hidden">
         <global-sider />
-        <a-layout class="h-full">
+        <a-layout class="h-full flex-1">
             <a-layout-header>
                 <global-header />
             </a-layout-header>
@@ -12,7 +12,7 @@
                 <global-footer />
             </a-layout-footer>
         </a-layout>
-    </a-layout>
+    </div>
 </template>
 
 <script setup lang="ts">

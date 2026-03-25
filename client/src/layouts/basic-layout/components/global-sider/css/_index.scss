@@ -1,23 +1,47 @@
 .global-sider {
-    @apply h-full relative;
+    @apply flex flex-col items-center h-screen py-4;
 
-    .sider-header {
-        @apply flex items-center;
+    width: 64px;
+    background-color: #f5f5f5;
+    border-right: 1px solid #e8e8e8;
 
-        .logo-img {
-            @apply w-12 h-12;
-        }
+    .sider-avatar {
+        @apply relative cursor-pointer mb-6;
 
-        .logo-text {
-            @apply ml-2 text-lg font-bold;
+        .avatar-status {
+            @apply absolute bottom-0 right-0 w-3 h-3 rounded-full;
+
+            background-color: #52c41a;
+            border: 2px solid #f5f5f5;
         }
     }
-}
 
-.ant-layout-sider {
-    @apply h-screen;
-}
+    .sider-nav {
+        @apply flex flex-col items-center gap-2 flex-1;
+    }
 
-.ant-menu {
-    @apply bg-[#34495E] text-white;
+    .nav-item {
+        @apply flex items-center justify-center w-10 h-10 rounded-xl cursor-pointer transition-all duration-200;
+
+        color: #8c8c8c;
+
+        &:hover {
+            background-color: #e6e6e6;
+            color: #595959;
+        }
+
+        &.active {
+            background-color: #1677ff;
+            color: #fff;
+            box-shadow: 0 2px 8px rgb(22 119 255 / 35%);
+        }
+    }
+
+    .nav-icon {
+        font-size: 20px;
+    }
+
+    .sider-footer {
+        @apply mt-auto;
+    }
 }

@@ -4,13 +4,25 @@ import Tabs from './components/tabs/index.vue'
 import { storeToRefs } from 'pinia'
 import usePictureStore from '@/store/modules/picture'
 import TagBars from './components/tag-bars/index.vue'
+import PictureDetailModal from './components/picture-detail-modal/index.vue'
 import { LazyImg, Waterfall } from 'vue-waterfall-plugin-next'
 import 'vue-waterfall-plugin-next/dist/style.css'
+import { ref } from 'vue'
 
 const pictureStore = usePictureStore()
 const { tag_category } = storeToRefs(pictureStore)
-const { dataList, changeTabs, changeTags, clickPicture, handleSearchPicture, searchParams, containerRef } =
-    useHomeHooks()
+const containerRef = ref<HTMLDivElement | null>(null)
+const {
+    dataList,
+    changeTabs,
+    changeTags,
+    clickPicture,
+    handleSearchPicture,
+    searchParams,
+    detailVisible,
+    detailPicture,
+    detailLoading
+} = useHomeHooks(containerRef)
 </script>
 <template>
     <div class="home h-full overflow-scroll" ref="containerRef">
@@ -29,25 +41,25 @@ const { dataList, changeTabs, changeTags, clickPicture, handleSearchPicture, sea
             <Waterfall :list="dataList" :width="230">
                 <!-- 新版插槽数据获取 -->
                 <template #default="{ item }">
-                    <a-card @click="clickPicture(item.id)">
-                        <template #cover>
+                    <div class="picture-card" @click="clickPicture(item.id)">
+                        <div class="picture-card__cover">
                             <LazyImg :url="item.url" />
-                        </template>
-                        <a-card-meta :title="item.filename">
-                            <template #description>
-                                <a-flex>
-                                    <a-tag color="success">{{ item.category || '默认' }}</a-tag>
-                                    <a-tag v-for="tag in item.tags.slice(0, 2)" :key="tag">{{ tag }}</a-tag>
-                                </a-flex>
-                            </template>
-                        </a-card-meta>
-                    </a-card>
+                        </div>
+                        <div class="picture-card__body">
+                            <div class="picture-card__title">{{ item.filename }}</div>
+                            <div class="picture-card__tags">
+                                <span class="tag tag--category">{{ item.category || '默认' }}</span>
+                                <span class="tag" v-for="tag in item.tags.slice(0, 2)" :key="tag">{{ tag }}</span>
+                            </div>
+                        </div>
+                    </div>
                 </template>
             </Waterfall>
         </template>
         <template v-else>
             <a-empty description="暂无数据" />
         </template>
+        <PictureDetailModal v-model:visible="detailVisible" :picture="detailPicture" :loading="detailLoading" />
     </div>
 </template>
 

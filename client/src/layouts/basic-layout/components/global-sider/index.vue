@@ -1,42 +1,37 @@
 <script setup lang="ts">
-import { ref, h } from 'vue'
+import { HomeFilled, FileOutlined, MessageOutlined, UserOutlined } from '@ant-design/icons-vue'
 import { useGlobalSider } from './hooks'
-import { MenuUnfoldOutlined, MenuFoldOutlined } from '@ant-design/icons-vue'
+import { useUserStore } from '@/store/modules/user'
+import { storeToRefs } from 'pinia'
 
-const { siderStyle, handleClick, menuItems, current } = useGlobalSider()
-const collapsed = ref(true)
-const showToggle = ref(false)
+const { handleClick, current } = useGlobalSider()
+const userStore = useUserStore()
+const { loginUser } = storeToRefs(userStore)
 
-const toggleCollapse = () => {
-    collapsed.value = !collapsed.value
-}
+const menuList = [
+    { key: '/', icon: HomeFilled, title: '公共图库' },
+    { key: '/user/center', icon: UserOutlined, title: '个人中心' },
+    { key: '/space/user', icon: FileOutlined, title: '我的空间' },
+    { key: '/user/message', icon: MessageOutlined, title: '我的消息' }
+]
 </script>
 <template>
-    <div class="global-sider" @mouseenter="showToggle = true" @mouseleave="showToggle = false">
-        <a-layout-sider
-            :style="siderStyle"
-            :collapsed="collapsed"
-            :collapsed-width="64"
-            :width="200"
-            :trigger="null"
-            collapsible
-        >
-            <div v-if="!collapsed" class="sider-header">
-                <a href="http://docs.aklry.com" target="_blank">
-                    <img src="/logo.svg" alt="画云间" class="logo-img" />
-                </a>
-                <div class="logo-text">画云间</div>
-            </div>
-            <a-menu :items="menuItems" v-model:selectedKeys="current" @click="handleClick" />
-            <a-button
-                v-show="showToggle"
-                class="absolute top-1/2 -right-2 transform -translate-y-1/2"
-                type="button"
-                @click.stop="toggleCollapse"
-                :icon="collapsed ? h(MenuUnfoldOutlined) : h(MenuFoldOutlined)"
-                size="large"
-            />
-        </a-layout-sider>
+    <div class="global-sider">
+        <!-- 用户头像 -->
+        <div class="sider-avatar" @click="handleClick('/user/center')">
+            <a-avatar :size="40" :src="loginUser.userAvatar" v-if="loginUser.userAvatar" />
+            <a-avatar :size="40" v-else>{{ loginUser.userName?.charAt(0) || '?' }}</a-avatar>
+            <div class="avatar-status"></div>
+        </div>
+
+        <!-- 导航图标 -->
+        <nav class="sider-nav">
+            <a-tooltip v-for="item in menuList" :key="item.key" :title="item.title" placement="right">
+                <div class="nav-item" :class="{ active: current.includes(item.key) }" @click="handleClick(item.key)">
+                    <component :is="item.icon" class="nav-icon" />
+                </div>
+            </a-tooltip>
+        </nav>
     </div>
 </template>
 <style scoped lang="scss">
