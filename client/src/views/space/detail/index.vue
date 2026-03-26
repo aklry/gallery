@@ -1,10 +1,16 @@
 <script setup lang="ts">
 import { useSpaceDetail } from './hooks'
-import { PlusOutlined, EditOutlined, BarChartOutlined } from '@ant-design/icons-vue'
+import {
+    PlusOutlined,
+    EditOutlined,
+    BarChartOutlined,
+    PictureOutlined,
+    CloudOutlined,
+    FilterOutlined
+} from '@ant-design/icons-vue'
 import PictureCard from '@/components/picture-card/index.vue'
 import QueryForm from './component/query-form/index.vue'
 import EditBatchModal from './component/edit-batch-modal/index.vue'
-import { h } from 'vue'
 
 const {
     spaceDetail,
@@ -19,44 +25,77 @@ const {
     handleSearch,
     handleReset,
     handleEditBatchPicture,
-    handleGoToSpaceAnalyze
+    handleGoToSpaceAnalyze,
+    pictureCount
 } = useSpaceDetail()
 </script>
 <template>
     <div class="space-detail">
-        <div class="space-detail-header p-4">
-            <div class="flex flex-col gap-4">
-                <h2 class="text-2xl font-bold">{{ spaceDetail?.spaceName }}</h2>
-            </div>
-            <a-space>
-                <a-button type="primary" @click="handleCreateImage">
-                    <div class="flex items-center">
-                        创建图片
-                        <PlusOutlined />
+        <!-- Header -->
+        <div class="space-detail-header">
+            <div class="space-info">
+                <h2 class="space-info__name">{{ spaceDetail?.spaceName }}</h2>
+                <div class="space-info__stats">
+                    <div class="stat-item">
+                        <PictureOutlined />
+                        <span class="stat-value">{{ pictureCount }}</span>
+                        张图片
                     </div>
+                    <span class="stat-divider">|</span>
+                    <div class="space-capacity">
+                        <CloudOutlined style="color: #64748b" />
+                        <a-tooltip title="当前使用空间容量">
+                            <a-progress
+                                :percent="percent"
+                                :size="[120, 8]"
+                                :stroke-color="{ from: '#6366f1', to: '#8b5cf6' }"
+                            />
+                        </a-tooltip>
+                        <span class="space-capacity__label">{{ percent }}%</span>
+                    </div>
+                </div>
+            </div>
+            <div class="space-actions">
+                <a-button type="primary" @click="handleCreateImage">
+                    <PlusOutlined />
+                    创建图片
                 </a-button>
-                <a-button type="primary" ghost :icon="h(BarChartOutlined)" @click="handleGoToSpaceAnalyze">
+                <a-button type="primary" ghost @click="handleGoToSpaceAnalyze">
+                    <BarChartOutlined />
                     空间分析
                 </a-button>
-                <a-button type="primary" @click="editBatchModalVisible = true">
-                    <div class="flex items-center">
-                        批量编辑
-                        <EditOutlined class="ml-1" />
-                    </div>
+                <a-button type="primary" ghost @click="editBatchModalVisible = true">
+                    <EditOutlined />
+                    批量编辑
                 </a-button>
-                <a-tooltip title="当前使用空间容量">
-                    <a-progress :percent="percent" type="circle" :size="42" />
-                </a-tooltip>
-            </a-space>
+            </div>
         </div>
+
+        <!-- Search & Filter -->
         <query-form :onSuccess="handleSearch" :spaceId="spaceId" :onReset="handleReset" />
-        <picture-card
-            :picture="privatePictureList"
-            :loading="loading"
-            :spaceId="spaceId"
-            @deletePicture="handleDeletePrivatePicture"
-            @editPicture="handleEditPrivatePicture"
-        />
+
+        <!-- Picture Grid -->
+        <template v-if="privatePictureList.length > 0 || loading">
+            <picture-card
+                :picture="privatePictureList"
+                :loading="loading"
+                :spaceId="spaceId"
+                @deletePicture="handleDeletePrivatePicture"
+                @editPicture="handleEditPrivatePicture"
+            />
+        </template>
+        <template v-else>
+            <div class="empty-state">
+                <a-empty description="暂无图片，点击「创建图片」开始上传吧">
+                    <a-button type="primary" @click="handleCreateImage">
+                        <PlusOutlined />
+                        创建图片
+                    </a-button>
+                </a-empty>
+            </div>
+        </template>
+
+        <!-- Batch Edit Modal -->
         <edit-batch-modal
             v-model:visible="editBatchModalVisible"
             :pictureList="privatePictureList"

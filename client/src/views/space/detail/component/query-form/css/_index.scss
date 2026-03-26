@@ -1,20 +1,34 @@
 .query-form {
-    @apply mb-2;
+    @apply mb-4;
 }
 
-.ant-form {
-    @apply grid grid-cols-3 gap-3;
+.query-form__search-bar {
+    @apply flex gap-2 mb-3;
 
-    & .ant-input-number {
+    max-width: 520px;
+
+    .filter-toggle {
+        @apply rounded-lg flex items-center gap-1;
+    }
+}
+
+.query-form__filter-panel {
+    @apply rounded-xl p-5 mb-4;
+
+    background: #fafbfc;
+    border: 1px solid #f0f0f0;
+    box-shadow: 0 1px 4px rgb(0 0 0 / 4%);
+}
+
+.filter-grid {
+    @apply grid grid-cols-3 gap-x-4 gap-y-1;
+
+    .ant-form-item {
+        @apply mb-3;
+    }
+
+    .ant-input-number {
         @apply w-full;
-    }
-
-    &-item {
-        @apply mb-2;
-    }
-
-    .more {
-        @apply col-span-full;
     }
 
     .color-search {
@@ -22,6 +36,36 @@
     }
 }
 
-:deep(.ant-collapse-content-box) {
-    @apply grid grid-cols-3 gap-3;
+.advanced-collapse {
+    @apply mb-3;
+
+    background: transparent;
+
+    :deep(.ant-collapse-content-box) {
+        @apply pt-3;
+    }
+}
+
+.filter-actions {
+    @apply flex gap-2 pt-2;
+
+    border-top: 1px solid #f0f0f0;
+}
+
+/* 筛选面板展开/收起动画 */
+.filter-panel-enter-active,
+.filter-panel-leave-active {
+    transition:
+        opacity 0.25s ease,
+        max-height 0.3s ease,
+        transform 0.25s ease;
+    max-height: 600px;
+    overflow: hidden;
+}
+
+.filter-panel-enter-from,
+.filter-panel-leave-to {
+    opacity: 0;
+    max-height: 0;
+    transform: translateY(-8px);
 }

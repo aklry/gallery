@@ -12,6 +12,7 @@ export const useQueryFormHooks = (props: QueryFormPropsType) => {
     const dateRange = ref<RangeValue>()
     const { tag_category } = storeToRefs(pictureStore)
     const picColor = ref<string>('')
+    const filterVisible = ref(false)
     const initParams = {
         current: '1',
         pageSize: '10',
@@ -64,6 +65,9 @@ export const useQueryFormHooks = (props: QueryFormPropsType) => {
     const handlePureColorChange = (color: string) => {
         picColor.value = color
     }
+    const toggleFilter = () => {
+        filterVisible.value = !filterVisible.value
+    }
     return {
         searchParams,
         tag_category,
@@ -71,6 +75,8 @@ export const useQueryFormHooks = (props: QueryFormPropsType) => {
         rangePresets,
         doSearch,
         doReset,
-        handlePureColorChange
+        handlePureColorChange,
+        filterVisible,
+        toggleFilter
     }
 }

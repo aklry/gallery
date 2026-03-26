@@ -119,6 +119,8 @@ export const useSpaceDetail = () => {
         await fetchPrivatePicture()
     })
 
+    const pictureCount = computed(() => privatePictureList.value.length)
+
     return {
         spaceDetail,
         handleCreateImage,
@@ -132,6 +134,7 @@ export const useSpaceDetail = () => {
         handleSearch,
         handleReset,
         handleEditBatchPicture,
-        handleGoToSpaceAnalyze
+        handleGoToSpaceAnalyze,
+        pictureCount
     }
 }
