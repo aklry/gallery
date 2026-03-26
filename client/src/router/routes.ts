@@ -85,7 +85,29 @@ export const routes: RouteRecordRaw[] = [
     {
         path: '/space/user',
         name: 'user-space',
-        component: () => import('@/views/space/user/index.vue')
+        component: () => import('@/views/space/user/index.vue'),
+        beforeEnter: async (_to, _from, next) => {
+            const { useUserStore } = await import('@/store/modules/user')
+            const { spaceControllerListSpaceV1 } = await import('@/api/space')
+            const userStore = useUserStore()
+            const loginUser = userStore.loginUser
+            if (!loginUser || !loginUser.id) {
+                next('/user/login')
+                return
+            }
+            const res = await spaceControllerListSpaceV1({
+                userId: loginUser.id,
+                current: '1',
+                pageSize: '1'
+            })
+            if (res.code === 1 && res.data.list.length > 0) {
+                next(`/space/${res.data.list[0].id}`)
+            } else if (res.code === 1) {
+                next('/space/add')
+            } else {
+                next() // 请求失败则正常进入页面
+            }
+        }
     },
     {
         path: '/space/:id',

@@ -13,26 +13,45 @@ const useMessage = () => {
     const historyMessageList = ref<API.MessageVoModel[]>()
     const historyMessageTotal = ref<number>(0)
     const currentKey = ref<string>('1')
+    const loading = ref(false)
+    const readAllLoading = ref(false)
+
     const getNewMessageList = async () => {
-        const res = await messageControllerFindAllNewMessage()
-        newMessageList.value = res.data.list
-        newMessageTotal.value = res.data.total
+        loading.value = true
+        try {
+            const res = await messageControllerFindAllNewMessage()
+            newMessageList.value = res.data.list
+            newMessageTotal.value = res.data.total
+        } finally {
+            loading.value = false
+        }
     }
 
     const getHistoryMessageList = async () => {
-        const res = await messageControllerFindAllHistoryMessage()
-        historyMessageList.value = res.data.list
-        historyMessageTotal.value = res.data.total
+        loading.value = true
+        try {
+            const res = await messageControllerFindAllHistoryMessage()
+            historyMessageList.value = res.data.list
+            historyMessageTotal.value = res.data.total
+        } finally {
+            loading.value = false
+        }
     }
 
-    const historyMessageHasRead = computed(() => {
-        const hasRead = historyMessageList.value?.some(item => item.hasRead === MessageStatus.UNREAD)
-        return hasRead
-    })
-
-    const newHistoryMessageHasRead = computed(() =>
-        newMessageList.value?.some(item => item.hasRead === MessageStatus.UNREAD)
+    const newUnreadCount = computed(
+        () => newMessageList.value?.filter(item => item.hasRead === MessageStatus.UNREAD).length ?? 0
     )
+
+    const historyUnreadCount = computed(
+        () => historyMessageList.value?.filter(item => item.hasRead === MessageStatus.UNREAD).length ?? 0
+    )
+
+    const hasUnread = computed(() => {
+        if (currentKey.value === '1') {
+            return newUnreadCount.value > 0
+        }
+        return historyUnreadCount.value > 0
+    })
 
     const currentMessageList = computed(() => {
         if (currentKey.value === '1') {
@@ -57,8 +76,10 @@ const useMessage = () => {
     }
 
     const handleReadAllMessage = async () => {
+        readAllLoading.value = true
         try {
             await messageControllerReadAllMessage()
+            message.success('已全部标记为已读')
             if (currentKey.value === '1') {
                 getNewMessageList()
             } else {
@@ -66,6 +87,8 @@ const useMessage = () => {
             }
         } catch (error) {
             message.error('全部已读失败')
+        } finally {
+            readAllLoading.value = false
         }
     }
 
@@ -81,8 +104,11 @@ const useMessage = () => {
         newMessageTotal,
         historyMessageList,
         historyMessageTotal,
-        historyMessageHasRead,
-        newHistoryMessageHasRead,
+        newUnreadCount,
+        historyUnreadCount,
+        hasUnread,
+        loading,
+        readAllLoading,
         currentKey,
         currentMessageList,
         handleMessageClick,

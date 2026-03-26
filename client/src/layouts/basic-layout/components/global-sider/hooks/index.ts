@@ -10,7 +10,12 @@ export const useGlobalSider = () => {
     }
 
     router.afterEach((to, _from) => {
-        current.value = [to.path]
+        const path = to.path
+        if (path.startsWith('/space/') && path !== '/space/admin') {
+            current.value = ['/space/user']
+        } else {
+            current.value = [path]
+        }
     })
 
     return { handleClick, current }

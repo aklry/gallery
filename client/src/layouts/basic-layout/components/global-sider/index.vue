@@ -10,9 +10,9 @@ const { loginUser } = storeToRefs(userStore)
 
 const menuList = [
     { key: '/', icon: HomeFilled, title: '公共图库' },
-    { key: '/user/center', icon: UserOutlined, title: '个人中心' },
     { key: '/space/user', icon: FileOutlined, title: '我的空间' },
-    { key: '/user/message', icon: MessageOutlined, title: '我的消息' }
+    { key: '/user/message', icon: MessageOutlined, title: '我的消息' },
+    { key: '/user/center', icon: UserOutlined, title: '个人中心' }
 ]
 </script>
 <template>

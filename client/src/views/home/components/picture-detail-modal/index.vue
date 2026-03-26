@@ -100,9 +100,11 @@ const open = computed({
         border-radius: 8px;
         overflow: hidden;
         min-height: 300px;
+        max-height: 500px;
     }
 
     &__img {
+        max-width: 100%;
         max-height: 500px;
         object-fit: contain;
     }

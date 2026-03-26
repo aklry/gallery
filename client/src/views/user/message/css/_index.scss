@@ -2,8 +2,99 @@
 
 .user-message {
     @include screen-center;
+    @apply py-6;
+}
 
-    .ant-list-item {
-        @apply p-0;
+.message-header {
+    @apply flex justify-between items-center mb-5;
+}
+
+.message-title {
+    @apply text-xl font-semibold m-0;
+
+    color: rgb(0 0 0 / 85%);
+}
+
+.message-tabs {
+    @apply mb-2;
+
+    :deep(.ant-tabs-nav) {
+        @apply mb-0;
     }
+}
+
+.tab-label {
+    @apply inline-flex items-center gap-1.5;
+}
+
+.tab-badge {
+    @apply ml-1;
+}
+
+.message-list {
+    @apply flex flex-col gap-2;
+}
+
+.message-item {
+    @apply flex items-start gap-3 px-4 py-3 rounded-lg cursor-pointer;
+
+    background: #fafafa;
+    border: 1px solid transparent;
+    transition: all 0.25s ease;
+
+    &:hover {
+        background: #fff;
+        border-color: #e8e8e8;
+        box-shadow: 0 2px 8px rgb(0 0 0 / 6%);
+    }
+
+    &--unread {
+        background: #fff;
+        border-color: #e6f4ff;
+
+        &:hover {
+            border-color: #91caff;
+            box-shadow: 0 2px 8px rgb(24 144 255 / 10%);
+        }
+
+        .message-item__title {
+            @apply font-semibold;
+
+            color: rgb(0 0 0 / 88%);
+        }
+    }
+}
+
+.message-item__indicator {
+    @apply flex-shrink-0 pt-1.5;
+}
+
+.unread-dot {
+    @apply block w-2 h-2 rounded-full;
+
+    background: #1677ff;
+}
+
+.message-item__content {
+    @apply flex-1 min-w-0;
+}
+
+.message-item__title {
+    @apply text-sm leading-6 truncate;
+
+    color: rgb(0 0 0 / 65%);
+}
+
+.message-item__desc {
+    @apply text-xs leading-5 mt-0.5 truncate;
+
+    color: rgb(0 0 0 / 45%);
+}
+
+.message-item__action {
+    @apply flex-shrink-0 self-center;
+}
+
+.message-empty {
+    @apply py-16;
 }

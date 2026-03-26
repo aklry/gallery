@@ -89,6 +89,7 @@ const useHomeHooks = (containerRef: Ref<HTMLDivElement | null>) => {
     const detailPicture = ref<API.GetPictureVoModel | null>(null)
     const detailLoading = ref(false)
     const clickPicture = async (id: string) => {
+        detailPicture.value = null
         detailVisible.value = true
         detailLoading.value = true
         try {
