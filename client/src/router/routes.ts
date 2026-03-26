@@ -85,7 +85,8 @@ export const routes: RouteRecordRaw[] = [
     {
         path: '/space/user',
         name: 'user-space',
-        component: () => import('@/views/space/user/index.vue'),
+        // beforeEnter 始终会重定向，此组件不会实际渲染
+        component: { render: () => null },
         beforeEnter: async (_to, _from, next) => {
             const { useUserStore } = await import('@/store/modules/user')
             const { spaceControllerListSpaceV1 } = await import('@/api/space')
@@ -105,7 +106,7 @@ export const routes: RouteRecordRaw[] = [
             } else if (res.code === 1) {
                 next('/space/add')
             } else {
-                next() // 请求失败则正常进入页面
+                next('/') // 请求失败则重定向到首页
             }
         }
     },
