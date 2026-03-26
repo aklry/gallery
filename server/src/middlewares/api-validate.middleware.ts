@@ -7,7 +7,13 @@ import { BusinessStatus } from '../config'
 @Injectable()
 export class ApiValidateMiddleware implements NestMiddleware {
     use(req: Request, _res: Response, next: NextFunction) {
-        const { headers } = req
+        const { headers, originalUrl } = req
+        console.log('originalUrl', originalUrl)
+        if (originalUrl.includes('message/stream')) {
+            console.log('SSE stream request, skipping API validation')
+            next()
+            return
+        }
         const { s_sign: sSign, s_t: st } = headers
         const signKey = 'aklry'
         const signature = md5(`${signKey}_${st}`)

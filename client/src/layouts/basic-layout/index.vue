@@ -19,6 +19,9 @@
 import GlobalHeader from './components/global-header/index.vue'
 import GlobalFooter from './components/global-footer/index.vue'
 import GlobalSider from './components/global-sider/index.vue'
+
+import { useMessageStream } from '@/hooks/useMessageStream'
+useMessageStream()
 </script>
 
 <style lang="scss" scoped>

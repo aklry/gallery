@@ -34,6 +34,7 @@ import { Space } from '../space/entities/space.entity'
 import { PermissionGuard } from '../permission/permission.guard'
 import { PERMISSION_KEY } from '../permission/permission.decorator'
 import { AiGeneratePictureDto } from '../ai-generate-picture/dto'
+import { SseService } from '../sse/sse.service'
 
 @Injectable()
 export class PictureService {
@@ -45,7 +46,8 @@ export class PictureService {
         private readonly aiExpandPictureService: AiExpandPictureService,
         private readonly aiGeneratePictureService: AiGeneratePictureService,
         private readonly spaceUserAuthManager: SpaceUserAuthManager,
-        private readonly permissionGuard: PermissionGuard
+        private readonly permissionGuard: PermissionGuard,
+        private readonly sseService: SseService
     ) {}
 
     async getPictureByPage(queryPictureDto: QueryPictureDto) {
@@ -662,11 +664,19 @@ export class PictureService {
         if (!result) {
             throw new BusinessException('图片审核失败', BusinessStatus.OPERATION_ERROR.code)
         } else {
-            await this.prismaService.message.create({
+            const msg = await this.prismaService.message.create({
                 data: {
                     userId: picture.userId,
                     content: reviewMessage,
                     hasRead: MessageStatus.UNREAD,
+                    title: '图片审核结果'
+                }
+            })
+            this.sseService.emit({
+                userId: picture.userId,
+                data: {
+                    id: msg.id,
+                    content: reviewMessage,
                     title: '图片审核结果'
                 }
             })

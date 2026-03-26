@@ -6,9 +6,16 @@ import { BusinessException } from '../custom-exception'
 import { PrismaService } from '../prisma/prisma.service'
 import { ReadMessageDto } from './dto/read-message.dto'
 import { MessageVoModel } from './vo/message.vo'
+import { SseService } from '../sse/sse.service'
+import { Sse, MessageEvent } from '@nestjs/common'
+import { Observable, map } from 'rxjs'
+
 @Injectable()
 export class MessageService {
-    constructor(private readonly prisma: PrismaService) {}
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly sseService: SseService
+    ) {}
 
     async findAllNewMessage(req: Request) {
         const user = req.session.user
@@ -127,5 +134,17 @@ export class MessageService {
             throw new BusinessException('消息已读失败', BusinessStatus.PARAMS_ERROR.code)
         }
         return true
+    }
+
+    streamMessages(userId: string) {
+        return this.sseService.subscribe(userId).pipe(
+            map(
+                event =>
+                    ({
+                        data: event.data,
+                        type: 'message' // 事件类型
+                    }) as MessageEvent
+            )
+        )
     }
 }

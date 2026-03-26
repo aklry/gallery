@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, UseGuards, Req } from '@nestjs/common'
+import { Controller, Get, Post, Body, UseGuards, Req, Sse, MessageEvent } from '@nestjs/common'
 import { MessageService } from './message.service'
 import { ApiOperation, ApiResponse } from '@nestjs/swagger'
 import { MessageVo } from './vo/message.vo'
@@ -9,7 +9,12 @@ import { ReadMessageVo } from './vo/read-message.vo'
 import { Request } from 'express'
 import { ValidationPipe } from '../pipe/validation.pipe'
 import { ReadAllMessageVo } from './vo/read-all-message.vo'
-@Controller('message')
+import { Observable } from 'rxjs'
+import { version } from '../config'
+@Controller({
+    path: 'message',
+    version
+})
 export class MessageController {
     constructor(
         private readonly messageService: MessageService,
@@ -56,5 +61,11 @@ export class MessageController {
     async readAllMessage(@Req() req: Request) {
         const data = await this.messageService.readAllMessage(req)
         return this.responseService.success(data)
+    }
+
+    @Sse('/stream')
+    @UseGuards(AuthGuard)
+    streamMessages(@Req() req: Request): Observable<MessageEvent> {
+        return this.messageService.streamMessages(req.session.user.id)
     }
 }

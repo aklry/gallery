@@ -27,6 +27,7 @@ import { load } from 'js-yaml'
 import * as fs from 'node:fs'
 import * as path from 'node:path'
 import type { YamlOssConfig } from './types'
+import { SseModule } from './sse/sse.module'
 
 @Module({
     imports: [
@@ -51,7 +52,8 @@ import type { YamlOssConfig } from './types'
             isGlobal: true,
             load: [() => load(fs.readFileSync(path.resolve(process.cwd(), 'config.yaml'), 'utf8')) as YamlOssConfig]
         }),
-        AiGeneratePictureModule
+        AiGeneratePictureModule,
+        SseModule
     ],
     controllers: [AppController],
     providers: [AppService]

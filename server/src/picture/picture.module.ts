@@ -6,11 +6,12 @@ import { SpaceModule } from '../space/space.module'
 import { AiExpandPictureModule } from '../ai-expand-picture/ai-expand-picture.module'
 import { PermissionModule } from '../permission/permission.module'
 import { AiGeneratePictureModule } from '../ai-generate-picture/ai-generate-picture.module'
+import { SseModule } from '../sse/sse.module'
 
 @Module({
     controllers: [PictureController],
     providers: [PictureService],
-    imports: [ExtractModule, SpaceModule, AiExpandPictureModule, PermissionModule, AiGeneratePictureModule],
+    imports: [ExtractModule, SpaceModule, AiExpandPictureModule, PermissionModule, AiGeneratePictureModule, SseModule],
     exports: [PictureService]
 })
 export class PictureModule {}
