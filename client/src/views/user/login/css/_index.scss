@@ -91,8 +91,7 @@
     width: 420px;
     padding: 48px;
     border-radius: 24px;
-    background-color: rgb(255 255 255 / 8%); // 半透明背景
-    backdrop-filter: blur(24px); // 毛玻璃主要属性
+    background-color: rgb(255 255 255 / 8%); // 半透明背景 // 毛玻璃主要属性
     backdrop-filter: blur(24px);
     border: 1px solid rgb(255 255 255 / 15%); // 白色微弱边框
     box-shadow: 0 25px 50px -12px rgb(0 0 0 / 40%); // 投影增加层次感
