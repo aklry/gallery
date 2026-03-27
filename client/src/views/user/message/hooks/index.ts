@@ -1,9 +1,9 @@
 import { computed, ref, watchEffect } from 'vue'
 import {
-    messageControllerFindAllHistoryMessage,
-    messageControllerFindAllNewMessage,
-    messageControllerReadMessage,
-    messageControllerReadAllMessage
+    messageControllerFindAllHistoryMessageV1,
+    messageControllerFindAllNewMessageV1,
+    messageControllerReadMessageV1,
+    messageControllerReadAllMessageV1
 } from '@/api/message'
 import { MessageStatus } from '@/constants'
 import { message } from 'ant-design-vue'
@@ -19,7 +19,7 @@ const useMessage = () => {
     const getNewMessageList = async () => {
         loading.value = true
         try {
-            const res = await messageControllerFindAllNewMessage()
+            const res = await messageControllerFindAllNewMessageV1()
             newMessageList.value = res.data.list
             newMessageTotal.value = res.data.total
         } finally {
@@ -30,7 +30,7 @@ const useMessage = () => {
     const getHistoryMessageList = async () => {
         loading.value = true
         try {
-            const res = await messageControllerFindAllHistoryMessage()
+            const res = await messageControllerFindAllHistoryMessageV1()
             historyMessageList.value = res.data.list
             historyMessageTotal.value = res.data.total
         } finally {
@@ -65,7 +65,7 @@ const useMessage = () => {
         if (item.hasRead === MessageStatus.READ) {
             return
         }
-        await messageControllerReadMessage({
+        await messageControllerReadMessageV1({
             id: item.id
         })
         if (currentKey.value === '1') {
@@ -78,7 +78,7 @@ const useMessage = () => {
     const handleReadAllMessage = async () => {
         readAllLoading.value = true
         try {
-            await messageControllerReadAllMessage()
+            await messageControllerReadAllMessageV1()
             message.success('已全部标记为已读')
             if (currentKey.value === '1') {
                 getNewMessageList()

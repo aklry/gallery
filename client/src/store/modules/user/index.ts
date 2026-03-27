@@ -10,7 +10,8 @@ export const useUserStore = defineStore('user', () => {
         userAvatar: '',
         userProfile: '',
         userRole: '',
-        userName: ''
+        userName: '',
+        userEmail: ''
     })
     const fetchLoginUser = async () => {
         const data = await userControllerGetLoginUserV1()
@@ -31,7 +32,8 @@ export const useUserStore = defineStore('user', () => {
                 userAvatar: '',
                 userProfile: '',
                 userRole: '',
-                userName: ''
+                userName: '',
+                userEmail: ''
             }
         }
     }
