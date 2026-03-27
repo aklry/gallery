@@ -1,11 +1,15 @@
 <script setup lang="ts">
 import { formatTime, formatSize, toHexColor, downloadPicture } from '@/utils'
 import { computed } from 'vue'
+import { useUserStore } from '@/store/modules/user'
+import { storeToRefs } from 'pinia'
+import { useRouter } from 'vue-router'
 
 const props = defineProps<{
     visible: boolean
     picture: API.GetPictureVoModel | null
     loading: boolean
+    spaceId?: string
 }>()
 
 const emit = defineEmits<{
@@ -16,6 +20,20 @@ const open = computed({
     get: () => props.visible,
     set: (val: boolean) => emit('update:visible', val)
 })
+
+const userStore = useUserStore()
+const router = useRouter()
+const { loginUser } = storeToRefs(userStore)
+
+const handleNavigateToUpdatePicture = (picture: API.GetPictureVoModel) => {
+    router.push({
+        path: '/picture/add',
+        query: {
+            id: picture.id,
+            ...(props.spaceId ? { spaceId: props.spaceId } : {})
+        }
+    })
+}
 </script>
 <template>
     <a-modal v-model:open="open" :footer="null" :width="860" :bodyStyle="{ padding: '16px' }" destroyOnClose>
@@ -80,6 +98,15 @@ const open = computed({
                         <div class="detail-modal__actions">
                             <a-button type="primary" @click="downloadPicture(picture.url, picture.name)">
                                 下载图片
+                            </a-button>
+
+                            <a-button
+                                class="ml-3"
+                                type="primary"
+                                v-if="loginUser.id === props.picture?.user?.id && !props.picture?.spaceId"
+                                @click="handleNavigateToUpdatePicture(props.picture)"
+                            >
+                                修改图片
                             </a-button>
                         </div>
                     </div>

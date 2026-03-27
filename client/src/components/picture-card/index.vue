@@ -1,9 +1,14 @@
 <script setup lang="ts">
 import { EditOutlined, DeleteOutlined, EyeOutlined } from '@ant-design/icons-vue'
 import { PictureCardEmits, PictureCardProps } from './types'
-import usePictureCard from './hooks'
-const props = defineProps<PictureCardProps>()
+defineProps<PictureCardProps>()
 const emit = defineEmits<PictureCardEmits>()
+
+const handlePreviewPicture = (id: string, e?: MouseEvent) => {
+    e?.stopPropagation()
+    emit('previewPicture', id)
+}
+
 const handleDeletePrivatePicture = (id: string, e: MouseEvent) => {
     e.stopPropagation()
     emit('deletePicture', id)
@@ -12,8 +17,6 @@ const handleEditPicture = (id: string, e: MouseEvent) => {
     e.stopPropagation()
     emit('editPicture', id)
 }
-
-const { goToPictureDetail } = usePictureCard(props)
 </script>
 <template>
     <div class="picture-card-grid">
@@ -24,11 +27,15 @@ const { goToPictureDetail } = usePictureCard(props)
         >
             <template #renderItem="{ item: picture }: { item: API.ShowPictureModelVo }">
                 <a-list-item>
-                    <div class="pic-card" @click="goToPictureDetail(picture.id)">
+                    <div class="pic-card" @click="handlePreviewPicture(picture.id)">
                         <div class="pic-card__cover">
                             <img :src="picture.thumbnailUrl || picture.url" :alt="picture.filename" />
                             <div class="pic-card__overlay">
-                                <a-button type="text" class="overlay-btn" @click="goToPictureDetail(picture.id)">
+                                <a-button
+                                    type="text"
+                                    class="overlay-btn"
+                                    @click="(e: MouseEvent) => handlePreviewPicture(picture.id, e)"
+                                >
                                     <EyeOutlined />
                                 </a-button>
                                 <a-button

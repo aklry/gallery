@@ -8,9 +8,7 @@ import { BusinessStatus } from '../config'
 export class ApiValidateMiddleware implements NestMiddleware {
     use(req: Request, _res: Response, next: NextFunction) {
         const { headers, originalUrl } = req
-        console.log('originalUrl', originalUrl)
         if (originalUrl.includes('message/stream')) {
-            console.log('SSE stream request, skipping API validation')
             next()
             return
         }

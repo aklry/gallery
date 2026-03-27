@@ -3,6 +3,7 @@ import { spaceControllerListSpaceV1 } from '@/api/space'
 import {
     pictureControllerDeletePictureV1,
     pictureControllerEditPictureByBatchV1,
+    pictureControllerGetByIdVoV1,
     pictureControllerGetPictureByPageVoV1
 } from '@/api/picture'
 import { computed, onMounted, ref } from 'vue'
@@ -16,6 +17,9 @@ export const useSpaceDetail = () => {
     const privatePictureList = ref<API.ShowPictureModelVo[]>([])
     const loading = ref(false)
     const editBatchModalVisible = ref(false)
+    const detailVisible = ref(false)
+    const detailPicture = ref<API.GetPictureVoModel | null>(null)
+    const detailLoading = ref(false)
     const percent = computed(() => {
         const percent = (((spaceDetail.value?.totalSize ?? 0) / (spaceDetail.value?.maxSize ?? 1)) * 100).toFixed(2)
         return parseFloat(percent)
@@ -80,6 +84,24 @@ export const useSpaceDetail = () => {
         router.push(`/picture/add?id=${id}&spaceId=${spaceId}`)
     }
 
+    const handlePreviewPrivatePicture = async (id: string) => {
+        detailPicture.value = null
+        detailVisible.value = true
+        detailLoading.value = true
+        try {
+            const res = await pictureControllerGetByIdVoV1({ id })
+            if (res.code === 1) {
+                detailPicture.value = res.data
+            } else {
+                message.error(res.message)
+            }
+        } catch (error) {
+            message.error('获取图片详情失败')
+        } finally {
+            detailLoading.value = false
+        }
+    }
+
     const handleSearch = (result: API.ShowPictureVo) => {
         const list = result.data.list
         if (list.length > 0) {
@@ -128,9 +150,13 @@ export const useSpaceDetail = () => {
         loading,
         percent,
         spaceId,
+        detailVisible,
+        detailPicture,
+        detailLoading,
         editBatchModalVisible,
         handleDeletePrivatePicture,
         handleEditPrivatePicture,
+        handlePreviewPrivatePicture,
         handleSearch,
         handleReset,
         handleEditBatchPicture,

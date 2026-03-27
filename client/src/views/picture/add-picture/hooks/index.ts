@@ -55,8 +55,8 @@ const useAddPicture = () => {
                 res = await pictureControllerEditPictureV1(pictureInfo)
             }
             if (res.data) {
-                message.success('创建成功')
-                router.replace(`/picture/${pictureInfo.id}`)
+                message.success(`${id ? '修改成功' : '创建成功'}`)
+                router.replace('/')
             } else {
                 message.error(res.message)
             }
