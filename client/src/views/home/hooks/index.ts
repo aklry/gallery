@@ -1,11 +1,8 @@
-import { ref, reactive, watch, onMounted, onBeforeUnmount, type Ref } from 'vue'
-import {
-    pictureControllerGetPictureByPageVoV1,
-    pictureControllerQueryPictureV1,
-    pictureControllerGetByIdVoV1
-} from '@/api/picture'
+﻿import { ref, reactive, watch, onMounted, onBeforeUnmount, type Ref } from 'vue'
+import { pictureControllerGetPictureByPageVoV1, pictureControllerQueryPictureV1 } from '@/api/picture'
 import { message } from 'ant-design-vue'
 import { debounce } from 'lodash'
+import { usePictureDetailPreview } from '@/hooks/usePictureDetailPreview'
 
 const useHomeHooks = (containerRef: Ref<HTMLDivElement | null>) => {
     const dataList = ref<API.ShowPictureModelVo[]>([])
@@ -32,13 +29,11 @@ const useHomeHooks = (containerRef: Ref<HTMLDivElement | null>) => {
                     message.info('没有更多图片了')
                     loading.value = false
                 }
+            } else if (res.data.list.length === 0) {
+                message.info('没有更多图片了')
+                loading.value = false
             } else {
-                if (res.data.list.length === 0) {
-                    message.info('没有更多图片了')
-                    loading.value = false
-                } else {
-                    dataList.value = dataList.value?.concat(res.data.list)
-                }
+                dataList.value = dataList.value.concat(res.data.list)
             }
             total.value = res.data.total
         } catch (error) {
@@ -85,22 +80,9 @@ const useHomeHooks = (containerRef: Ref<HTMLDivElement | null>) => {
             searchParams.tags = [tag]
         }
     }
-    const detailVisible = ref(false)
-    const detailPicture = ref<API.GetPictureVoModel | null>(null)
-    const detailLoading = ref(false)
-    const clickPicture = async (id: string) => {
-        detailPicture.value = null
-        detailVisible.value = true
-        detailLoading.value = true
-        try {
-            const res = await pictureControllerGetByIdVoV1({ id })
-            detailPicture.value = res.data
-        } catch {
-            message.error('获取图片详情失败')
-        } finally {
-            detailLoading.value = false
-        }
-    }
+
+    const { detailVisible, detailPicture, detailLoading, openPictureDetail: clickPicture } = usePictureDetailPreview()
+
     const queryPictureBySearchText = async (queryPictureDto: Partial<API.QueryPictureDto>) => {
         const res = await pictureControllerQueryPictureV1(queryPictureDto)
         dataList.value = res.data.list
@@ -128,7 +110,6 @@ const useHomeHooks = (containerRef: Ref<HTMLDivElement | null>) => {
         }
         if (category === undefined || tags === undefined) {
             fetchData('1')
-            return
         }
     })
     const handleScroll = debounce((e: Event) => {

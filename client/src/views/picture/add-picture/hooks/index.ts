@@ -1,4 +1,4 @@
-import { ref, reactive, onMounted, useTemplateRef } from 'vue'
+﻿import { ref, reactive, onMounted, useTemplateRef } from 'vue'
 import {
     pictureControllerUpdatePictureV1,
     pictureControllerEditPictureV1,
@@ -13,6 +13,8 @@ import { storeToRefs } from 'pinia'
 import { UserRole } from '@/constants'
 import ImageExpand from '@/components/image-expand/index.vue'
 import { useGenerateImageByAi } from './useGenerateImage'
+import { pictureDetailCache } from '@/utils/picture-detail-cache'
+
 const useAddPicture = () => {
     const pictureStore = usePictureStore()
     const { tag_category } = storeToRefs(pictureStore)
@@ -55,6 +57,10 @@ const useAddPicture = () => {
                 res = await pictureControllerEditPictureV1(pictureInfo)
             }
             if (res.data) {
+                const targetId = (id || pictureInfo.id) as string | undefined
+                if (targetId) {
+                    pictureDetailCache.invalidate(targetId)
+                }
                 message.success(`${id ? '修改成功' : '创建成功'}`)
                 router.replace('/')
             } else {
@@ -71,6 +77,7 @@ const useAddPicture = () => {
         uploadLoading.value = true
         if (!url.value) {
             message.error('请输入图片链接')
+            uploadLoading.value = false
             return
         }
         try {
@@ -130,7 +137,7 @@ const useAddPicture = () => {
     onMounted(async () => {
         if (id) {
             try {
-                const res = await pictureControllerGetByIdVoV1({ id: id as string })
+                const res = await pictureControllerGetByIdVoV1({ id })
                 if (res.code === 1) {
                     Object.assign(pictureInfo, {
                         id: res.data.id,
@@ -154,7 +161,7 @@ const useAddPicture = () => {
                     }
                 }
             } catch (error) {
-                message.error('获取数据失败,请重试')
+                message.error('获取数据失败，请重试')
             }
         }
     })

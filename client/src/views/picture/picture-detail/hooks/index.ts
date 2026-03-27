@@ -1,9 +1,10 @@
-import { message, Modal } from 'ant-design-vue'
+﻿import { message, Modal } from 'ant-design-vue'
 import { computed, onMounted, ref } from 'vue'
-import { pictureControllerGetByIdVoV1, pictureControllerDeletePictureV1 } from '@/api/picture'
+import { pictureControllerDeletePictureV1 } from '@/api/picture'
 import { useRouter, useRoute } from 'vue-router'
 import { useUserStore } from '@/store/modules/user'
 import { downloadPicture as download } from '@/utils'
+import { pictureDetailCache } from '@/utils/picture-detail-cache'
 
 const usePictureDetail = (id: string) => {
     const picture = ref<API.GetPictureVoModel>()
@@ -19,10 +20,9 @@ const usePictureDetail = (id: string) => {
     })
     const getPictureDetail = async () => {
         try {
-            const res = await pictureControllerGetByIdVoV1({ id })
-            picture.value = res.data
+            picture.value = await pictureDetailCache.get(id)
         } catch (error) {
-            message.error('获取图片详情失败')
+            message.error(error instanceof Error ? error.message : '获取图片详情失败')
         }
     }
     const deletePicture = async () => {
@@ -39,6 +39,7 @@ const usePictureDetail = (id: string) => {
                     }
                     const res = await pictureControllerDeletePictureV1({ id })
                     if (res.code === 1) {
+                        pictureDetailCache.invalidate(id)
                         message.success('删除图片成功')
                     } else {
                         message.error(res.message || '删除图片失败')

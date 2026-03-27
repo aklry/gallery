@@ -1,13 +1,14 @@
-import { useRoute, useRouter } from 'vue-router'
+﻿import { useRoute, useRouter } from 'vue-router'
 import { spaceControllerListSpaceV1 } from '@/api/space'
 import {
     pictureControllerDeletePictureV1,
     pictureControllerEditPictureByBatchV1,
-    pictureControllerGetByIdVoV1,
     pictureControllerGetPictureByPageVoV1
 } from '@/api/picture'
 import { computed, onMounted, ref } from 'vue'
 import { message, Modal } from 'ant-design-vue'
+import { usePictureDetailPreview } from '@/hooks/usePictureDetailPreview'
+import { pictureDetailCache } from '@/utils/picture-detail-cache'
 
 export const useSpaceDetail = () => {
     const route = useRoute()
@@ -17,16 +18,22 @@ export const useSpaceDetail = () => {
     const privatePictureList = ref<API.ShowPictureModelVo[]>([])
     const loading = ref(false)
     const editBatchModalVisible = ref(false)
-    const detailVisible = ref(false)
-    const detailPicture = ref<API.GetPictureVoModel | null>(null)
-    const detailLoading = ref(false)
+    const {
+        detailVisible,
+        detailPicture,
+        detailLoading,
+        openPictureDetail: handlePreviewPrivatePicture
+    } = usePictureDetailPreview()
     const percent = computed(() => {
-        const percent = (((spaceDetail.value?.totalSize ?? 0) / (spaceDetail.value?.maxSize ?? 1)) * 100).toFixed(2)
-        return parseFloat(percent)
+        const currentPercent = (
+            ((spaceDetail.value?.totalSize ?? 0) / (spaceDetail.value?.maxSize ?? 1)) *
+            100
+        ).toFixed(2)
+        return parseFloat(currentPercent)
     })
     const fetchSpaceDetail = async () => {
         const res = await spaceControllerListSpaceV1({
-            id: spaceId as string,
+            id: spaceId,
             current: '1',
             pageSize: '1'
         })
@@ -39,7 +46,7 @@ export const useSpaceDetail = () => {
     const fetchPrivatePicture = async () => {
         try {
             const res = await pictureControllerGetPictureByPageVoV1({
-                spaceId: spaceId as string,
+                spaceId,
                 current: '1',
                 pageSize: '10'
             })
@@ -68,8 +75,9 @@ export const useSpaceDetail = () => {
                         id
                     })
                     if (res.code === 1) {
+                        pictureDetailCache.invalidate(id)
                         message.success('删除成功')
-                        fetchPrivatePicture()
+                        await fetchPrivatePicture()
                     } else {
                         message.error(res.message)
                     }
@@ -84,38 +92,20 @@ export const useSpaceDetail = () => {
         router.push(`/picture/add?id=${id}&spaceId=${spaceId}`)
     }
 
-    const handlePreviewPrivatePicture = async (id: string) => {
-        detailPicture.value = null
-        detailVisible.value = true
-        detailLoading.value = true
-        try {
-            const res = await pictureControllerGetByIdVoV1({ id })
-            if (res.code === 1) {
-                detailPicture.value = res.data
-            } else {
-                message.error(res.message)
-            }
-        } catch (error) {
-            message.error('获取图片详情失败')
-        } finally {
-            detailLoading.value = false
-        }
-    }
-
     const handleSearch = (result: API.ShowPictureVo) => {
         const list = result.data.list
         if (list.length > 0) {
             privatePictureList.value = list
         }
     }
-    // 批量编辑图片
     const handleEditBatchPicture = async (params: API.EditPictureByBatchDto, callback?: () => void) => {
         try {
             const res = await pictureControllerEditPictureByBatchV1({
                 ...params,
-                spaceId: spaceId as string
+                spaceId
             })
             if (res.code === 1) {
+                pictureDetailCache.invalidateMany(params.idList)
                 message.success('编辑图片成功')
                 editBatchModalVisible.value = false
                 await fetchPrivatePicture()
