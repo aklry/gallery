@@ -5,6 +5,8 @@ export class LoginVoModel {
     id: string
     @ApiProperty({ description: '用户账号' })
     userAccount: string
+    @ApiProperty({ description: '用户邮箱' })
+    userEmail?: string
     @ApiProperty({ description: '用户名' })
     userName: string
     @ApiProperty({ description: '用户头像' })

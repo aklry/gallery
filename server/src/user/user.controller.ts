@@ -5,7 +5,10 @@ import {
     FindUserDto,
     UpdateUserDto,
     EditUserDto,
-    UploadAvatarDto
+    UploadAvatarDto,
+    UserRegisterByEmailDto,
+    UserLoginByEmailDto,
+    EmailValidateDto
 } from './dto'
 import {
     Controller,
@@ -31,7 +34,8 @@ import {
     UserVoModel,
     UserDeleteVo,
     UserCreateVo,
-    UserUpdateVo
+    UserUpdateVo,
+    EmailValidateVo
 } from './vo'
 import { ApiBody, ApiConsumes, ApiOperation, ApiResponse } from '@nestjs/swagger'
 import { Request } from 'express'
@@ -62,6 +66,22 @@ export class UserController {
         return this.responseService.success(data)
     }
 
+    @Post('/register/email')
+    @ApiResponse({ type: UserRegisterVo })
+    @ApiOperation({ summary: '用户注册(邮箱)' })
+    async userRegisterByEmail(@Body(new ValidationPipe()) userRegisterByEmailDto: UserRegisterByEmailDto) {
+        const data = await this.userService.userRegisterByEmail(userRegisterByEmailDto)
+        return this.responseService.success(data)
+    }
+
+    @Post('/register/email/code')
+    @ApiResponse({ type: EmailValidateVo })
+    @ApiOperation({ summary: '发送注册验证码(邮箱)' })
+    async userRegisterByEmailCode(@Body(new ValidationPipe()) emailValidateDto: EmailValidateDto) {
+        const isSend = await this.userService.sendEmailValidateCode(emailValidateDto.userEmail)
+        return this.responseService.success(isSend)
+    }
+
     @Get('/get/login')
     @UseGuards(AuthGuard)
     @ApiResponse({ type: UserLoginVo })
@@ -85,12 +105,23 @@ export class UserController {
         return this.responseService.success(data)
     }
 
+    @Post('/login/email')
+    @ApiResponse({ type: UserLoginVo })
+    @ApiOperation({ summary: '用户登录(邮箱)' })
+    async userLoginByEmail(@Req() req: Request, @Body(new ValidationPipe()) userLoginByEmailDto: UserLoginByEmailDto) {
+        const data = await this.userService.userLoginByEmail(userLoginByEmailDto)
+        req.session.user = data
+        this.permissionKit.setSession(data.id, data)
+        this.permissionKit.login(data.id)
+        return this.responseService.success(data)
+    }
+
     @Post('/logout')
     @UseGuards(AuthGuard)
     @ApiResponse({ type: UserLogoutVo })
     @ApiOperation({ summary: '退出登录' })
-    async userLogout(@Req() req: Request) {
-        const flag = await this.userService.userLogout(req)
+    userLogout(@Req() req: Request) {
+        const flag = this.userService.userLogout(req)
         return this.responseService.success(flag)
     }
 

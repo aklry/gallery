@@ -12,6 +12,7 @@ model user {
     id           String   @id @default(cuid())
     userAccount  String   @unique(map: "uk_userAccount") @db.VarChar(256)
     userPassword String   @db.VarChar(512)
+    userEmail    String?  @unique(map: "uk_userEmail") @db.VarChar(256)
     userName     String?  @db.VarChar(256)
     userAvatar   String?  @db.VarChar(1024)
     userProfile  String?  @db.VarChar(512)

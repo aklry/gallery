@@ -28,6 +28,7 @@ import * as fs from 'node:fs'
 import * as path from 'node:path'
 import type { YamlOssConfig } from './types'
 import { SseModule } from './sse/sse.module'
+import { EmailModule } from './email/email.module'
 
 @Module({
     imports: [
@@ -53,7 +54,8 @@ import { SseModule } from './sse/sse.module'
             load: [() => load(fs.readFileSync(path.resolve(process.cwd(), 'config.yaml'), 'utf8')) as YamlOssConfig]
         }),
         AiGeneratePictureModule,
-        SseModule
+        SseModule,
+        EmailModule
     ],
     controllers: [AppController],
     providers: [AppService]

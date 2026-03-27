@@ -14,16 +14,23 @@ import {
     UpdateUserDto,
     UploadAvatarDto,
     UserLoginDto,
-    UserRegisterDto
+    UserRegisterByEmailDto,
+    UserRegisterDto,
+    UserLoginByEmailDto
 } from './dto'
 import { OssService } from '../oss/oss.service'
+import { EmailService } from '../email/email.service'
+import { RedisService } from '../redis/redis.service'
+import { BusinessException } from '../custom-exception'
 
 @Injectable()
 export class UserService {
     constructor(
         private readonly prismaService: PrismaService,
         private readonly responseService: ResponseService,
-        private readonly ossService: OssService
+        private readonly ossService: OssService,
+        private readonly emailService: EmailService,
+        private readonly redisService: RedisService
     ) {}
 
     async userRegister(userRegisterDto: UserRegisterDto) {
@@ -249,7 +256,83 @@ export class UserService {
         return true
     }
 
-    async encryptPassword(password: string) {
+    async sendEmailValidateCode(email: string) {
+        let code = await this.redisService.get(email)
+        if (code) {
+            throw new BusinessException('验证码已发送，请5分钟后再试', BusinessStatus.PARAMS_ERROR.code)
+        }
+        code = this.generateCode()
+        //发送验证码
+        await this.emailService.sendEmail(
+            email,
+            '您的注册验证码',
+            `
+          <div style="font-family: Arial, sans-serif; padding: 20px;">
+            <h2>验证码</h2>
+            <p>您好，您的验证码为：</p>
+         
+           <h1 style="color: #4CAF50;">${code}</h1>
+            <p>该验证码在5分钟内有效。如非本人操作，请忽略此邮件。</p>
+          </div>
+        `
+        )
+        // 存储验证码到redis，设置5分钟过期
+        await this.redisService.set(email, code, 60 * 5)
+        return true
+    }
+
+    async userRegisterByEmail(userRegisterByEmailDto: UserRegisterByEmailDto) {
+        const { userEmail, code, userPassword, checkedPassword } = userRegisterByEmailDto
+        const storedCode = await this.redisService.get(userEmail)
+        if (storedCode !== code) {
+            throw new BusinessException('验证码错误', BusinessStatus.PARAMS_ERROR.code)
+        }
+        if (userPassword !== checkedPassword) {
+            throw new BusinessException('两次密码不一致', BusinessStatus.PARAMS_ERROR.code)
+        }
+        const user = await this.prismaService.user.create({
+            data: {
+                userEmail,
+                userPassword: await this.encryptPassword(userPassword),
+                userAccount: '佚名',
+                userName: '佚名'
+            }
+        })
+        return user.id
+    }
+
+    // 邮箱登录
+    async userLoginByEmail(userLoginByEmailDto: UserLoginByEmailDto) {
+        const { userEmail, userPassword } = userLoginByEmailDto
+        const user = await this.prismaService.user.findUnique({
+            where: {
+                userEmail
+            }
+        })
+        if (!user) {
+            throw new BusinessException('用户不存在', BusinessStatus.PARAMS_ERROR.code)
+        }
+        const isPasswordValid = await bcrypt.compare(userPassword, user.userPassword)
+        if (!isPasswordValid) {
+            throw new BusinessException('密码错误', BusinessStatus.PARAMS_ERROR.code)
+        }
+        return {
+            id: user.id,
+            userAccount: user.userAccount,
+            userEmail: user.userEmail,
+            userName: user.userName,
+            userAvatar: user.userAvatar,
+            userProfile: user.userProfile,
+            userRole: user.userRole
+        } as LoginVoModel
+    }
+
+    // 生成 6 位随机数字验证码
+    private generateCode(): string {
+        return Math.floor(100000 + Math.random() * 900000).toString()
+    }
+
+    private async encryptPassword(password: string) {
         const salt = await bcrypt.genSalt()
         return await bcrypt.hash(password, salt)
     }

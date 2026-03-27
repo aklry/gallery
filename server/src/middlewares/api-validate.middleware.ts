@@ -8,7 +8,11 @@ import { BusinessStatus } from '../config'
 export class ApiValidateMiddleware implements NestMiddleware {
     use(req: Request, _res: Response, next: NextFunction) {
         const { headers, originalUrl } = req
-        if (originalUrl.includes('message/stream')) {
+        if (
+            originalUrl.includes('message/stream') ||
+            originalUrl.includes('swagger') ||
+            originalUrl.includes('swagger-json')
+        ) {
             next()
             return
         }

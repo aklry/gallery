@@ -99,6 +99,21 @@ export async function userControllerUserLoginV1(body: API.UserLoginDto, options?
     })
 }
 
+/** 用户登录(邮箱) POST /api/v1/user/login/email */
+export async function userControllerUserLoginByEmailV1(
+    body: API.UserLoginByEmailDto,
+    options?: { [key: string]: any }
+) {
+    return ryRequest.request<API.UserLoginVo>('/api/v1/user/login/email', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        data: body,
+        ...(options || {})
+    })
+}
+
 /** 退出登录 POST /api/v1/user/logout */
 export async function userControllerUserLogoutV1(options?: { [key: string]: any }) {
     return ryRequest.request<API.UserLogoutVo>('/api/v1/user/logout', {
@@ -110,6 +125,36 @@ export async function userControllerUserLogoutV1(options?: { [key: string]: any 
 /** 用户注册 POST /api/v1/user/register */
 export async function userControllerUserRegisterV1(body: API.UserRegisterDto, options?: { [key: string]: any }) {
     return ryRequest.request<API.UserRegisterVo>('/api/v1/user/register', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        data: body,
+        ...(options || {})
+    })
+}
+
+/** 用户注册(邮箱) POST /api/v1/user/register/email */
+export async function userControllerUserRegisterByEmailV1(
+    body: API.UserRegisterByEmailDto,
+    options?: { [key: string]: any }
+) {
+    return ryRequest.request<API.UserRegisterVo>('/api/v1/user/register/email', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        data: body,
+        ...(options || {})
+    })
+}
+
+/** 发送注册验证码(邮箱) POST /api/v1/user/register/email/code */
+export async function userControllerUserRegisterByEmailCodeV1(
+    body: API.EmailValidateDto,
+    options?: { [key: string]: any }
+) {
+    return ryRequest.request<API.EmailValidateVo>('/api/v1/user/register/email/code', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'

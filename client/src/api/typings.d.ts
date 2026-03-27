@@ -286,6 +286,24 @@ declare namespace API {
         userPassword: string
     }
 
+    type EmailValidateDto = {
+        /** 发送验证码的邮箱 */
+        userEmail: string
+    }
+
+    type EmailValidateVo = {
+        /** 状态码 */
+        code: number
+        /** 消息 */
+        message: string
+        /** 是否发送成功 */
+        data: boolean
+        /** 时间戳 */
+        timestamp: string
+        /** 路径 */
+        path: string
+    }
+
     type FindUserDto = {
         /** 当前页 */
         current: string
@@ -364,6 +382,8 @@ declare namespace API {
         id: string
         /** 用户账号 */
         userAccount: string
+        /** 用户邮箱 */
+        userEmail: string
         /** 用户名 */
         userName: string
         /** 用户头像 */
@@ -1234,6 +1254,13 @@ declare namespace API {
         path: string
     }
 
+    type UserLoginByEmailDto = {
+        /** 用户邮箱 */
+        userEmail: string
+        /** 用户密码 */
+        userPassword: string
+    }
+
     type UserLoginDto = {
         /** 用户账号 */
         userAccount: string
@@ -1265,6 +1292,17 @@ declare namespace API {
         timestamp: string
         /** 路径 */
         path: string
+    }
+
+    type UserRegisterByEmailDto = {
+        /** 邮箱 */
+        userEmail: string
+        /** 验证码 */
+        code: string
+        /** 用户密码 */
+        userPassword: string
+        /** 确认密码 */
+        checkedPassword: string
     }
 
     type UserRegisterDto = {

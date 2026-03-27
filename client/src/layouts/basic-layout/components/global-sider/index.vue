@@ -20,7 +20,7 @@ const menuList = [
         <!-- 用户头像 -->
         <div class="sider-avatar" @click="handleClick('/user/center')">
             <a-avatar :size="40" :src="loginUser.userAvatar" v-if="loginUser.userAvatar" />
-            <a-avatar :size="40" v-else>{{ loginUser.userName?.charAt(0) || '?' }}</a-avatar>
+            <a-avatar :size="40" src="/logo.svg" v-else></a-avatar>
             <div class="avatar-status"></div>
         </div>
 

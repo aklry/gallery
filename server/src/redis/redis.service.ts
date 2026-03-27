@@ -28,9 +28,9 @@ export class RedisService implements OnModuleInit {
     }
 
     // 添加一些常用的方法
-    async set(key: string, value: any) {
+    async set(key: string, value: any, ttl: number = 60 * 60 * 24) {
         return await this.redisClient.set(key, JSON.stringify(value), {
-            EX: 60 * 60 * 24 // 24小时过期
+            EX: ttl
         })
     }
 

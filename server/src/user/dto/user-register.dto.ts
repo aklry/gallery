@@ -18,3 +18,22 @@ export class UserRegisterDto {
     @ApiProperty({ description: '确认密码' })
     checkedPassword: string
 }
+
+export class UserRegisterByEmailDto {
+    @IsNotEmpty()
+    @IsString()
+    @ApiProperty({ description: '邮箱' })
+    userEmail: string
+    @IsNotEmpty()
+    @IsString()
+    @ApiProperty({ description: '验证码' })
+    code: string
+    @IsNotEmpty()
+    @IsString()
+    @ApiProperty({ description: '用户密码' })
+    userPassword: string
+    @IsNotEmpty()
+    @IsString()
+    @ApiProperty({ description: '确认密码' })
+    checkedPassword: string
+}

@@ -12,6 +12,7 @@
         <a-col flex="150px">
             <template v-if="loginUser && loginUser.id">
                 <a-avatar :src="loginUser.userAvatar" v-if="loginUser.userAvatar" alt="个人头像" />
+                <a-avatar src="/logo.svg" v-else alt="个人头像" />
                 {{ loginUser.userName ?? '佚名' }}
             </template>
             <template v-else>
