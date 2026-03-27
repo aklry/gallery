@@ -3,8 +3,10 @@ import { reactive, ref } from 'vue'
 import { userControllerEditUserV1 } from '@/api/user'
 import { message } from 'ant-design-vue'
 import { storeToRefs } from 'pinia'
+import { useRouter } from 'vue-router'
 const useUserCenter = () => {
     const userStore = useUserStore()
+    const router = useRouter()
     const { loginUser: userInfo } = storeToRefs(userStore)
     const open = ref(false)
     const picture = ref<API.UploadAvatarVoModel>()
@@ -37,6 +39,10 @@ const useUserCenter = () => {
             url: userInfo.value.userAvatar
         }
     }
+    const handleLogout = async () => {
+        await userStore.userLogout()
+        router.push('/user/login')
+    }
     return {
         userInfo,
         open,
@@ -44,7 +50,8 @@ const useUserCenter = () => {
         picture,
         handleOk,
         handleUploadSuccess,
-        handleEdit
+        handleEdit,
+        handleLogout
     }
 }
 

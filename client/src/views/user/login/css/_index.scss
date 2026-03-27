@@ -1,22 +1,181 @@
-// 自定义样式
-.ant-card {
-    @apply bg-white;
+.login-wrapper {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    color: #fff;
+    background-color: #0f172a; // 深蓝色单色背景
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
-.ant-card-head {
-    @apply border-b border-gray-100;
+// 玻璃氛围背景装饰
+.glass-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    overflow: hidden;
+
+    .glass-shape {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(120px);
+        opacity: 0.5;
+
+        &.shape-1 {
+            width: 600px;
+            height: 600px;
+            background-color: #3b82f6; // 单色装饰
+            top: -200px;
+            left: -200px;
+        }
+
+        &.shape-2 {
+            width: 500px;
+            height: 500px;
+            background-color: #8b5cf6; // 单色装饰
+            bottom: -150px;
+            right: -150px;
+        }
+    }
 }
 
-:deep(.ant-card-head-title) {
-    @apply text-center text-2xl py-3 font-medium text-gray-800;
+.login-content {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 80px;
 }
 
-.ant-card-body {
-    @apply p-6;
+// Slogan 区域
+.slogan-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+
+    .slogan-title {
+        font-size: 4.5rem;
+        font-weight: 800;
+        letter-spacing: 0.2em;
+        color: #fff;
+        margin-bottom: 24px;
+        text-shadow: 0 4px 12px rgb(0 0 0 / 30%);
+    }
+
+    .slogan-subtitle {
+        font-size: 1.25rem;
+        color: #94a3b8;
+        letter-spacing: 0.1em;
+    }
 }
 
-.ant-form-item {
-    &:last-child {
-        @apply mb-0;
+// 登录容器
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+// 毛玻璃登录卡片
+.glass-card {
+    width: 420px;
+    padding: 48px;
+    border-radius: 24px;
+    background-color: rgb(255 255 255 / 8%); // 半透明背景
+    backdrop-filter: blur(24px); // 毛玻璃主要属性
+    backdrop-filter: blur(24px);
+    border: 1px solid rgb(255 255 255 / 15%); // 白色微弱边框
+    box-shadow: 0 25px 50px -12px rgb(0 0 0 / 40%); // 投影增加层次感
+
+    .card-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #fff;
+        margin-bottom: 8px;
+        text-align: center;
+    }
+
+    .card-desc {
+        color: #94a3b8;
+        text-align: center;
+        margin-bottom: 32px;
+        font-size: 0.875rem;
+    }
+}
+
+.form-back-hint {
+    margin-top: 24px;
+    text-align: center;
+    font-size: 0.875rem;
+    color: #94a3b8;
+    cursor: pointer;
+    transition: color 0.3s;
+
+    &:hover {
+        color: #fff;
+    }
+}
+
+// Ant Design 样式覆盖 (针对毛玻璃暗色主题)
+.login-form {
+    :deep(.ant-input-affix-wrapper),
+    :deep(.ant-input) {
+        background-color: rgb(255 255 255 / 5%) !important; // 毛玻璃输入框
+        border-color: rgb(255 255 255 / 10%) !important;
+        color: #fff !important;
+
+        &::placeholder {
+            color: #64748b !important;
+        }
+
+        &:focus,
+        &:hover,
+        &:focus-within {
+            border-color: #3b82f6 !important;
+            box-shadow: 0 0 0 2px rgb(59 130 246 / 20%) !important;
+            background-color: rgb(255 255 255 / 8%) !important;
+        }
+    }
+
+    :deep(.ant-input-password-icon),
+    :deep(.anticon) {
+        color: #94a3b8 !important;
+
+        &:hover {
+            color: #fff !important;
+        }
+    }
+
+    :deep(.ant-form-item-explain-error) {
+        color: #f87171 !important;
+        font-size: 0.75rem;
+    }
+}
+
+.login-btn {
+    background-color: #3b82f6 !important;
+    border: none !important;
+    height: 48px !important;
+    border-radius: 12px !important;
+    font-size: 1.1rem !important;
+    font-weight: 600 !important;
+    margin-top: 8px;
+    transition: all 0.3s !important;
+    color: #fff !important;
+
+    &:hover {
+        background-color: #2563eb !important;
+        transform: translateY(-2px);
+        box-shadow: 0 10px 15px -3px rgb(37 99 235 / 40%);
     }
 }

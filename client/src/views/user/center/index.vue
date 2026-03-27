@@ -72,6 +72,30 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Danger Zone -->
+                    <div class="mt-8">
+                        <div class="h-px bg-red-100 w-full mb-6"></div>
+                        <div class="text-sm font-semibold text-red-500 uppercase tracking-widest mb-4">危险操作</div>
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <div class="text-sm font-medium text-gray-800">退出登录</div>
+                                <div class="text-xs text-gray-400 mt-0.5">退出当前账号，需重新登录才能访问</div>
+                            </div>
+                            <a-popconfirm
+                                title="确定要退出登录吗？"
+                                ok-text="退出"
+                                cancel-text="取消"
+                                ok-type="danger"
+                                @confirm="handleLogout"
+                            >
+                                <a-button danger>
+                                    <template #icon><LogoutOutlined /></template>
+                                    退出登录
+                                </a-button>
+                            </a-popconfirm>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -108,11 +132,11 @@
 </template>
 
 <script setup lang="ts">
-import { SettingOutlined, UserOutlined } from '@ant-design/icons-vue'
+import { SettingOutlined, UserOutlined, LogoutOutlined } from '@ant-design/icons-vue'
 import useUserCenter from './hooks'
 import PictureUpload from '@/components/picture-upload/index.vue'
 
-const { userInfo, open, form, handleOk, handleUploadSuccess, picture, handleEdit } = useUserCenter()
+const { userInfo, open, form, handleOk, handleUploadSuccess, picture, handleEdit, handleLogout } = useUserCenter()
 </script>
 
 <style scoped lang="scss">
