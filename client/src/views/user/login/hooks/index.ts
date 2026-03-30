@@ -47,16 +47,14 @@ const useLogin = () => {
         context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0)
         context.clearRect(0, 0, logicalWidth, logicalHeight)
 
-        const backgroundGradient = context.createLinearGradient(0, 0, logicalWidth, logicalHeight)
-        backgroundGradient.addColorStop(0, 'rgba(15, 23, 42, 0.96)')
-        backgroundGradient.addColorStop(0.5, 'rgba(30, 41, 59, 0.94)')
-        backgroundGradient.addColorStop(1, 'rgba(37, 99, 235, 0.85)')
-        context.fillStyle = backgroundGradient
+        // 浅色背景（无渐变）
+        context.fillStyle = '#f8fafc'
         context.fillRect(0, 0, logicalWidth, logicalHeight)
 
+        // 干扰线（浅色主题）
         for (let index = 0; index < 5; index += 1) {
-            context.strokeStyle = `rgba(148, 163, 184, ${0.12 + Math.random() * 0.14})`
-            context.lineWidth = 1 + Math.random() * 1.2
+            context.strokeStyle = `rgba(148, 163, 184, ${0.2 + Math.random() * 0.3})`
+            context.lineWidth = 1 + Math.random() * 1.5
             context.beginPath()
             context.moveTo(Math.random() * logicalWidth, Math.random() * logicalHeight)
             context.bezierCurveTo(
@@ -70,8 +68,9 @@ const useLogin = () => {
             context.stroke()
         }
 
+        // 干扰点（浅色主题）
         for (let index = 0; index < 18; index += 1) {
-            context.fillStyle = `rgba(255, 255, 255, ${0.08 + Math.random() * 0.22})`
+            context.fillStyle = `rgba(59, 130, 246, ${0.1 + Math.random() * 0.2})`
             context.beginPath()
             context.arc(
                 Math.random() * logicalWidth,
@@ -87,6 +86,7 @@ const useLogin = () => {
         context.textAlign = 'center'
         context.font = '600 25px Georgia'
 
+        // 验证码文字颜色（深色主题）
         captchaValue.value.split('').forEach((character, index) => {
             const x = 22 + index * 28
             const y = logicalHeight / 2 + (Math.random() * 8 - 4)
@@ -95,9 +95,9 @@ const useLogin = () => {
             context.save()
             context.translate(x, y)
             context.rotate(rotation)
-            context.shadowColor = 'rgba(15, 23, 42, 0.35)'
-            context.shadowBlur = 10
-            context.fillStyle = ['#f8fafc', '#dbeafe', '#bfdbfe', '#e2e8f0'][index % 4]
+            context.shadowColor = 'rgba(59, 130, 246, 0.15)'
+            context.shadowBlur = 4
+            context.fillStyle = ['#1e40af', '#2563eb', '#1e3a8a', '#3b82f6'][index % 4]
             context.fillText(character, 0, 0)
             context.restore()
         })

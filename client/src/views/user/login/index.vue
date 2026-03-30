@@ -9,7 +9,7 @@
         <div class="login-content">
             <!-- Slogan 区域 -->
             <div class="slogan-container">
-                <h1 class="slogan-title">源空间</h1>
+                <h1 class="slogan-title">映刻</h1>
                 <p class="slogan-subtitle">探索、收藏、分享你的每一次灵感闪现</p>
             </div>
 
@@ -95,7 +95,7 @@
                                 <div class="flex justify-end mb-4">
                                     <router-link
                                         to="/user/register"
-                                        class="text-gray-300 hover:text-white transition-colors duration-300"
+                                        class="text-gray-500 hover:text-blue-600 transition-colors duration-300"
                                     >
                                         没有账户？去注册
                                     </router-link>
@@ -191,7 +191,7 @@
                                 <div class="flex justify-end mb-4">
                                     <router-link
                                         to="/user/register"
-                                        class="text-gray-300 hover:text-white transition-colors duration-300"
+                                        class="text-gray-500 hover:text-blue-600 transition-colors duration-300"
                                     >
                                         没有账户？去注册
                                     </router-link>
@@ -234,27 +234,27 @@ void captchaCanvasRef
     margin-bottom: 24px;
 
     &::before {
-        border-bottom-color: rgb(255 255 255 / 20%);
+        border-bottom-color: #e2e8f0;
     }
 }
 
 :deep(.ant-tabs-tab) {
-    color: rgb(255 255 255 / 65%);
+    color: #64748b;
 
     &:hover {
-        color: white;
+        color: #1e293b;
     }
 }
 
 :deep(.ant-tabs-tab-active) {
     .ant-tabs-tab-btn {
-        color: white;
+        color: #1e293b;
         text-shadow: 0 0 0.25px currentcolor;
     }
 }
 
 :deep(.ant-tabs-ink-bar) {
-    background: white;
+    background: #3b82f6;
 }
 
 .captcha-row {
@@ -275,9 +275,9 @@ void captchaCanvasRef
     justify-content: center;
     gap: 4px;
     padding: 0;
-    border: 1px solid rgb(255 255 255 / 16%);
+    border: 1px solid #e2e8f0;
     border-radius: 14px;
-    background: linear-gradient(135deg, rgb(15 23 42 / 82%), rgb(30 41 59 / 88%));
+    background: #fff;
     overflow: hidden;
     transition:
         transform 0.25s ease,
@@ -287,12 +287,12 @@ void captchaCanvasRef
 
     &:hover:not(:disabled) {
         transform: translateY(-1px);
-        border-color: rgb(96 165 250 / 55%);
-        box-shadow: 0 14px 28px rgb(15 23 42 / 28%);
+        border-color: #3b82f6;
+        box-shadow: 0 4px 12px rgb(59 130 246 / 15%);
     }
 
     &:focus-visible {
-        outline: 2px solid rgb(96 165 250 / 75%);
+        outline: 2px solid #3b82f6;
         outline-offset: 2px;
     }
 
@@ -315,7 +315,7 @@ void captchaCanvasRef
     gap: 6px;
     min-height: 28px;
     padding: 0 10px 8px;
-    color: rgb(226 232 240 / 92%);
+    color: #64748b;
     font-size: 12px;
     font-weight: 600;
     letter-spacing: 0.04em;

@@ -9,7 +9,7 @@
         <div class="login-content">
             <!-- Slogan 区域 -->
             <div class="slogan-container">
-                <h1 class="slogan-title">源空间</h1>
+                <h1 class="slogan-title">映刻</h1>
                 <p class="slogan-subtitle">加入我们，记录和分享你的每一次灵感闪现</p>
             </div>
 
@@ -72,7 +72,7 @@
                                 <div class="flex justify-end mb-4">
                                     <router-link
                                         to="/user/login"
-                                        class="text-gray-300 hover:text-white transition-colors duration-300"
+                                        class="text-gray-500 hover:text-blue-600 transition-colors duration-300"
                                     >
                                         已有账户？去登录
                                     </router-link>
@@ -125,7 +125,7 @@
                                             :loading="isSending"
                                             @click="sendCode"
                                             size="large"
-                                            class="h-auto px-4 !rounded-xl border-none !bg-white/10 hover:!bg-white/20 !text-white !font-medium transition-colors backdrop-blur"
+                                            class="h-auto px-4 !rounded-xl border-none !bg-blue-50 hover:!bg-blue-100 !text-blue-600 !font-medium transition-colors backdrop-blur"
                                         >
                                             {{ countdown > 0 ? `${countdown}秒后重新发送` : '获取验证码' }}
                                         </a-button>
@@ -162,7 +162,7 @@
                                 <div class="flex justify-end mb-4">
                                     <router-link
                                         to="/user/login"
-                                        class="text-gray-300 hover:text-white transition-colors duration-300"
+                                        class="text-gray-500 hover:text-blue-600 transition-colors duration-300"
                                     >
                                         已有账户？去登录
                                     </router-link>
@@ -196,26 +196,26 @@ const { tabKey, formState, countdown, isSending, sendCode, onFinish } = useRegis
     margin-bottom: 24px;
 
     &::before {
-        border-bottom-color: rgb(255 255 255 / 20%);
+        border-bottom-color: #e2e8f0;
     }
 }
 
 :deep(.ant-tabs-tab) {
-    color: rgb(255 255 255 / 65%);
+    color: #64748b;
 
     &:hover {
-        color: white;
+        color: #1e293b;
     }
 }
 
 :deep(.ant-tabs-tab-active) {
     .ant-tabs-tab-btn {
-        color: white;
+        color: #1e293b;
         text-shadow: 0 0 0.25px currentcolor;
     }
 }
 
 :deep(.ant-tabs-ink-bar) {
-    background: white;
+    background: #3b82f6;
 }
 </style>
