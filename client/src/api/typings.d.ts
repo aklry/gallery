@@ -377,6 +377,19 @@ declare namespace API {
         permissions?: string[]
     }
 
+    type LoginCaptchaVo = {
+        /** 状态码 */
+        code: number
+        /** 消息 */
+        message: string
+        /** 登录验证码 */
+        data: string
+        /** 时间戳 */
+        timestamp: string
+        /** 路径 */
+        path: string
+    }
+
     type LoginVoModel = {
         /** 用户ID */
         id: string
@@ -1259,6 +1272,8 @@ declare namespace API {
         userEmail: string
         /** 用户密码 */
         userPassword: string
+        /** 登录验证码 */
+        code: string
     }
 
     type UserLoginDto = {
@@ -1266,6 +1281,8 @@ declare namespace API {
         userAccount: string
         /** 用户密码 */
         userPassword: string
+        /** 登录验证码 */
+        code: string
     }
 
     type UserLoginVo = {

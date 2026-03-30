@@ -22,6 +22,7 @@ import { OssService } from '../oss/oss.service'
 import { EmailService } from '../email/email.service'
 import { RedisService } from '../redis/redis.service'
 import { BusinessException } from '../custom-exception'
+import { LOGIN_REDIS_KEY } from './constant'
 
 @Injectable()
 export class UserService {
@@ -87,7 +88,11 @@ export class UserService {
     }
 
     async userLogin(userLoginDto: UserLoginDto) {
-        const { userAccount, userPassword } = userLoginDto
+        const { userAccount, userPassword, code } = userLoginDto
+        const storedCode = await this.redisService.get(LOGIN_REDIS_KEY)
+        if (code !== storedCode) {
+            return this.responseService.error(null, '验证码错误', BusinessStatus.PARAMS_ERROR.code)
+        }
         const user = await this.prismaService.user.findUnique({
             where: {
                 userAccount
@@ -303,7 +308,11 @@ export class UserService {
 
     // 邮箱登录
     async userLoginByEmail(userLoginByEmailDto: UserLoginByEmailDto) {
-        const { userEmail, userPassword } = userLoginByEmailDto
+        const { userEmail, userPassword, code } = userLoginByEmailDto
+        const storedCode = await this.redisService.get(LOGIN_REDIS_KEY)
+        if (code !== storedCode) {
+            throw new BusinessException('验证码错误', BusinessStatus.PARAMS_ERROR.code)
+        }
         const user = await this.prismaService.user.findUnique({
             where: {
                 userEmail
@@ -327,9 +336,26 @@ export class UserService {
         } as LoginVoModel
     }
 
-    // 生成 6 位随机数字验证码
+    //生成登录页面的验证码
+    async generateLoginCaptcha() {
+        const code = this.generateStringCode()
+        this.redisService.set(LOGIN_REDIS_KEY, code, 60 * 5)
+        return code
+    }
+
+    // 生成 6位随机数字验证码
     private generateCode(): string {
         return Math.floor(100000 + Math.random() * 900000).toString()
+    }
+
+    // 生成4位随机字符串验证码
+    private generateStringCode(): string {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+        let result = ''
+        for (let i = 0; i < 4; i++) {
+            result += chars.charAt(Math.floor(Math.random() * chars.length))
+        }
+        return result
     }
 
     private async encryptPassword(password: string) {

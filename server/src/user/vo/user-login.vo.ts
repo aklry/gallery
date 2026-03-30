@@ -20,3 +20,8 @@ export class UserLoginVo extends ResponseVo<LoginVoModel> {
     @ApiProperty({ description: '用户信息', type: LoginVoModel })
     data: LoginVoModel
 }
+
+export class LoginCaptchaVo extends ResponseVo<string> {
+    @ApiProperty({ description: '登录验证码', type: 'string' })
+    data: string
+}

@@ -35,7 +35,8 @@ import {
     UserDeleteVo,
     UserCreateVo,
     UserUpdateVo,
-    EmailValidateVo
+    EmailValidateVo,
+    LoginCaptchaVo
 } from './vo'
 import { ApiBody, ApiConsumes, ApiOperation, ApiResponse } from '@nestjs/swagger'
 import { Request } from 'express'
@@ -113,6 +114,14 @@ export class UserController {
         req.session.user = data
         this.permissionKit.setSession(data.id, data)
         this.permissionKit.login(data.id)
+        return this.responseService.success(data)
+    }
+
+    @Get('/login/get/code')
+    @ApiResponse({ type: LoginCaptchaVo })
+    @ApiOperation({ summary: '获取登录验证码' })
+    async getLoginCaptcha() {
+        const data = await this.userService.generateLoginCaptcha()
         return this.responseService.success(data)
     }
 
