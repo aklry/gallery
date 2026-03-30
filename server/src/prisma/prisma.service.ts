@@ -56,6 +56,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
         })
 
         this.$on('error' as never, (e: any) => {
+            console.log(e, 'error')
             throw new BusinessException(BusinessStatus.SYSTEM_ERROR.message, BusinessStatus.SYSTEM_ERROR.code)
         })
 
@@ -64,10 +65,16 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
             query: {
                 $allModels: {
                     async findUnique({ args, query }) {
+                        if (args.where && 'isDelete' in args.where) {
+                            return query(args)
+                        }
                         args.where = { ...args.where, isDelete: 0 }
                         return query(args)
                     },
                     async findFirst({ args, query }) {
+                        if (args.where && 'isDelete' in args.where) {
+                            return query(args)
+                        }
                         args.where = { ...args.where, isDelete: 0 }
                         return query(args)
                     },

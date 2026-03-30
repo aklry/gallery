@@ -22,7 +22,7 @@ import { OssService } from '../oss/oss.service'
 import { EmailService } from '../email/email.service'
 import { RedisService } from '../redis/redis.service'
 import { BusinessException } from '../custom-exception'
-import { LOGIN_REDIS_KEY } from './constant'
+import { LOGIN_REDIS_KEY, USER_RANDOM_PREFIX } from './constant'
 
 @Injectable()
 export class UserService {
@@ -37,21 +37,25 @@ export class UserService {
     async userRegister(userRegisterDto: UserRegisterDto) {
         const { userAccount, userPassword, checkedPassword } = userRegisterDto
         if (userPassword !== checkedPassword) {
-            return this.responseService.error(null, '两次密码不一致', BusinessStatus.PARAMS_ERROR.code)
+            throw new BusinessException('两次密码不一致', BusinessStatus.PARAMS_ERROR.code)
         }
         const user = await this.prismaService.user.findUnique({
             where: {
-                userAccount
+                userAccount,
+                isDelete: {
+                    in: [0, 1]
+                }
             }
         })
         if (user) {
-            return this.responseService.error(null, '用户已存在', BusinessStatus.PARAMS_ERROR.code)
+            throw new BusinessException('用户已存在', BusinessStatus.PARAMS_ERROR.code)
         }
         // 加密
         const hashedPassword = await this.encryptPassword(userPassword)
         const newUser = await this.prismaService.user.create({
             data: {
                 userAccount,
+                userName: this.generateUsername(),
                 userPassword: hashedPassword,
                 userRole: UserRole.USER
             }
@@ -62,7 +66,7 @@ export class UserService {
     async getLoginUser(req: Request) {
         const user = req.session.user
         if (!user) {
-            return this.responseService.error(null, '用户未登录', BusinessStatus.PARAMS_ERROR.code)
+            throw new BusinessException('用户未登录', BusinessStatus.PARAMS_ERROR.code)
         }
         const userInfo = await this.prismaService.user.findUnique({
             where: {
@@ -70,7 +74,7 @@ export class UserService {
             }
         })
         if (!userInfo) {
-            return this.responseService.error(null, '用户不存在', BusinessStatus.PARAMS_ERROR.code)
+            throw new BusinessException('用户不存在', BusinessStatus.PARAMS_ERROR.code)
         }
         return {
             id: userInfo.id,
@@ -91,7 +95,7 @@ export class UserService {
         const { userAccount, userPassword, code } = userLoginDto
         const storedCode = await this.redisService.get(LOGIN_REDIS_KEY)
         if (code !== storedCode) {
-            return this.responseService.error(null, '验证码错误', BusinessStatus.PARAMS_ERROR.code)
+            throw new BusinessException('验证码错误', BusinessStatus.PARAMS_ERROR.code)
         }
         const user = await this.prismaService.user.findUnique({
             where: {
@@ -99,11 +103,11 @@ export class UserService {
             }
         })
         if (!user) {
-            return this.responseService.error(null, '用户不存在', BusinessStatus.PARAMS_ERROR.code)
+            throw new BusinessException('用户不存在', BusinessStatus.PARAMS_ERROR.code)
         }
         const isMatch = await bcrypt.compare(userPassword, user.userPassword)
         if (!isMatch) {
-            return this.responseService.error(null, '密码错误', BusinessStatus.PARAMS_ERROR.code)
+            throw new BusinessException('密码错误', BusinessStatus.PARAMS_ERROR.code)
         }
         return {
             id: user.id,
@@ -285,7 +289,7 @@ export class UserService {
         await this.redisService.set(email, code, 60 * 5)
         return true
     }
-
+    // 邮箱注册
     async userRegisterByEmail(userRegisterByEmailDto: UserRegisterByEmailDto) {
         const { userEmail, code, userPassword, checkedPassword } = userRegisterByEmailDto
         const storedCode = await this.redisService.get(userEmail)
@@ -299,8 +303,8 @@ export class UserService {
             data: {
                 userEmail,
                 userPassword: await this.encryptPassword(userPassword),
-                userAccount: '佚名',
-                userName: '佚名'
+                userAccount: this.generateUsername(),
+                userName: this.generateUsername()
             }
         })
         return user.id
@@ -356,6 +360,12 @@ export class UserService {
             result += chars.charAt(Math.floor(Math.random() * chars.length))
         }
         return result
+    }
+    // 生成随机用户名
+    private generateUsername(): string {
+        const prefix = USER_RANDOM_PREFIX
+        const randomSuffix = Math.floor(1000 + Math.random() * 9000).toString()
+        return prefix + '_' + randomSuffix
     }
 
     private async encryptPassword(password: string) {

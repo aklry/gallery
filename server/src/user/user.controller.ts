@@ -97,9 +97,6 @@ export class UserController {
     @ApiOperation({ summary: '用户登录' })
     async userLogin(@Req() req: Request, @Body(new ValidationPipe()) userLoginDto: UserLoginDto) {
         const data = await this.userService.userLogin(userLoginDto)
-        if ('code' in data) {
-            return this.responseService.error(null, data.message, data.code)
-        }
         req.session.user = data
         this.permissionKit.setSession(data.id, data)
         this.permissionKit.login(data.id)
