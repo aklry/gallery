@@ -57,16 +57,11 @@ const useAdmin = () => {
             key: 'userRole'
         },
         {
-            title: '用户头像',
-            dataIndex: 'userAvatar',
-            key: 'userAvatar',
-            width: '100px'
-        },
-        {
             title: '创建时间',
             dataIndex: 'createTime',
             key: 'createTime',
-            sorter: true
+            sorter: true,
+            width: 180
         },
         {
             title: '操作',

@@ -24,11 +24,7 @@
                     </a-tag>
                 </template>
                 <template v-if="column.dataIndex === 'action'">
-                    <a-button type="primary" class="mr-[10px]">编辑</a-button>
                     <a-button type="primary" danger @click="handleDelete(record.id)">删除</a-button>
-                </template>
-                <template v-if="column.dataIndex === 'userAvatar'">
-                    <a-image :src="record.userAvatar" width="50" />
                 </template>
             </template>
         </a-table>
