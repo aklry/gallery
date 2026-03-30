@@ -15,7 +15,7 @@ export default defineConfig(({ mode }) => {
             createHtmlPlugin({
                 inject: {
                     data: {
-                        title: '画云间',
+                        title: '映刻',
                         favicon: '/logo.svg'
                     }
                 }
