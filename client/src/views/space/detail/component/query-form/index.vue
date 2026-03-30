@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { ColorPicker } from 'vue3-colorpicker'
+import 'vue3-colorpicker/style.css'
 import { useQueryFormHooks } from './hooks'
 import { QueryFormPropsType } from './types'
 import { SearchOutlined, FilterOutlined, UndoOutlined } from '@ant-design/icons-vue'

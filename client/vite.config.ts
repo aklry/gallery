@@ -3,11 +3,24 @@ import vue from '@vitejs/plugin-vue'
 import { fileURLToPath } from 'node:url'
 import ViteCompression from 'vite-plugin-compression'
 import { createHtmlPlugin } from 'vite-plugin-html'
+import Components from 'unplugin-vue-components/vite'
+import { AntDesignVueResolver } from 'unplugin-vue-components/resolvers'
+
+const isPackage = (id: string, pkg: string) => id.includes(`/node_modules/${pkg}/`)
+
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
     return {
         plugins: [
             vue(),
+            Components({
+                dts: false,
+                resolvers: [
+                    AntDesignVueResolver({
+                        importStyle: false
+                    })
+                ]
+            }),
             ViteCompression({
                 threshold: 50 * 1024,
                 algorithm: 'gzip'
@@ -52,18 +65,47 @@ export default defineConfig(({ mode }) => {
                     assetFileNames: 'assets/[ext]/[name]-[hash].[ext]',
                     entryFileNames: 'js/entry-[hash].js',
                     manualChunks: (id: string) => {
-                        if (id.includes('node_modules')) {
-                            if (id.includes('echarts')) {
-                                return 'echarts'
-                            }
-                            if (id.includes('vue') || id.includes('vue-router') || id.includes('pinia')) {
-                                return 'vue-libs'
-                            }
-                            if (id.includes('axios') || id.includes('lodash') || id.includes('dayjs')) {
-                                return 'common-libs'
-                            }
-                            return 'vendor'
+                        if (!id.includes('node_modules')) {
+                            return
                         }
+
+                        if (isPackage(id, 'vue') || isPackage(id, 'vue-router') || isPackage(id, 'pinia')) {
+                            return 'vue-core'
+                        }
+
+                        if (isPackage(id, 'pinia-plugin-persistedstate')) {
+                            return 'state-libs'
+                        }
+
+                        if (
+                            isPackage(id, 'echarts') ||
+                            isPackage(id, 'echarts-wordcloud') ||
+                            isPackage(id, 'vue-echarts')
+                        ) {
+                            return 'echarts'
+                        }
+
+                        if (isPackage(id, 'vue-cropper')) {
+                            return 'image-tools'
+                        }
+
+                        if (isPackage(id, 'vue-waterfall-plugin-next')) {
+                            return 'waterfall'
+                        }
+
+                        if (isPackage(id, 'vue3-colorpicker')) {
+                            return 'colorpicker'
+                        }
+
+                        if (isPackage(id, 'axios') || isPackage(id, 'lodash') || isPackage(id, 'dayjs')) {
+                            return 'common-libs'
+                        }
+
+                        if (isPackage(id, 'ant-design-vue') || isPackage(id, '@ant-design/icons-vue')) {
+                            return 'ant-design'
+                        }
+
+                        return 'vendor'
                     }
                 }
             }
