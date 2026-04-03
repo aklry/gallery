@@ -12,7 +12,7 @@
 }
 
 .search-hero {
-    @apply flex flex-col items-center justify-center py-10 px-4 mb-6 relative overflow-hidden rounded-b-3xl mx-4 mt-2;
+    @apply flex flex-col items-center justify-center py-10 px-4 mb-6 relative overflow-hidden rounded-b-3xl mx-4 md:mx-6 lg:mx-8 xl:mx-10 mt-2;
 
     background: linear-gradient(135deg, rgb(255 255 255 / 60%) 0%, rgb(255 255 255 / 30%) 100%);
     backdrop-filter: blur(20px);
@@ -76,7 +76,7 @@
 }
 
 .main-content {
-    @apply max-w-[1400px] mx-auto px-4 md:px-6;
+    @apply w-full px-4 md:px-6 lg:px-8 xl:px-10;
 }
 
 .picture-card {
@@ -138,4 +138,8 @@
             }
         }
     }
+}
+
+:deep(.waterfall-list) {
+    @apply bg-transparent;
 }

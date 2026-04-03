@@ -46,7 +46,7 @@ const {
             <tabs :tag_category="tag_category" @changeTabs="changeTabs" />
             <tag-bars :tag_category="tag_category" @changeTags="changeTags" />
             <template v-if="dataList.length > 0">
-                <Waterfall :list="dataList" :width="230">
+                <Waterfall :list="dataList" :width="300">
                     <!-- 新版插槽数据获取 -->
                     <template #default="{ item }">
                         <div class="picture-card" @click="clickPicture(item.id)">
