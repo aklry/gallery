@@ -1,39 +1,108 @@
 .global-sider {
-    @apply flex flex-col items-center h-screen py-4;
+    @apply flex flex-col items-center py-4 rounded-3xl z-50 transition-all duration-300 relative;
 
     width: 64px;
-    background-color: #f5f5f5;
-    border-right: 1px solid #e8e8e8;
+    height: max-content;
+
+    /* 利用 align-self 在 flex 容器中垂直居中，水平方向保留左右外边距 */
+    align-self: center;
+    margin: 0 16px;
+
+    /* 现代化悬浮设计：毛玻璃效果 & 阴影 */
+    background-color: rgb(255 255 255 / 70%);
+    backdrop-filter: blur(16px);
+    box-shadow: 0 4px 24px rgb(0 0 0 / 8%);
+    border: 1px solid rgb(255 255 255 / 60%);
+
+    &.collapsed {
+        /* 收起时向左平移，并隐藏自身的一部分（或者整体移出视口仅留边角） */
+        margin-left: -56px; /* 留出8px在边缘，或者完全收起配合按钮 */
+        opacity: 0.8;
+
+        .sider-avatar,
+        .sider-nav {
+            opacity: 0;
+            pointer-events: none;
+            visibility: hidden;
+            transition: all 0.2s ease;
+        }
+
+        .collapse-btn {
+            right: -24px; /* 展开时贴合些，收起时向外展出以便点击 */
+            opacity: 1;
+            color: #1677ff;
+            box-shadow: 0 4px 16px rgb(0 0 0 / 10%);
+            background-color: #fff;
+        }
+    }
+
+    .collapse-btn {
+        @apply absolute flex items-center justify-center cursor-pointer z-50;
+
+        top: 50%;
+        right: -12px;
+        transform: translateY(-50%);
+        width: 24px;
+        height: 48px; /* 现代化胶囊形 (Pill shape) */
+        background-color: rgb(255 255 255 / 80%);
+        backdrop-filter: blur(8px);
+        border-radius: 12px;
+        border: 1px solid rgb(0 0 0 / 5%);
+        box-shadow: 0 2px 8px rgb(0 0 0 / 6%);
+        color: #a3a3a3;
+        opacity: 0.6; /* 正常状态下弱化存在感 */
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+
+        &:hover {
+            opacity: 1;
+            right: -16px; /* 悬停时微微向外探出，增加交互感 */
+            color: #1677ff;
+            background-color: #fff;
+            border-color: rgb(22 119 255 / 20%);
+            box-shadow: 0 6px 20px rgb(22 119 255 / 15%);
+        }
+
+        .collapse-icon {
+            font-size: 11px;
+            font-weight: bold;
+        }
+    }
 
     .sider-avatar {
-        @apply relative cursor-pointer mb-6;
+        @apply relative cursor-pointer mb-6 transform hover:scale-105 transition-all duration-300;
 
         .avatar-status {
             @apply absolute bottom-0 right-0 w-3 h-3 rounded-full;
 
             background-color: #52c41a;
-            border: 2px solid #f5f5f5;
+            border: 2px solid #fff;
         }
+
+        visibility: visible;
+        transition: all 0.3s ease;
     }
 
     .sider-nav {
-        @apply flex flex-col items-center gap-2 flex-1;
+        @apply flex flex-col items-center gap-3 flex-1 px-2 transition-all duration-300;
+
+        visibility: visible;
     }
 
     .nav-item {
-        @apply flex items-center justify-center w-10 h-10 rounded-xl cursor-pointer transition-all duration-200;
+        @apply flex items-center justify-center w-11 h-11 rounded-2xl cursor-pointer transition-all duration-300;
 
-        color: #8c8c8c;
+        color: #737373;
 
         &:hover {
-            background-color: #e6e6e6;
-            color: #595959;
+            background-color: rgb(0 0 0 / 4%);
+            color: #1677ff;
+            transform: translateY(-2px);
         }
 
         &.active {
             background-color: #1677ff;
             color: #fff;
-            box-shadow: 0 2px 8px rgb(22 119 255 / 35%);
+            box-shadow: 0 4px 12px rgb(22 119 255 / 40%);
         }
     }
 

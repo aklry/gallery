@@ -1,9 +1,13 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+const currentYear = new Date().getFullYear()
+</script>
 
 <template>
-    <div class="w-full h-full text-center">
-        <a href="http://docs.aklry.com" target="_blank">Copyright &copy; aklry 2024</a>
-    </div>
+    <footer class="w-full py-4 text-center text-sm text-gray-400">
+        <a href="http://docs.aklry.com" target="_blank" class="hover:text-blue-500 transition-colors duration-300">
+            Copyright &copy; aklry {{ currentYear }}
+        </a>
+    </footer>
 </template>
 
 <style scoped></style>

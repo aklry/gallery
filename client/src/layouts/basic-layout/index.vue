@@ -2,9 +2,6 @@
     <div class="layout flex h-[100vh] overflow-hidden">
         <global-sider />
         <a-layout class="h-full flex-1">
-            <a-layout-header>
-                <global-header />
-            </a-layout-header>
             <a-layout-content class="content">
                 <router-view />
             </a-layout-content>
@@ -16,7 +13,6 @@
 </template>
 
 <script setup lang="ts">
-import GlobalHeader from './components/global-header/index.vue'
 import GlobalFooter from './components/global-footer/index.vue'
 import GlobalSider from './components/global-sider/index.vue'
 

@@ -1,7 +1,7 @@
 @use '@/assets/styles/mixins' as *;
 
 .home {
-    @apply bg-[#f8fafc]; /* Light sleek background */
+    @apply bg-transparent; /* Inherit the global sleek background */
 
     scrollbar-width: none; /* Hide scrollbar for modern feel */
 }
@@ -12,10 +12,12 @@
 }
 
 .search-hero {
-    @apply flex flex-col items-center justify-center py-10 px-4 mb-6 relative overflow-hidden rounded-b-3xl;
+    @apply flex flex-col items-center justify-center py-10 px-4 mb-6 relative overflow-hidden rounded-b-3xl mx-4 mt-2;
 
-    background: linear-gradient(135deg, #eef2f3 0%, #f7f9fa 100%);
-    box-shadow: 0 4px 20px rgb(0 0 0 / 2%);
+    background: linear-gradient(135deg, rgb(255 255 255 / 60%) 0%, rgb(255 255 255 / 30%) 100%);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgb(255 255 255 / 40%);
+    box-shadow: 0 8px 32px rgb(0 0 0 / 4%);
 
     /* Subtle background decoration */
     &::before {
@@ -30,7 +32,7 @@
 
     .hero-title {
         @apply text-3xl md:text-4xl font-black text-gray-800 mb-3 z-10 text-center tracking-tight;
-        
+
         .gradient-text {
             @apply bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-cyan-500;
         }
@@ -42,7 +44,7 @@
 
     .input-search-wrapper {
         @apply w-full max-w-2xl z-10 relative shadow-xl shadow-blue-500/5 rounded-full bg-white p-1.5;
-        
+
         :deep(.ant-input-group-wrapper) {
             .ant-input {
                 @apply border-none shadow-none text-base pl-4;
@@ -91,11 +93,11 @@
         .picture-card__cover img {
             transform: scale(1.05);
         }
-        
+
         .picture-card__overlay {
             @apply opacity-100;
         }
-        
+
         .zoom-icon {
             @apply scale-100;
         }
@@ -103,7 +105,7 @@
 
     &__cover {
         @apply relative overflow-hidden bg-gray-50 aspect-auto;
-        
+
         img {
             @apply w-full block transition-transform duration-500 ease-out;
 
@@ -114,7 +116,7 @@
     // Interactive Hover Overlay
     &__overlay {
         @apply absolute inset-0 bg-black/20 opacity-0 transition-opacity duration-300 flex items-center justify-center;
-        
+
         .zoom-icon {
             @apply w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white text-xl shadow-lg transform scale-50 transition-transform duration-300;
         }

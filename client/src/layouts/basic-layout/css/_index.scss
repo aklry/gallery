@@ -1,14 +1,25 @@
+.layout {
+    /* 为整个应用背景采用现代极简淡雅色调 */
+    @apply bg-[#f6f8fb];
+}
+
+.ant-layout {
+    @apply bg-transparent;
+}
+
 .ant-layout-header {
-    @apply bg-white;
+    @apply bg-white border-b border-gray-100;
 
     padding-inline: 20px;
+    z-index: 10;
 }
 
 .ant-layout-footer {
-    @apply bg-white p-0 h-[64px] leading-[64px];
+    @apply p-0 h-[64px] leading-[64px] bg-transparent backdrop-blur-md;
 }
 
 .content {
-    background: linear-gradient(to bottom, #fefefe, #fff);
-    @apply p-[20px] overflow-hidden box-border pb-[20px];
+    /* 统一整个项目的现代化浅灰背景 */
+    background-color: #f6f8fb;
+    @apply p-[20px] overflow-hidden box-border;
 }
