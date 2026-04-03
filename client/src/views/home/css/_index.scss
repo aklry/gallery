@@ -97,10 +97,6 @@
         .picture-card__overlay {
             @apply opacity-100;
         }
-
-        .zoom-icon {
-            @apply scale-100;
-        }
     }
 
     &__cover {
@@ -116,10 +112,6 @@
     // Interactive Hover Overlay
     &__overlay {
         @apply absolute inset-0 bg-black/20 opacity-0 transition-opacity duration-300 flex items-center justify-center;
-
-        .zoom-icon {
-            @apply w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white text-xl shadow-lg transform scale-50 transition-transform duration-300;
-        }
     }
 
     &__body {

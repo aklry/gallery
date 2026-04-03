@@ -52,17 +52,8 @@ const {
                         <div class="picture-card" @click="clickPicture(item.id)">
                             <div class="picture-card__cover">
                                 <LazyImg :url="item.url" />
-                                <!-- Hover Overlay -->
-                                <div class="picture-card__overlay">
-                                    <div class="zoom-icon"><i class="ri-zoom-in-line"></i></div>
-                                </div>
-                            </div>
-                            <div class="picture-card__body">
-                                <div class="picture-card__title">{{ item.filename }}</div>
-                                <div class="picture-card__tags">
-                                    <span class="tag tag--category">{{ item.category || '默认' }}</span>
-                                    <span class="tag" v-for="tag in item.tags.slice(0, 2)" :key="tag">{{ tag }}</span>
-                                </div>
+                                <!-- 遮罩层 -->
+                                <div class="picture-card__overlay" />
                             </div>
                         </div>
                     </template>
