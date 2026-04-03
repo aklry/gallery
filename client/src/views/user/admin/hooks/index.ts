@@ -42,9 +42,10 @@ const useAdmin = () => {
     }
     const columns = ref<any[]>([
         {
-            title: '用户名',
-            dataIndex: 'userName',
-            key: 'userName'
+            title: '头像',
+            dataIndex: 'userAvatar',
+            key: 'userAvatar',
+            width: 80
         },
         {
             title: '用户账号',
@@ -52,9 +53,15 @@ const useAdmin = () => {
             key: 'userAccount'
         },
         {
+            title: '用户名',
+            dataIndex: 'userName',
+            key: 'userName'
+        },
+        {
             title: '用户角色',
             dataIndex: 'userRole',
-            key: 'userRole'
+            key: 'userRole',
+            width: 100
         },
         {
             title: '创建时间',
@@ -67,7 +74,8 @@ const useAdmin = () => {
             title: '操作',
             dataIndex: 'action',
             key: 'action',
-            fixed: 'right'
+            fixed: 'right',
+            width: 120
         }
     ])
     const fetchData = async () => {
@@ -86,6 +94,16 @@ const useAdmin = () => {
         searchParams.pageSize = pageSize.toString()
         fetchData()
     }
+    const handleSearch = () => {
+        searchParams.current = '1'
+        fetchData()
+    }
+    const handleReset = () => {
+        searchParams.userName = undefined
+        searchParams.userAccount = undefined
+        searchParams.current = '1'
+        fetchData()
+    }
     onMounted(async () => {
         await fetchData()
     })
@@ -96,7 +114,9 @@ const useAdmin = () => {
         searchParams,
         handleChange,
         handleDelete,
-        handlePageChange
+        handlePageChange,
+        handleSearch,
+        handleReset
     }
 }
 
