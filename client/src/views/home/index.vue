@@ -8,10 +8,12 @@ import PictureDetailModal from '@/components/picture-detail-modal/index.vue'
 import { LazyImg, Waterfall } from 'vue-waterfall-plugin-next'
 import 'vue-waterfall-plugin-next/dist/style.css'
 import { ref } from 'vue'
+import { LoadingOutlined } from '@ant-design/icons-vue'
 
 const pictureStore = usePictureStore()
 const { tag_category } = storeToRefs(pictureStore)
 const containerRef = ref<HTMLDivElement | null>(null)
+const sentinelRef = ref<HTMLDivElement | null>(null)
 const {
     dataList,
     changeTabs,
@@ -19,10 +21,12 @@ const {
     clickPicture,
     handleSearchPicture,
     searchParams,
+    loading,
+    noMore,
     detailVisible,
     detailPicture,
     detailLoading
-} = useHomeHooks(containerRef)
+} = useHomeHooks(containerRef, sentinelRef)
 </script>
 <template>
     <div class="home h-full overflow-scroll" ref="containerRef">
@@ -58,6 +62,16 @@ const {
                         </div>
                     </template>
                 </Waterfall>
+                <!-- 底部加载状态 -->
+                <div ref="sentinelRef" class="load-more-sentinel">
+                    <div v-if="loading" class="load-more-indicator">
+                        <LoadingOutlined class="load-more-icon" />
+                        <span>加载中...</span>
+                    </div>
+                    <div v-else-if="noMore" class="load-more-indicator load-more-end">
+                        <span>没有更多图片了</span>
+                    </div>
+                </div>
             </template>
             <template v-else>
                 <a-empty description="暂无数据" class="mt-20" />

@@ -1,14 +1,12 @@
-﻿import { ref, reactive, watch, onMounted, onBeforeUnmount, type Ref } from 'vue'
+﻿import { ref, reactive, watch, onMounted, onBeforeUnmount, nextTick, type Ref } from 'vue'
 import { pictureControllerGetPictureByPageVoV1, pictureControllerQueryPictureV1 } from '@/api/picture'
 import { message } from 'ant-design-vue'
-import { debounce } from 'lodash'
 import { usePictureDetailPreview } from '@/hooks/usePictureDetailPreview'
 
-const useHomeHooks = (containerRef: Ref<HTMLDivElement | null>) => {
+const useHomeHooks = (containerRef: Ref<HTMLDivElement | null>, sentinelRef: Ref<HTMLDivElement | null>) => {
     const dataList = ref<API.ShowPictureModelVo[]>([])
     const total = ref<number>(0)
-    let flag1 = true
-    let flag2 = true
+    const hasUserScrolled = ref(false)
     const searchParams = reactive<API.QueryPictureDto>({
         current: '1',
         pageSize: '20',
@@ -16,66 +14,72 @@ const useHomeHooks = (containerRef: Ref<HTMLDivElement | null>) => {
         sortOrder: 'desc'
     })
     const loading = ref(false)
+    const noMore = ref(false)
+    let isLoadingMore = false
+    let observer: IntersectionObserver | null = null
+    let lastSentinelEl: HTMLDivElement | null = null
+
     const fetchData = async (current?: string) => {
+        if (isLoadingMore) return
+        isLoadingMore = true
+        loading.value = true
         try {
             if (current) {
                 searchParams.current = current
             }
             const res = await pictureControllerGetPictureByPageVoV1(searchParams)
-            if (dataList.value.length === 0) {
-                if (res.data.list.length > 0) {
-                    dataList.value = res.data.list
-                } else {
-                    message.info('没有更多图片了')
-                    loading.value = false
-                }
-            } else if (res.data.list.length === 0) {
-                message.info('没有更多图片了')
-                loading.value = false
+            if (res.data.list.length === 0) {
+                noMore.value = true
+            } else if (dataList.value.length === 0 || current === '1') {
+                dataList.value = res.data.list
             } else {
                 dataList.value = dataList.value.concat(res.data.list)
             }
             total.value = res.data.total
+            noMore.value = dataList.value.length >= res.data.total
         } catch (error) {
             message.error('获取图片失败')
+        } finally {
+            loading.value = false
+            isLoadingMore = false
+        }
+    }
+
+    const fetchDataByClassify = async (category?: string, tags?: string[]) => {
+        loading.value = true
+        try {
+            const res = await pictureControllerGetPictureByPageVoV1({
+                ...searchParams,
+                category,
+                tags
+            })
+            dataList.value = res.data.list
+            total.value = res.data.total
+            noMore.value = dataList.value.length >= res.data.total
+        } finally {
             loading.value = false
         }
     }
-    const fetchDataByClassify = async (category?: string, tags?: string[]) => {
-        const res = await pictureControllerGetPictureByPageVoV1({
-            ...searchParams,
-            category,
-            tags
-        })
-        dataList.value = res.data.list
-        total.value = res.data.total
-    }
-    const changeTabs = (key: string) => {
+
+    const resetAndFetch = () => {
         searchParams.current = '1'
-        if (flag1) {
-            if (loading.value) {
-                loading.value = false
-            }
-            flag1 = false
-        }
+        noMore.value = false
+        hasUserScrolled.value = false
+    }
+
+    const changeTabs = (key: string) => {
+        resetAndFetch()
         if (key === 'all') {
             searchParams.category = undefined
-            loading.value = true
         } else {
             searchParams.category = key
         }
     }
+
     const changeTags = (tag: string, checked: boolean) => {
-        searchParams.current = '1'
-        if (flag2) {
-            if (loading.value) {
-                loading.value = false
-            }
-            flag2 = false
-        }
+        resetAndFetch()
         if (!checked) {
             searchParams.tags = undefined
-            loading.value = true
         } else {
             searchParams.tags = [tag]
         }
@@ -84,21 +88,67 @@ const useHomeHooks = (containerRef: Ref<HTMLDivElement | null>) => {
     const { detailVisible, detailPicture, detailLoading, openPictureDetail: clickPicture } = usePictureDetailPreview()
 
     const queryPictureBySearchText = async (queryPictureDto: Partial<API.QueryPictureDto>) => {
-        const res = await pictureControllerQueryPictureV1(queryPictureDto)
-        dataList.value = res.data.list
-        total.value = res.data.total
-    }
-    const handleSearchPicture = (value: string) => {
-        if (!value) {
-            searchParams.searchText = undefined
-        } else {
-            searchParams.searchText = value
+        loading.value = true
+        try {
+            const res = await pictureControllerQueryPictureV1(queryPictureDto)
+            dataList.value = res.data.list
+            total.value = res.data.total
+            noMore.value = dataList.value.length >= res.data.total
+        } finally {
+            loading.value = false
         }
+    }
+
+    const handleSearchPicture = (value: string) => {
+        searchParams.searchText = value || undefined
+        hasUserScrolled.value = false
         queryPictureBySearchText({ searchText: value })
     }
-    onMounted(() => {
-        fetchData()
+
+    const handleContainerScroll = () => {
+        if (!containerRef.value) return
+        if (containerRef.value.scrollTop > 0) {
+            hasUserScrolled.value = true
+        }
+    }
+
+    const loadMore = () => {
+        if (isLoadingMore || noMore.value) return
+        const newPage = (parseInt(searchParams.current as string, 10) + 1).toString()
+        fetchData(newPage)
+    }
+
+    const setupObserver = () => {
+        // 只在 sentinel 元素真正变化时才重建 observer，避免重复触发
+        if (sentinelRef.value === lastSentinelEl && observer) return
+
+        if (observer) observer.disconnect()
+        if (!sentinelRef.value || !containerRef.value) return
+
+        lastSentinelEl = sentinelRef.value
+
+        observer = new IntersectionObserver(
+            entries => {
+                if (entries[0].isIntersecting && hasUserScrolled.value && !isLoadingMore && !noMore.value) {
+                    loadMore()
+                }
+            },
+            {
+                root: containerRef.value,
+                rootMargin: '0px 0px 200px 0px',
+                threshold: 0
+            }
+        )
+        observer.observe(sentinelRef.value)
+    }
+
+    onMounted(async () => {
+        await fetchData()
+        await nextTick()
+        containerRef.value?.addEventListener('scroll', handleContainerScroll)
+        setupObserver()
     })
+
     watch([() => searchParams.category, () => searchParams.tags], ([category, tags]) => {
         if (category) {
             fetchDataByClassify(category)
@@ -112,35 +162,28 @@ const useHomeHooks = (containerRef: Ref<HTMLDivElement | null>) => {
             fetchData('1')
         }
     })
-    const handleScroll = debounce((e: Event) => {
-        const target = e.target as HTMLElement
-        const { scrollTop, clientHeight, scrollHeight } = target
-        const nearBottom = scrollHeight - (scrollTop + clientHeight) <= 100
-        loading.value = nearBottom
-        const hasMore = dataList.value.length < total.value
-        if (!nearBottom || !hasMore || !loading.value) return
 
-        const newPage = (parseInt(searchParams.current as string, 10) + 1).toString()
-        fetchData(newPage)
-    }, 100)
-
-    onMounted(() => {
-        if (containerRef.value) {
-            containerRef.value.addEventListener('scroll', handleScroll)
-        }
+    // 数据变化后重新挂载 observer（sentinel 可能因 v-if 重新渲染）
+    watch(dataList, async () => {
+        await nextTick()
+        setupObserver()
     })
 
     onBeforeUnmount(() => {
-        if (containerRef.value) {
-            containerRef.value.removeEventListener('scroll', handleScroll)
+        containerRef.value?.removeEventListener('scroll', handleContainerScroll)
+        if (observer) {
+            observer.disconnect()
+            observer = null
         }
     })
+
     return {
         dataList,
         containerRef,
         total,
         searchParams,
         loading,
+        noMore,
         changeTabs,
         changeTags,
         clickPicture,

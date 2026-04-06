@@ -139,7 +139,7 @@ const useLogin = () => {
             return
         }
 
-        if (inputCode !== captchaValue.value) {
+        if (inputCode !== captchaValue.value && inputCode.toLowerCase() !== captchaValue.value.toLowerCase()) {
             message.error('验证码填写不正确')
             await refreshCaptcha(true)
             return

@@ -143,3 +143,33 @@
 :deep(.waterfall-list) {
     @apply bg-transparent;
 }
+
+.load-more-sentinel {
+    @apply w-full py-6 flex justify-center;
+
+    min-height: 1px; /* 确保 sentinel 始终有尺寸供 Observer 检测 */
+}
+
+.load-more-indicator {
+    @apply flex items-center gap-2 text-sm text-gray-400;
+
+    .load-more-icon {
+        @apply text-lg text-blue-400;
+
+        animation: spin 1s linear infinite;
+    }
+}
+
+.load-more-end {
+    @apply text-gray-300;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}

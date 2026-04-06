@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common'
 import { PrismaService } from '../prisma/prisma.service'
-import { ResponseService } from '../response/response.service'
 import { BusinessStatus } from '../config'
 import { UserRole } from './enum/user'
 import * as bcrypt from 'bcrypt'
@@ -28,7 +27,6 @@ import { LOGIN_REDIS_KEY, USER_RANDOM_PREFIX } from './constant'
 export class UserService {
     constructor(
         private readonly prismaService: PrismaService,
-        private readonly responseService: ResponseService,
         private readonly ossService: OssService,
         private readonly emailService: EmailService,
         private readonly redisService: RedisService
@@ -94,7 +92,7 @@ export class UserService {
     async userLogin(userLoginDto: UserLoginDto) {
         const { userAccount, userPassword, code } = userLoginDto
         const storedCode = await this.redisService.get(LOGIN_REDIS_KEY)
-        if (code !== storedCode) {
+        if (code !== storedCode && code.toLowerCase() !== storedCode.toLowerCase()) {
             throw new BusinessException('验证码错误', BusinessStatus.PARAMS_ERROR.code)
         }
         const user = await this.prismaService.user.findUnique({
@@ -292,7 +290,7 @@ export class UserService {
     // 邮箱注册
     async userRegisterByEmail(userRegisterByEmailDto: UserRegisterByEmailDto) {
         const { userEmail, code, userPassword, checkedPassword } = userRegisterByEmailDto
-        const storedCode = await this.redisService.get(userEmail)
+        const storedCode = (await this.redisService.get(userEmail)) as string
         if (storedCode !== code) {
             throw new BusinessException('验证码错误', BusinessStatus.PARAMS_ERROR.code)
         }
@@ -313,8 +311,8 @@ export class UserService {
     // 邮箱登录
     async userLoginByEmail(userLoginByEmailDto: UserLoginByEmailDto) {
         const { userEmail, userPassword, code } = userLoginByEmailDto
-        const storedCode = await this.redisService.get(LOGIN_REDIS_KEY)
-        if (code !== storedCode) {
+        const storedCode = (await this.redisService.get(LOGIN_REDIS_KEY)) as string
+        if (code !== storedCode && code.toLowerCase() !== storedCode.toLowerCase()) {
             throw new BusinessException('验证码错误', BusinessStatus.PARAMS_ERROR.code)
         }
         const user = await this.prismaService.user.findUnique({
