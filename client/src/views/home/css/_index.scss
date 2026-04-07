@@ -83,19 +83,32 @@
     @apply rounded-2xl overflow-hidden cursor-pointer relative bg-white border border-gray-100;
 
     box-shadow: 0 4px 12px rgb(0 0 0 / 3%);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0) scale(1);
+    transition:
+        transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1),
+        box-shadow 0.4s ease,
+        border-color 0.4s ease;
+    transform-style: preserve-3d;
+    will-change: transform;
 
     &:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 12px 30px rgb(0 0 0 / 8%);
+        transition:
+            transform 0.15s cubic-bezier(0.2, 0, 0.2, 1),
+            box-shadow 0.3s ease,
+            border-color 0.3s ease;
+        transform: perspective(1000px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translateY(-5px) scale(1.02);
+        box-shadow: 0 20px 40px rgb(0 0 0 / 12%);
         border-color: rgb(59 130 246 / 20%);
+        z-index: 10;
 
         .picture-card__cover img {
-            transform: scale(1.05);
+            transform: scale(1.05) translateY(-2px);
         }
 
         .picture-card__overlay {
             @apply opacity-100;
+
+            transform: translateY(0);
         }
     }
 
@@ -111,7 +124,46 @@
 
     // Interactive Hover Overlay
     &__overlay {
-        @apply absolute inset-0 bg-black/20 opacity-0 transition-opacity duration-300 flex items-center justify-center;
+        @apply absolute inset-x-0 bottom-0 p-3 opacity-0 transition-all duration-300 flex flex-col justify-end;
+
+        background: linear-gradient(to top, rgb(0 0 0 / 80%) 0%, rgb(0 0 0 / 40%) 60%, transparent 100%);
+        transform: translateY(20px);
+        pointer-events: none;
+
+        .overlay-content {
+            @apply flex flex-col gap-1.5 p-3 rounded-lg backdrop-blur-md;
+
+            background: rgb(30 30 30 / 50%);
+            border: 1px solid rgb(255 255 255 / 15%);
+            box-shadow: 0 4px 15px rgb(0 0 0 / 20%);
+            color: rgb(255 255 255 / 90%);
+            font-size: 11px;
+            pointer-events: auto;
+
+            .info-row {
+                @apply flex flex-row items-center justify-between gap-2;
+
+                .info-item {
+                    @apply flex items-center gap-1;
+
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+
+                    .label {
+                        @apply text-gray-300;
+                    }
+
+                    .value {
+                        @apply font-medium;
+                    }
+
+                    .color-block {
+                        @apply inline-block w-3 border border-white/20 h-3 rounded-sm shadow-sm;
+                    }
+                }
+            }
+        }
     }
 
     &__body {
@@ -172,4 +224,10 @@
     to {
         transform: rotate(360deg);
     }
+}
+
+:deep(.lazy__img[lazy='loading']) {
+    width: 100%;
+    height: 100%;
+    padding: 0;
 }

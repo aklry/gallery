@@ -9,6 +9,7 @@ import { LazyImg, Waterfall } from 'vue-waterfall-plugin-next'
 import 'vue-waterfall-plugin-next/dist/style.css'
 import { ref } from 'vue'
 import { LoadingOutlined } from '@ant-design/icons-vue'
+import { formatSize, toHexColor } from '@/utils'
 
 const pictureStore = usePictureStore()
 const { tag_category } = storeToRefs(pictureStore)
@@ -27,6 +28,34 @@ const {
     detailPicture,
     detailLoading
 } = useHomeHooks(containerRef, sentinelRef)
+
+// 3D Parallax Hover Effect
+const handleMouseMove = (e: MouseEvent) => {
+    const card = e.currentTarget as HTMLElement
+    if (!card) return
+    // Request animation frame to throttle calculation and rendering for performance
+    requestAnimationFrame(() => {
+        const rect = card.getBoundingClientRect()
+        const x = e.clientX - rect.left
+        const y = e.clientY - rect.top
+        // Normalize mouse coordinates from -1 to 1 based on card center
+        const xPct = (x / rect.width - 0.5) * 2
+        const yPct = (y / rect.height - 0.5) * 2
+        // Tilt intensity limit (degrees)
+        const intensity = 10
+        const rotateX = yPct * -intensity
+        const rotateY = xPct * intensity
+        card.style.setProperty('--rx', `${rotateX}deg`)
+        card.style.setProperty('--ry', `${rotateY}deg`)
+    })
+}
+
+const handleMouseLeave = (e: MouseEvent) => {
+    const card = e.currentTarget as HTMLElement
+    if (!card) return
+    card.style.setProperty('--rx', '0deg')
+    card.style.setProperty('--ry', '0deg')
+}
 </script>
 <template>
     <div class="home h-full overflow-scroll" ref="containerRef">
@@ -50,14 +79,70 @@ const {
             <tabs :tag_category="tag_category" @changeTabs="changeTabs" />
             <tag-bars :tag_category="tag_category" @changeTags="changeTags" />
             <template v-if="dataList.length > 0">
-                <Waterfall :list="dataList" :width="300">
+                <Waterfall
+                    :list="dataList"
+                    :width="300"
+                    :loadProps="{
+                        loading: '/loading.gif'
+                    }"
+                >
                     <!-- 新版插槽数据获取 -->
                     <template #default="{ item }">
-                        <div class="picture-card" @click="clickPicture(item.id)">
+                        <div
+                            class="picture-card"
+                            @click="clickPicture(item.id)"
+                            @mousemove="handleMouseMove"
+                            @mouseleave="handleMouseLeave"
+                        >
                             <div class="picture-card__cover">
                                 <LazyImg :url="item.url" />
                                 <!-- 遮罩层 -->
-                                <div class="picture-card__overlay" />
+                                <div class="picture-card__overlay">
+                                    <div class="overlay-content">
+                                        <div class="info-row">
+                                            <div class="info-item">
+                                                <span class="label">格式:</span>
+                                                <span class="value">{{
+                                                    (item.picFormat || item.format || '未知').toUpperCase()
+                                                }}</span>
+                                            </div>
+                                            <div class="info-item">
+                                                <span class="label">大小:</span>
+                                                <span class="value">{{
+                                                    formatSize(item.picSize || item.fileSize)
+                                                }}</span>
+                                            </div>
+                                        </div>
+                                        <div class="info-row">
+                                            <div class="info-item">
+                                                <span class="label">分辨率:</span>
+                                                <span class="value"
+                                                    >{{ item.picWidth || item.width || 0 }}x{{
+                                                        item.picHeight || item.height || 0
+                                                    }}</span
+                                                >
+                                            </div>
+                                            <div class="info-item">
+                                                <span class="label">分类:</span>
+                                                <span class="value">{{ item.category ?? '默认' }}</span>
+                                            </div>
+                                        </div>
+                                        <div class="info-row" v-if="item.picColor || item.color">
+                                            <div class="info-item">
+                                                <span class="label">主色调:</span>
+                                                <span
+                                                    class="color-block"
+                                                    :style="{
+                                                        backgroundColor: toHexColor(item.picColor || item.color)
+                                                    }"
+                                                ></span>
+                                                <span class="value">{{
+                                                    toHexColor(item.picColor || item.color)?.toUpperCase()
+                                                }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </template>
