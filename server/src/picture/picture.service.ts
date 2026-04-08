@@ -134,7 +134,10 @@ export class PictureService {
             filters.reviewStatus = 1
             filters.nullSpaceId = true
         } else {
-            const user = req.session.user
+            const user = req.session?.user
+            if (!user || !user.id) {
+                throw new BusinessException('未登录', BusinessStatus.NOT_LOGIN_ERROR.code)
+            }
             const space = await this.spaceService.getById(filters.spaceId)
             if (!space) {
                 throw new BusinessException('空间不存在', BusinessStatus.PARAMS_ERROR.code)
@@ -323,10 +326,13 @@ export class PictureService {
             where: { id: result.userId }
         })
         // 获取权限列表
-        const loginUser = req.session.user
+        const loginUser = req.session?.user
         const spaceId = result.spaceId
         let space: Space | null = null
         if (spaceId !== null) {
+            if (!loginUser || !loginUser.id) {
+                throw new BusinessException('未登录', BusinessStatus.NOT_LOGIN_ERROR.code)
+            }
             const hasPermission = await this.permissionGuard.hasPermission(loginUser.id, PERMISSION_KEY, req, [
                 SpaceUserPermissionConstant.PICTURE_VIEW
             ])

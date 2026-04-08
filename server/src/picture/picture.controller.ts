@@ -74,7 +74,6 @@ export class PictureController {
     }
 
     @Post('/list/page/vo')
-    @UseGuards(AuthGuard)
     @ApiResponse({ type: ShowPictureVo })
     @ApiOperation({ summary: '获取图片列表(非管理员)' })
     async getPictureByPageVo(@Body(new ValidationPipe()) queryPictureDto: QueryPictureDto, @Req() req: Request) {
@@ -105,7 +104,6 @@ export class PictureController {
     }
 
     @Get('/get/vo/:id')
-    @UseGuards(AuthGuard)
     @ApiResponse({ type: GetPictureVo })
     @ApiOperation({ summary: '根据id获取图片(非管理员)' })
     async getByIdVo(@Param('id') id: string, @Req() req: Request) {
@@ -222,7 +220,6 @@ export class PictureController {
     }
 
     @Post('/query')
-    @UseGuards(AuthGuard)
     @ApiResponse({ type: ShowPictureVo })
     @ApiOperation({ summary: '首页查询图片' })
     @ApiBody({

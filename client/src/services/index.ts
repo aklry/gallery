@@ -14,7 +14,7 @@ const ryRequest = new RYRequest({
                     !window.location.pathname.includes('/user/login')
                 ) {
                     message.error('请先登录')
-                    window.location.href = `/user/login?redirect=${window.location.pathname}`
+                    window.location.replace(`/user/login?redirect=${window.location.pathname}`)
                 }
             }
             return res.data

@@ -34,7 +34,17 @@ export const routes: RouteRecordRaw[] = [
             {
                 path: 'user/center',
                 name: 'user-center',
-                component: () => import('@/views/user/center/index.vue')
+                component: () => import('@/views/user/center/index.vue'),
+                beforeEnter: async (to, _from, next) => {
+                    const { useUserStore } = await import('@/store/modules/user')
+                    const userStore = useUserStore()
+                    const loginUser = userStore.loginUser
+                    if (loginUser && loginUser.id) {
+                        next()
+                    } else {
+                        next(`/user/login?redirect=${to.fullPath}`)
+                    }
+                }
             },
             {
                 path: 'user/message',

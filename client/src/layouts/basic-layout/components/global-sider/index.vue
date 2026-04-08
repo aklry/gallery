@@ -32,14 +32,21 @@ const handleAvatarClick = () => {
 }
 
 const menuList = computed(() => {
-    const list = [
-        { key: '/', icon: HomeFilled, title: '公共图库' },
-        { key: '/picture/add', icon: PlusCircleOutlined, title: '创建图片' },
-        { key: '/space/add', icon: FolderAddOutlined, title: '创建空间' },
-        { key: '/space/user', icon: FileOutlined, title: '我的空间' },
-        { key: '/user/message', icon: MessageOutlined, title: '我的消息' },
-        { key: '/user/center', icon: UserOutlined, title: '个人中心' }
-    ]
+    // 基础公共路由
+    const list = [{ key: '/', icon: HomeFilled, title: '公共图库' }]
+
+    // 登录后可见路由
+    if (loginUser.value && loginUser.value.id) {
+        list.push(
+            { key: '/picture/add', icon: PlusCircleOutlined, title: '创建图片' },
+            { key: '/space/add', icon: FolderAddOutlined, title: '创建空间' },
+            { key: '/space/user', icon: FileOutlined, title: '我的空间' },
+            { key: '/user/message', icon: MessageOutlined, title: '我的消息' },
+            { key: '/user/center', icon: UserOutlined, title: '个人中心' }
+        )
+    }
+
+    // 管理员可见路由
     if (loginUser.value && loginUser.value.userRole === 'admin') {
         list.push(
             { key: '/user/admin', icon: TeamOutlined, title: '用户管理' },
@@ -59,9 +66,11 @@ const menuList = computed(() => {
 
         <!-- 用户头像 -->
         <div class="sider-avatar" @click="handleAvatarClick">
-            <a-avatar :size="40" :src="loginUser.userAvatar" v-if="loginUser.userAvatar" />
-            <a-avatar :size="40" src="/logo.svg" v-else></a-avatar>
-            <div class="avatar-status"></div>
+            <a-tooltip :title="loginUser?.id ? loginUser.userName || '个人中心' : '未登录，点击登录'" placement="right">
+                <a-avatar :size="40" :src="loginUser.userAvatar" v-if="loginUser?.userAvatar" />
+                <a-avatar :size="40" src="/logo.svg" v-else></a-avatar>
+            </a-tooltip>
+            <div class="avatar-status" :class="{ 'is-offline': !loginUser?.id }"></div>
         </div>
 
         <!-- 导航图标 -->

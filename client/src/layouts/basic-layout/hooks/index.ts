@@ -39,10 +39,21 @@ export const useMenus = () => {
 
     const filterMenus = (menus: MenuProps['items'] = []) => {
         return menus.filter(menu => {
-            if (menu?.key?.toString().includes('admin')) {
-                const userStore = useUserStore()
-                const loginUser = userStore.loginUser
+            const userStore = useUserStore()
+            const loginUser = userStore.loginUser
+            const keyStr = menu?.key?.toString() || ''
+
+            // 需要管理员权限的路由
+            if (keyStr.includes('admin')) {
                 if (!loginUser || loginUser.userRole !== 'admin') {
+                    return false
+                }
+            }
+
+            // 需要普通用户登录也能访问的非公开路由
+            const requireLoginPaths = ['/picture/add', '/space/add', '/space/user']
+            if (requireLoginPaths.some(path => keyStr.includes(path))) {
+                if (!loginUser || !loginUser.id) {
                     return false
                 }
             }

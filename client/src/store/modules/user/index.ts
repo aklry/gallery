@@ -15,8 +15,18 @@ export const useUserStore = defineStore('user', () => {
     })
     const fetchLoginUser = async () => {
         const data = await userControllerGetLoginUserV1()
-        if (data.code !== 40100) {
+        if (data.code === 1 && data.data) {
             loginUser.value = data.data
+        } else {
+            loginUser.value = {
+                id: '',
+                userAccount: '',
+                userAvatar: '',
+                userProfile: '',
+                userRole: '',
+                userName: '',
+                userEmail: ''
+            }
         }
     }
     const setLoginUser = async (user: API.LoginVoModel) => {
