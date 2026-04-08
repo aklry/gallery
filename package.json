@@ -23,7 +23,9 @@
         "generate:db": "pnpm -C server generate:db",
         "pull:db": "pnpm -C server pull:db",
         "clear": "rimraf --glob node_modules client/node_modules server/node_modules",
-        "build": "pnpm -C client build&&pnpm -C server build"
+        "build": "concurrently --kill-others-on-fail --success all \"pnpm -C client build\" \"pnpm -C server build\"",
+        "push:deploy": "node ./scripts/push-deploy.mjs",
+        "deploy:upload": "node ./scripts/push-deploy.mjs --skip-push"
     },
     "keywords": [
         "云图库",
@@ -64,7 +66,8 @@
         "husky": "^9.1.7",
         "inquirer": "^8.0.0",
         "lint-staged": "^15.2.10",
-        "prettier": "^3.0.0"
+        "prettier": "^3.0.0",
+        "ssh2-sftp-client": "^12.1.1"
     },
     "dependencies": {
         "axios": "^1.7.9",
