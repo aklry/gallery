@@ -1,12 +1,16 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 import PictureDetailContent from '@/components/picture-detail-content/index.vue'
 import usePictureDetail from './hooks'
+import { EyeFilled } from '@ant-design/icons-vue'
 
 const props = defineProps<{
     id: string
 }>()
 
 const { picture, deletePicture, canEditOrDelete, editPicture, downloadPicture } = usePictureDetail(props.id)
+
+const previewVisible = ref(false)
 </script>
 
 <template>
@@ -19,13 +23,28 @@ const { picture, deletePicture, canEditOrDelete, editPicture, downloadPicture } 
                         <div class="corner top-right"></div>
                         <div class="corner bottom-left"></div>
                         <div class="corner bottom-right"></div>
-
+                        <div
+                            class="relative w-full h-full group flex justify-center items-center overflow-hidden rounded-[18px] cursor-pointer"
+                            @click="previewVisible = true"
+                        >
+                            <img
+                                :src="picture?.url"
+                                :alt="picture?.name"
+                                class="object-cover w-full h-full transition duration-300 main-image group-hover:scale-105"
+                            />
+                            <div
+                                class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none flex items-center justify-center"
+                            >
+                                <span class="text-white text-lg tracking-wider"><EyeFilled /></span>
+                            </div>
+                        </div>
                         <a-image
-                            width="100%"
-                            height="100%"
+                            :style="{ display: 'none' }"
                             :src="picture?.url"
-                            :alt="picture?.name"
-                            class="main-image"
+                            :preview="{
+                                visible: previewVisible,
+                                onVisibleChange: (vis: boolean) => (previewVisible = vis)
+                            }"
                         />
                     </div>
                 </div>
@@ -67,6 +86,9 @@ const { picture, deletePicture, canEditOrDelete, editPicture, downloadPicture } 
         min-height: 620px;
 
         .image-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
             position: relative;
             width: var(--preview-frame-width);
             height: var(--preview-frame-height);
@@ -117,27 +139,6 @@ const { picture, deletePicture, canEditOrDelete, editPicture, downloadPicture } 
                 border-bottom-color: #b7c8dd;
                 border-right-color: #b7c8dd;
                 border-bottom-right-radius: 12px;
-            }
-
-            :deep(.main-image) {
-                display: block;
-                width: 100%;
-                height: 100%;
-                border-radius: 18px;
-                overflow: hidden;
-                background: radial-gradient(circle at top, rgb(43 56 82 / 16%), rgb(15 23 42 / 4%));
-            }
-
-            :deep(.main-image .ant-image-img) {
-                width: 100%;
-                height: 100%;
-                object-fit: contain;
-                border-radius: 18px;
-                background: rgb(226 236 248 / 55%);
-            }
-
-            :deep(.main-image .ant-image-mask) {
-                border-radius: 18px;
             }
         }
     }
