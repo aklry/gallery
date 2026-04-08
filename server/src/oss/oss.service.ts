@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import * as OSS from 'ali-oss'
 import { isValidUrl } from '../utils'
-import { extname } from 'node:path'
+import { basename, extname } from 'node:path'
 import {
     BusinessStatus,
     OSS_IMAGE_DOMAIN,
@@ -31,18 +31,50 @@ interface ImageInfo {
 interface PaletteInfo {
     RGB: string
 }
+
+type OssConstructor = new (options: OSS.Options) => OSS
+
 @Injectable()
 export class OssService {
     private readonly ossClient: OSS
+
     constructor(private readonly configService: ConfigService) {
         const config = this.configService.get<OssConfig>('oss')
-        this.ossClient = new OSS({
+        const OssClient = OSS as unknown as OssConstructor
+        this.ossClient = new OssClient({
             region: config.region,
             accessKeyId: config.accessKeyId,
             accessKeySecret: config.accessKeySecret,
             bucket: config.bucket
         })
     }
+
+    private generateAutoFilename(sourceName: string, ext?: string) {
+        const fallbackName = `image-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+
+        try {
+            const rawFilename = isValidUrl(sourceName)
+                ? decodeURIComponent(new URL(sourceName).pathname.split('/').pop() || '')
+                : basename(sourceName)
+
+            if (!rawFilename) {
+                return fallbackName
+            }
+
+            const rawExt = extname(rawFilename)
+            const normalizedExt = rawExt || ext || ''
+            const filenameWithoutExt = normalizedExt ? basename(rawFilename, normalizedExt) : rawFilename
+            const safeFilename = filenameWithoutExt
+                .replace(/[\\/:*?"<>|]/g, ' ')
+                .replace(/\s+/g, ' ')
+                .trim()
+
+            return safeFilename || fallbackName
+        } catch (error) {
+            return fallbackName
+        }
+    }
+
     async uploadFile(filename: string, fileBuffer: Buffer, prefix: string = OSS_PUBLIC_PICTURE_PATH) {
         try {
             let ext = ''
@@ -54,7 +86,7 @@ export class OssService {
                 // Get content type from response headers
                 const contentType = response.headers.get('content-type')
                 if (contentType) {
-                    const extension = contentType.split('/')[1]
+                    const extension = contentType.split('/')[1]?.split(';')[0]
                     if (['jpeg', 'jpg', 'png', 'webp'].includes(extension)) {
                         ext = `.${extension}`
                     } else {
@@ -69,6 +101,9 @@ export class OssService {
                     throw new BusinessException('文件名包含非法字符', BusinessStatus.OPERATION_ERROR.code)
                 }
             }
+
+            const autoFilename = this.generateAutoFilename(filename, ext)
+
             // 生成唯一的文件名
             const uniqueId = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`
             const uploadFileName = `${OSS_PICTURE_PATH}/${prefix}/${uniqueId}${ext}`
@@ -118,7 +153,7 @@ export class OssService {
                 fileSize: BigInt(info.FileSize.value),
                 width: info.ImageWidth.value,
                 height: info.ImageHeight.value,
-                filename: isUrl ? uploadFileName.split('/').pop().split('-').pop() : filename,
+                filename: autoFilename,
                 thumbnailUrl: thumbUrl,
                 color: rgb
             } as UploadPictureVoModel

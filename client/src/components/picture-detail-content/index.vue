@@ -172,12 +172,16 @@ const showManageActions = computed(() => props.canEdit || props.canDelete)
 
     .picture-summary {
         margin-bottom: 18px;
+        min-width: 0;
 
         &__name {
             margin: 0;
             font-size: 20px;
             line-height: 1.3;
             color: #1d2129;
+            white-space: normal;
+            overflow-wrap: anywhere;
+            word-break: break-word;
         }
 
         &__intro {
@@ -185,6 +189,8 @@ const showManageActions = computed(() => props.canEdit || props.canDelete)
             font-size: 14px;
             line-height: 1.6;
             color: #4e5969;
+            overflow-wrap: anywhere;
+            word-break: break-word;
         }
     }
 

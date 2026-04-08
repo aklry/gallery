@@ -20,7 +20,13 @@ const { picture, deletePicture, canEditOrDelete, editPicture, downloadPicture } 
                         <div class="corner bottom-left"></div>
                         <div class="corner bottom-right"></div>
 
-                        <a-image :src="picture?.url" :alt="picture?.name" class="main-image" />
+                        <a-image
+                            width="100%"
+                            height="100%"
+                            :src="picture?.url"
+                            :alt="picture?.name"
+                            class="main-image"
+                        />
                     </div>
                 </div>
             </a-col>
