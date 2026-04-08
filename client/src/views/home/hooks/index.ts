@@ -1,9 +1,10 @@
 ﻿import { ref, reactive, watch, onMounted, onBeforeUnmount, nextTick, type Ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { pictureControllerGetPictureByPageVoV1, pictureControllerQueryPictureV1 } from '@/api/picture'
 import { message } from 'ant-design-vue'
-import { usePictureDetailPreview } from '@/hooks/usePictureDetailPreview'
 
 const useHomeHooks = (containerRef: Ref<HTMLDivElement | null>, sentinelRef: Ref<HTMLDivElement | null>) => {
+    const router = useRouter()
     const dataList = ref<API.ShowPictureModelVo[]>([])
     const total = ref<number>(0)
     const hasUserScrolled = ref(false)
@@ -85,7 +86,9 @@ const useHomeHooks = (containerRef: Ref<HTMLDivElement | null>, sentinelRef: Ref
         }
     }
 
-    const { detailVisible, detailPicture, detailLoading, openPictureDetail: clickPicture } = usePictureDetailPreview()
+    const clickPicture = (id: string) => {
+        void router.push(`/picture/${id}`)
+    }
 
     const queryPictureBySearchText = async (queryPictureDto: Partial<API.QueryPictureDto>) => {
         loading.value = true
@@ -188,10 +191,7 @@ const useHomeHooks = (containerRef: Ref<HTMLDivElement | null>, sentinelRef: Ref
         changeTags,
         clickPicture,
         fetchData,
-        handleSearchPicture,
-        detailVisible,
-        detailPicture,
-        detailLoading
+        handleSearchPicture
     }
 }
 export default useHomeHooks

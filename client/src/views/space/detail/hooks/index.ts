@@ -7,7 +7,6 @@ import {
 } from '@/api/picture'
 import { computed, onMounted, ref } from 'vue'
 import { message, Modal } from 'ant-design-vue'
-import { usePictureDetailPreview } from '@/hooks/usePictureDetailPreview'
 import { pictureDetailCache } from '@/utils/picture-detail-cache'
 
 export const useSpaceDetail = () => {
@@ -18,12 +17,12 @@ export const useSpaceDetail = () => {
     const privatePictureList = ref<API.ShowPictureModelVo[]>([])
     const loading = ref(false)
     const editBatchModalVisible = ref(false)
-    const {
-        detailVisible,
-        detailPicture,
-        detailLoading,
-        openPictureDetail: handlePreviewPrivatePicture
-    } = usePictureDetailPreview()
+    const handlePreviewPrivatePicture = (id: string) => {
+        void router.push({
+            path: `/picture/${id}`,
+            query: { spaceId }
+        })
+    }
     const percent = computed(() => {
         const currentPercent = (
             ((spaceDetail.value?.totalSize ?? 0) / (spaceDetail.value?.maxSize ?? 1)) *
@@ -140,9 +139,6 @@ export const useSpaceDetail = () => {
         loading,
         percent,
         spaceId,
-        detailVisible,
-        detailPicture,
-        detailLoading,
         editBatchModalVisible,
         handleDeletePrivatePicture,
         handleEditPrivatePicture,

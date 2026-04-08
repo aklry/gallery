@@ -4,7 +4,6 @@ import { PlusOutlined, EditOutlined, BarChartOutlined, PictureOutlined, CloudOut
 import PictureCard from '@/components/picture-card/index.vue'
 import QueryForm from './component/query-form/index.vue'
 import EditBatchModal from './component/edit-batch-modal/index.vue'
-import PictureDetailModal from '@/components/picture-detail-modal/index.vue'
 
 const {
     spaceDetail,
@@ -15,9 +14,6 @@ const {
     handleEditPrivatePicture,
     percent,
     spaceId,
-    detailVisible,
-    detailPicture,
-    detailLoading,
     editBatchModalVisible,
     handleSearch,
     handleReset,
@@ -98,12 +94,6 @@ const {
             v-model:visible="editBatchModalVisible"
             :pictureList="privatePictureList"
             :on-ok="handleEditBatchPicture"
-        />
-        <picture-detail-modal
-            v-model:visible="detailVisible"
-            :picture="detailPicture"
-            :loading="detailLoading"
-            :space-id="spaceId"
         />
     </div>
 </template>

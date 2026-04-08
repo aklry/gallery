@@ -4,7 +4,6 @@ import Tabs from './components/tabs/index.vue'
 import { storeToRefs } from 'pinia'
 import usePictureStore from '@/store/modules/picture'
 import TagBars from './components/tag-bars/index.vue'
-import PictureDetailModal from '@/components/picture-detail-modal/index.vue'
 import { LazyImg, Waterfall } from 'vue-waterfall-plugin-next'
 import 'vue-waterfall-plugin-next/dist/style.css'
 import { ref } from 'vue'
@@ -15,19 +14,8 @@ const pictureStore = usePictureStore()
 const { tag_category } = storeToRefs(pictureStore)
 const containerRef = ref<HTMLDivElement | null>(null)
 const sentinelRef = ref<HTMLDivElement | null>(null)
-const {
-    dataList,
-    changeTabs,
-    changeTags,
-    clickPicture,
-    handleSearchPicture,
-    searchParams,
-    loading,
-    noMore,
-    detailVisible,
-    detailPicture,
-    detailLoading
-} = useHomeHooks(containerRef, sentinelRef)
+const { dataList, changeTabs, changeTags, clickPicture, handleSearchPicture, searchParams, loading, noMore } =
+    useHomeHooks(containerRef, sentinelRef)
 
 // 3D Parallax Hover Effect
 const handleMouseMove = (e: MouseEvent) => {
@@ -87,7 +75,7 @@ const handleMouseLeave = (e: MouseEvent) => {
                     }"
                 >
                     <!-- 新版插槽数据获取 -->
-                    <template #default="{ item }">
+                    <template #default="{ item }: { item: API.ShowPictureModelVo }">
                         <div
                             class="picture-card"
                             @click="clickPicture(item.id)"
@@ -95,50 +83,40 @@ const handleMouseLeave = (e: MouseEvent) => {
                             @mouseleave="handleMouseLeave"
                         >
                             <div class="picture-card__cover">
-                                <LazyImg :url="item.url" />
+                                <LazyImg :url="item.thumbnailUrl" />
                                 <!-- 遮罩层 -->
                                 <div class="picture-card__overlay">
                                     <div class="overlay-content">
                                         <div class="info-row">
                                             <div class="info-item">
                                                 <span class="label">格式:</span>
-                                                <span class="value">{{
-                                                    (item.picFormat || item.format || '未知').toUpperCase()
-                                                }}</span>
+                                                <span class="value">{{ (item.format || '未知').toUpperCase() }}</span>
                                             </div>
                                             <div class="info-item">
                                                 <span class="label">大小:</span>
-                                                <span class="value">{{
-                                                    formatSize(item.picSize || item.fileSize)
-                                                }}</span>
+                                                <span class="value">{{ formatSize(item.fileSize) }}</span>
                                             </div>
                                         </div>
                                         <div class="info-row">
                                             <div class="info-item">
                                                 <span class="label">分辨率:</span>
-                                                <span class="value"
-                                                    >{{ item.picWidth || item.width || 0 }}x{{
-                                                        item.picHeight || item.height || 0
-                                                    }}</span
-                                                >
+                                                <span class="value">{{ item.width || 0 }}x{{ item.height || 0 }}</span>
                                             </div>
                                             <div class="info-item">
                                                 <span class="label">分类:</span>
                                                 <span class="value">{{ item.category ?? '默认' }}</span>
                                             </div>
                                         </div>
-                                        <div class="info-row" v-if="item.picColor || item.color">
+                                        <div class="info-row" v-if="item.color">
                                             <div class="info-item">
                                                 <span class="label">主色调:</span>
                                                 <span
                                                     class="color-block"
                                                     :style="{
-                                                        backgroundColor: toHexColor(item.picColor || item.color)
+                                                        backgroundColor: toHexColor(item.color)
                                                     }"
                                                 ></span>
-                                                <span class="value">{{
-                                                    toHexColor(item.picColor || item.color)?.toUpperCase()
-                                                }}</span>
+                                                <span class="value">{{ toHexColor(item.color)?.toUpperCase() }}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -162,7 +140,6 @@ const handleMouseLeave = (e: MouseEvent) => {
                 <a-empty description="暂无数据" class="mt-20" />
             </template>
         </div>
-        <PictureDetailModal v-model:visible="detailVisible" :picture="detailPicture" :loading="detailLoading" />
     </div>
 </template>
 
