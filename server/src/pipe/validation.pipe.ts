@@ -14,10 +14,7 @@ export class ValidationPipe implements PipeTransform<any> {
         const errors = await validate(object)
         if (errors.length > 0) {
             const formattedErrors = this.formatErrors(errors)
-            throw new BusinessException(
-                BusinessStatus.PARAMS_VALIDATION_ERROR.message + ': ' + formattedErrors,
-                BusinessStatus.PARAMS_VALIDATION_ERROR.code
-            )
+            throw new BusinessException(formattedErrors, BusinessStatus.PARAMS_VALIDATION_ERROR.code)
         }
         return value
     }
@@ -28,6 +25,11 @@ export class ValidationPipe implements PipeTransform<any> {
     }
 
     private formatErrors(errors: any[]): string {
-        return errors.map(error => Object.values(error.constraints || {}).join(', ')).join('; ')
+        // 通常只需要向用户展示第一个验证失败的字段的第一条错误原因即可
+        const firstError = errors[0]
+        if (firstError.constraints) {
+            return Object.values(firstError.constraints)[0] as string
+        }
+        return '参数校验失败'
     }
 }
