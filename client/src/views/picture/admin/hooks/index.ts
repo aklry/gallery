@@ -1,8 +1,9 @@
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, computed } from 'vue'
 import {
     pictureControllerDeletePictureV1,
     pictureControllerGetPictureByPageV1,
-    pictureControllerReviewPictureV1
+    pictureControllerReviewPictureV1,
+    pictureControllerDeletePictureByIdsV1
 } from '@/api/picture'
 import { message, Modal, TableColumnProps } from 'ant-design-vue'
 import { useRouter } from 'vue-router'
@@ -21,6 +22,18 @@ const usePictureHooks = () => {
     const pictureId = ref('')
     const openMessageModal = ref(false)
     const messageContent = ref('')
+
+    // 选中行数组
+    const selectedRowKeys = ref<string[]>([])
+
+    const rowSelection = computed(() => {
+        return {
+            selectedRowKeys: selectedRowKeys.value,
+            onChange: (keys: string[]) => {
+                selectedRowKeys.value = keys
+            }
+        }
+    })
     const handleSearch = async () => {
         const res = await pictureControllerGetPictureByPageV1(searchParams)
         dataSource.value = res.data.list
@@ -67,6 +80,34 @@ const usePictureHooks = () => {
                     }
                 } catch (error) {
                     message.error('删除失败')
+                }
+            }
+        })
+    }
+
+    const handleBatchDelete = () => {
+        if (!selectedRowKeys.value.length) {
+            message.warning('请先选择要删除的图片')
+            return
+        }
+        Modal.confirm({
+            title: '确定要批量删除已选中的图片吗？',
+            content: `即将删除 ${selectedRowKeys.value.length} 张图片，删除后将无法恢复`,
+            okText: '确定',
+            cancelText: '取消',
+            okButtonProps: { danger: true },
+            onOk: async () => {
+                try {
+                    const res = await pictureControllerDeletePictureByIdsV1({ ids: selectedRowKeys.value })
+                    if (res.code === 1) {
+                        message.success('批量删除成功')
+                        selectedRowKeys.value = [] // clear selection
+                        fetchData()
+                    } else {
+                        message.error(res.message)
+                    }
+                } catch (error) {
+                    message.error('批量删除失败')
                 }
             }
         })
@@ -179,7 +220,10 @@ const usePictureHooks = () => {
         openMessageModal,
         messageContent,
         handleMessageOk,
-        goToBatchAddPicture
+        goToBatchAddPicture,
+        selectedRowKeys,
+        rowSelection,
+        handleBatchDelete
     }
 }
 

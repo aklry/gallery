@@ -37,6 +37,7 @@ import { Permission } from '../permission/permission.decorator'
 import { UserRole } from '../user/enum/user'
 import {
     AiExpandPictureDto,
+    DeleteBatchPictureDto,
     DeletePictureDto,
     EditPictureByBatchDto,
     PartialQueryPictureDto,
@@ -119,6 +120,18 @@ export class PictureController {
     @ApiOperation({ summary: '删除图片(管理员)' })
     async deletePicture(@Body(new ValidationPipe()) deletePictureDto: DeletePictureDto, @Req() req: Request) {
         const data = await this.pictureService.delete(deletePictureDto, req)
+        return this.responseService.success(data)
+    }
+    @Post('/delete/batch')
+    @ApiResponse({ type: DeletePictureVo })
+    @Permission(SpaceUserPermissionConstant.PICTURE_DELETE)
+    @UseGuards(AuthGuard, PermissionGuard)
+    @ApiOperation({ summary: '删除图片(管理员)' })
+    async deletePictureByIds(
+        @Body(new ValidationPipe()) deleteBatchPictureDto: DeleteBatchPictureDto,
+        @Req() req: Request
+    ) {
+        const data = await this.pictureService.deletePictureByIds(deleteBatchPictureDto, req)
         return this.responseService.success(data)
     }
 

@@ -24,7 +24,8 @@ import {
     DeletePictureDto,
     ReviewPictureDto,
     UploadPictureUrlDto,
-    AiExpandPictureDto
+    AiExpandPictureDto,
+    DeleteBatchPictureDto
 } from './dto'
 import { AiExpandPictureService } from '../ai-expand-picture/ai-expand-picture.service'
 import { AiGeneratePictureService } from '../ai-generate-picture/ai-generate-picture.service'
@@ -261,6 +262,54 @@ export class PictureService {
                 userRole: user?.userRole
             } as LoginVoModel
         } as GetPictureVoModel
+    }
+
+    async getByIds(ids: string[]) {
+        const result = await this.prismaService.picture.findMany({
+            where: {
+                id: {
+                    in: ids
+                }
+            }
+        })
+        if (result.length === 0) {
+            throw new BusinessException('图片不存在', BusinessStatus.OPERATION_ERROR.code)
+        }
+        const users = await this.prismaService.user.findMany({
+            where: {
+                id: {
+                    in: result.map(item => item.userId)
+                }
+            }
+        })
+        return result.map(item => {
+            const user = users.find(user => user.id === item.userId)
+            return {
+                id: item.id,
+                url: item.url,
+                name: item.name,
+                introduction: item.introduction,
+                category: item.category,
+                tags: item.tags === '' ? '' : JSON.parse(item.tags) || [],
+                picSize: Number(item.picSize),
+                picWidth: item.picWidth,
+                picHeight: item.picHeight,
+                picScale: item.picScale,
+                picFormat: item.picFormat,
+                createTime: item.createTime.toISOString(),
+                userId: item.userId,
+                spaceId: item.spaceId,
+                editTime: item.editTime.toISOString(),
+                user: {
+                    id: user?.id,
+                    userAccount: user?.userAccount,
+                    userName: user?.userName,
+                    userAvatar: user?.userAvatar,
+                    userProfile: user?.userProfile,
+                    userRole: user?.userRole
+                } as LoginVoModel
+            }
+        })
     }
 
     async getByIdVo(id: string, req: Request) {
@@ -711,6 +760,35 @@ export class PictureService {
             where: { id }
         })
         if (!result) {
+            throw new BusinessException('图片删除失败', BusinessStatus.OPERATION_ERROR.code)
+        }
+        return true
+    }
+
+    async deletePictureByIds(deleteBatchPictureDto: DeleteBatchPictureDto, req: Request) {
+        const user = req.session.user
+        if (!user) {
+            throw new BusinessException('用户未登录', BusinessStatus.NOT_LOGIN_ERROR.code)
+        }
+        const userId = user.id
+        const oldPicture = await this.getByIds(deleteBatchPictureDto.ids)
+        if (!oldPicture) {
+            throw new BusinessException('图片不存在', BusinessStatus.OPERATION_ERROR.code)
+        }
+        for (const picture of oldPicture) {
+            this.checkPictureAuth(user, picture)
+            if (picture.user.id !== userId && user.userRole !== UserRole.ADMIN) {
+                throw new BusinessException('仅自己或管理员可以删除', BusinessStatus.OPERATION_ERROR.code)
+            }
+        }
+        const result = await this.prismaService.picture.deleteMany({
+            where: {
+                id: {
+                    in: deleteBatchPictureDto.ids
+                }
+            }
+        })
+        if (result.count === 0) {
             throw new BusinessException('图片删除失败', BusinessStatus.OPERATION_ERROR.code)
         }
         return true

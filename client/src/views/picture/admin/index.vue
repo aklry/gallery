@@ -26,7 +26,10 @@ const {
     openMessageModal,
     messageContent,
     handleMessageOk,
-    goToBatchAddPicture
+    goToBatchAddPicture,
+    selectedRowKeys,
+    rowSelection,
+    handleBatchDelete
 } = usePictureHooks()
 
 const reviewStatusConfig: Record<number, { color: string; text: string }> = {
@@ -49,12 +52,32 @@ const reviewStatusConfig: Record<number, { color: string; text: string }> = {
                     <p class="mt-1 text-[13px] text-[#8c8c8c]">共 {{ total }} 张图片</p>
                 </div>
             </div>
-            <a-button type="primary" size="large" class="add-btn !rounded-lg !font-medium" @click="goToBatchAddPicture">
-                <span style="display: inline-flex; align-items: center; gap: 6px">
-                    <PlusOutlined />
-                    批量上传
-                </span>
-            </a-button>
+            <div class="flex items-center gap-3">
+                <a-button
+                    v-if="selectedRowKeys.length > 0"
+                    danger
+                    type="primary"
+                    size="large"
+                    class="!rounded-lg !font-medium"
+                    @click="handleBatchDelete"
+                >
+                    <span style="display: inline-flex; align-items: center; gap: 6px">
+                        <DeleteOutlined />
+                        批量删除 ({{ selectedRowKeys.length }})
+                    </span>
+                </a-button>
+                <a-button
+                    type="primary"
+                    size="large"
+                    class="add-btn !rounded-lg !font-medium"
+                    @click="goToBatchAddPicture"
+                >
+                    <span style="display: inline-flex; align-items: center; gap: 6px">
+                        <PlusOutlined />
+                        批量上传
+                    </span>
+                </a-button>
+            </div>
         </div>
 
         <!-- 搜索区域 -->
@@ -99,6 +122,8 @@ const reviewStatusConfig: Record<number, { color: string; text: string }> = {
         <!-- 数据表格 -->
         <div class="rounded-xl border border-[#f0f0f0] bg-white px-6 py-5 shadow-sm">
             <a-table
+                :row-selection="rowSelection"
+                rowKey="id"
                 :dataSource="dataSource"
                 :columns="columns"
                 :pagination="{

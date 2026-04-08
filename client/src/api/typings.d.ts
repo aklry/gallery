@@ -148,6 +148,11 @@ declare namespace API {
         userRole: string
     }
 
+    type DeleteBatchPictureDto = {
+        /** 图片id列表 */
+        ids: string[]
+    }
+
     type DeletePictureDto = {
         /** 图片id */
         id: string

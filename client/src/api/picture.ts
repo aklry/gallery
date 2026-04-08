@@ -75,6 +75,21 @@ export async function pictureControllerDeletePictureV1(body: API.DeletePictureDt
     })
 }
 
+/** 删除图片(管理员) POST /api/v1/picture/delete/batch */
+export async function pictureControllerDeletePictureByIdsV1(
+    body: API.DeleteBatchPictureDto,
+    options?: { [key: string]: any }
+) {
+    return ryRequest.request<API.DeletePictureVo>('/api/v1/picture/delete/batch', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        data: body,
+        ...(options || {})
+    })
+}
+
 /** 更新图片(非管理员) POST /api/v1/picture/edit */
 export async function pictureControllerEditPictureV1(body: API.UpdatePictureDto, options?: { [key: string]: any }) {
     return ryRequest.request<API.UpdatePictureVo>('/api/v1/picture/edit', {
