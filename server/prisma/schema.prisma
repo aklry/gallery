@@ -26,29 +26,33 @@ model user {
 }
 
 model picture {
-    id            String   @id @default(cuid())
-    url           String   @db.VarChar(512)
-    name          String   @db.VarChar(128)
-    introduction  String   @db.VarChar(256)
-    category      String   @db.VarChar(64)
-    tags          String   @db.VarChar(512)
-    picSize       BigInt
-    picWidth      Int
-    picHeight     Int
-    picScale      Float
-    picFormat     String   @db.VarChar(32)
-    picColor      String   @default("") @db.VarChar(10)
-    userId        String   @db.VarChar(256)
-    spaceId       String?  @db.VarChar(256)
-    createTime    DateTime @default(now()) @db.DateTime(0)
-    editTime      DateTime @default(now()) @db.DateTime(0)
-    updateTime    DateTime @default(now()) @db.DateTime(0)
-    reviewStatus  Int      @default(0) @db.TinyInt
-    reviewMessage String   @default("") @db.VarChar(512)
-    reviewerId    String   @default("") @db.VarChar(256)
-    reviewTime    DateTime @default(now()) @db.DateTime(0)
-    isDelete      Int      @default(0) @db.TinyInt
-    thumbnailUrl  String?  @db.VarChar(512)
+    id               String   @id @default(cuid())
+    url              String   @db.VarChar(512)
+    name             String   @db.VarChar(128)
+    introduction     String   @db.VarChar(256)
+    category         String   @db.VarChar(64)
+    tags             String   @db.VarChar(512)
+    picSize          BigInt
+    picWidth         Int
+    picHeight        Int
+    picScale         Float
+    picFormat        String   @db.VarChar(32)
+    picColor         String   @default("") @db.VarChar(10)
+    userId           String   @db.VarChar(256)
+    spaceId          String?  @db.VarChar(256)
+    viewNumber       Int?     @default(0) @db.Int
+    likeNumber       Int?     @default(0) @db.Int
+    collectionNumber Int?     @default(0) @db.Int
+    downloadNumber   Int?     @default(0) @db.Int
+    createTime       DateTime @default(now()) @db.DateTime(0)
+    editTime         DateTime @default(now()) @db.DateTime(0)
+    updateTime       DateTime @default(now()) @db.DateTime(0)
+    reviewStatus     Int      @default(0) @db.TinyInt
+    reviewMessage    String   @default("") @db.VarChar(512)
+    reviewerId       String   @default("") @db.VarChar(256)
+    reviewTime       DateTime @default(now()) @db.DateTime(0)
+    isDelete         Int      @default(0) @db.TinyInt
+    thumbnailUrl     String?  @db.VarChar(512)
 
     @@index([name], map: "idx_name")
     @@index([introduction], map: "idx_introduction")
@@ -106,14 +110,55 @@ enum SpaceRole {
 }
 
 model space_user {
-    id         String   @id @default(cuid())
+    id         String    @id @default(cuid())
     spaceId    String    @db.VarChar(256)
-    userId     String   @db.VarChar(256)
+    userId     String    @db.VarChar(256)
     spaceRole  SpaceRole @default(viewer)
-    createTime DateTime @default(now()) @db.DateTime(0)
-    updateTime DateTime @default(now()) @db.DateTime(0)
+    createTime DateTime  @default(now()) @db.DateTime(0)
+    updateTime DateTime  @default(now()) @db.DateTime(0)
 
     @@unique([spaceId, userId], map: "uk_spaceId_userId")
     @@index([spaceId], map: "idx_spaceId")
     @@index([userId], map: "idx_userId")
+}
+
+enum UserActionStatus {
+    ACTIVE
+    CANCELLED
+}
+
+model picture_like {
+    id         String           @id @default(cuid())
+    pictureId  String           @db.VarChar(256)
+    userId     String           @db.VarChar(256)
+    status     UserActionStatus @default(ACTIVE)
+    createTime DateTime         @default(now()) @db.DateTime(0)
+    updateTime DateTime         @default(now()) @db.DateTime(0)
+
+    @@unique([pictureId, userId], map: "uk_picture_like_pictureId_userId")
+    @@index([userId, status, createTime], map: "idx_picture_like_userId_status_createTime")
+    @@index([pictureId, status], map: "idx_picture_like_pictureId_status")
+}
+
+model picture_favorite {
+    id         String           @id @default(cuid())
+    pictureId  String           @db.VarChar(256)
+    userId     String           @db.VarChar(256)
+    status     UserActionStatus @default(ACTIVE)
+    createTime DateTime         @default(now()) @db.DateTime(0)
+    updateTime DateTime         @default(now()) @db.DateTime(0)
+
+    @@unique([pictureId, userId], map: "uk_picture_favorite_pictureId_userId")
+    @@index([userId, status, createTime], map: "idx_picture_favorite_userId_status_createTime")
+    @@index([pictureId, status], map: "idx_picture_favorite_pictureId_status")
+}
+
+model picture_download {
+    id         String   @id @default(cuid())
+    pictureId  String   @db.VarChar(256)
+    userId     String   @db.VarChar(256)
+    createTime DateTime @default(now()) @db.DateTime(0)
+
+    @@index([userId, createTime], map: "idx_picture_download_userId_createTime")
+    @@index([pictureId, createTime], map: "idx_picture_download_pictureId_createTime")
 }

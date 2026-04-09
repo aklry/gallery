@@ -30,6 +30,7 @@ import type { YamlOssConfig } from './types'
 import { SseModule } from './sse/sse.module'
 import { EmailModule } from './email/email.module'
 import { SeoModule } from './seo/seo.module'
+import { PictureCollectionModule } from './picture-collection/picture-collection.module'
 
 @Module({
     imports: [
@@ -57,7 +58,8 @@ import { SeoModule } from './seo/seo.module'
         AiGeneratePictureModule,
         SseModule,
         EmailModule,
-        SeoModule
+        SeoModule,
+        PictureCollectionModule
     ],
     controllers: [AppController],
     providers: [AppService]
