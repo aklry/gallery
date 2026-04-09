@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import PictureDetailContent from '@/components/picture-detail-content/index.vue'
 import usePictureDetail from './hooks'
-import { EyeFilled } from '@ant-design/icons-vue'
+import { EyeOutlined } from '@ant-design/icons-vue'
 
 const props = defineProps<{
     id: string
@@ -19,23 +19,39 @@ const previewVisible = ref(false)
             <a-col :sm="24" :md="16" :xl="18">
                 <div class="image-preview-card">
                     <div class="image-container">
-                        <div class="corner top-left"></div>
-                        <div class="corner top-right"></div>
-                        <div class="corner bottom-left"></div>
-                        <div class="corner bottom-right"></div>
+                        <div class="corner top-left" />
+                        <div class="corner top-right" />
+                        <div class="corner bottom-left" />
+                        <div class="corner bottom-right" />
                         <div
-                            class="relative w-full h-full group flex justify-center items-center overflow-hidden rounded-[18px] cursor-pointer"
+                            class="relative w-full h-full group flex justify-center items-center overflow-hidden rounded-[18px] cursor-pointer bg-black/5"
                             @click="previewVisible = true"
                         >
+                            <!-- 沉浸式毛玻璃背景垫底 -->
+                            <div
+                                class="absolute inset-0 bg-cover bg-center scale-[1.15] blur-2xl opacity-60 pointer-events-none"
+                                :style="{ backgroundImage: `url(${picture?.url})` }"
+                            />
+
+                            <!-- 保证图片完整展示 (contain) 并在视觉上与背景拉开层次 -->
                             <img
                                 :src="picture?.url"
                                 :alt="picture?.name"
-                                class="object-cover w-full h-full transition duration-300 main-image group-hover:scale-105"
+                                class="object-contain w-full h-full transition duration-300 main-image group-hover:scale-105 relative z-10 drop-shadow-lg"
                             />
+
+                            <!-- 遮罩层 (提高 z-index 确保盖在所有元素上方) -->
                             <div
-                                class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none flex items-center justify-center"
+                                class="absolute inset-0 bg-black/40 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none flex items-center justify-center z-20"
                             >
-                                <span class="text-white text-lg tracking-wider"><EyeFilled /></span>
+                                <div
+                                    class="flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-white/20 text-white shadow-xl backdrop-blur-md border border-white/30 transform scale-95 group-hover:scale-100 transition-all duration-300"
+                                >
+                                    <EyeOutlined class="text-xl leading-none" />
+                                    <span class="text-sm font-medium tracking-wide leading-none mt-[2px]">
+                                        点击预览
+                                    </span>
+                                </div>
                             </div>
                         </div>
                         <a-image
