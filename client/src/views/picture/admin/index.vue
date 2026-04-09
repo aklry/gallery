@@ -40,7 +40,7 @@ const reviewStatusConfig: Record<number, { color: string; text: string }> = {
 </script>
 
 <template>
-    <div class="min-h-full bg-[#f5f7fa] p-6">
+    <div class="min-h-full min-w-0 bg-[#f5f7fa] p-6">
         <!-- 页面头部 -->
         <div
             class="mb-5 flex items-center justify-between rounded-xl border border-[#f0f0f0] bg-white px-6 py-5 shadow-sm"
@@ -120,7 +120,7 @@ const reviewStatusConfig: Record<number, { color: string; text: string }> = {
         </div>
 
         <!-- 数据表格 -->
-        <div class="rounded-xl border border-[#f0f0f0] bg-white px-6 py-5 shadow-sm">
+        <div class="min-w-0 overflow-hidden rounded-xl border border-[#f0f0f0] bg-white px-6 py-5 shadow-sm">
             <a-table
                 :row-selection="rowSelection"
                 rowKey="id"

@@ -22,4 +22,6 @@
     /* 统一整个项目的现代化浅灰背景 */
     background-color: #f6f8fb;
     @apply p-[20px] overflow-hidden box-border;
+
+    min-width: 0;
 }

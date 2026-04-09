@@ -20,7 +20,7 @@
             </a-form>
         </a-card>
 
-        <a-card class="rounded-xl shadow-sm border-0" title="用户管理列表">
+        <a-card class="rounded-xl shadow-sm border-0 overflow-hidden" title="用户管理列表">
             <a-table
                 :dataSource="dataSource"
                 :columns="columns"

@@ -122,40 +122,46 @@ const usePictureHooks = () => {
         {
             title: '图片',
             dataIndex: 'url',
-            key: 'url'
+            key: 'url',
+            width: 120
         },
         {
             title: '名称',
             dataIndex: 'name',
             key: 'name',
-            width: 240
+            width: 180
         },
         {
             title: '图片信息',
             key: 'pictureInfo',
             dataIndex: 'pictureInfo',
-            slots: { customRender: 'pictureInfo' }
+            slots: { customRender: 'pictureInfo' },
+            width: 180
         },
         {
             title: '简介',
             dataIndex: 'introduction',
-            key: 'introduction'
+            key: 'introduction',
+            width: 180
         },
         {
             title: '类型',
             dataIndex: 'category',
-            key: 'category'
+            key: 'category',
+            width: 120
         },
         {
             title: '标签',
             dataIndex: 'tags',
-            key: 'tags'
+            key: 'tags',
+            width: 200
         },
         {
             title: '创建时间',
             dataIndex: 'createTime',
             key: 'createTime',
-            sorter: true
+            sorter: true,
+            width: 180
         },
         {
             title: '操作',

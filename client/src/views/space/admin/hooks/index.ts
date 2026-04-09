@@ -33,12 +33,14 @@ const useSpaceAdminHooks = () => {
         {
             title: '空间名称',
             dataIndex: 'spaceName',
-            key: 'spaceName'
+            key: 'spaceName',
+            width: 150
         },
         {
             title: '空间级别',
             key: 'spaceLevel',
-            dataIndex: 'spaceLevel'
+            dataIndex: 'spaceLevel',
+            width: 120
         },
         {
             title: '使用情况',
@@ -48,17 +50,20 @@ const useSpaceAdminHooks = () => {
         {
             title: '创建人',
             dataIndex: 'createUser',
-            key: 'createUser'
+            key: 'createUser',
+            width: 150
         },
         {
             title: '创建时间',
             dataIndex: 'createTime',
-            key: 'createTime'
+            key: 'createTime',
+            width: 180
         },
         {
             title: '更新时间',
             dataIndex: 'updateTime',
-            key: 'updateTime'
+            key: 'updateTime',
+            width: 180
         },
         {
             title: '操作',

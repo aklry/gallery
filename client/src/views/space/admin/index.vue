@@ -20,7 +20,7 @@ const {
 } = useSpaceHooks()
 </script>
 <template>
-    <div class="space-admin">
+    <div class="space-admin overflow-hidden">
         <a-card title="空间管理">
             <query-form :searchParams="searchParams" :query="handleQuery" />
             <template #extra>
@@ -33,6 +33,7 @@ const {
                 :columns="columns"
                 :data-source="spaceList"
                 :pagination="{ total, current: Number(searchParams.current), pageSize: Number(searchParams.pageSize) }"
+                :scroll="{ x: 'max-content' }"
             >
                 <template #bodyCell="{ column, record }: { column: any; record: API.SpaceModelVo }">
                     <template v-if="column.key === 'createTime'">

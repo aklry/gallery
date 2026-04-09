@@ -50,12 +50,14 @@ const useAdmin = () => {
         {
             title: '用户账号',
             dataIndex: 'userAccount',
-            key: 'userAccount'
+            key: 'userAccount',
+            width: 150
         },
         {
             title: '用户名',
             dataIndex: 'userName',
-            key: 'userName'
+            key: 'userName',
+            width: 150
         },
         {
             title: '用户角色',
