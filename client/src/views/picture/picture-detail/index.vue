@@ -11,6 +11,7 @@ const props = defineProps<{
 const { picture, deletePicture, canEditOrDelete, editPicture, downloadPicture } = usePictureDetail(props.id)
 
 const previewVisible = ref(false)
+const isImageLoaded = ref(false)
 </script>
 
 <template>
@@ -29,15 +30,29 @@ const previewVisible = ref(false)
                         >
                             <!-- 沉浸式毛玻璃背景垫底 -->
                             <div
-                                class="absolute inset-0 bg-cover bg-center scale-[1.15] blur-2xl opacity-60 pointer-events-none"
-                                :style="{ backgroundImage: `url(${picture?.url})` }"
+                                v-if="picture?.url"
+                                class="absolute inset-0 bg-cover bg-center scale-[1.15] blur-2xl pointer-events-none transition-opacity duration-500"
+                                :class="isImageLoaded ? 'opacity-60' : 'opacity-0'"
+                                :style="{ backgroundImage: `url(${picture.url})` }"
                             />
+
+                            <!-- 图片骨架屏/加载动画 -->
+                            <div
+                                v-if="picture?.url && !isImageLoaded"
+                                class="absolute inset-0 flex items-center justify-center z-10"
+                            >
+                                <a-spin size="large" />
+                            </div>
 
                             <!-- 保证图片完整展示 (contain) 并在视觉上与背景拉开层次 -->
                             <img
+                                v-show="picture?.url"
                                 :src="picture?.url"
                                 :alt="picture?.name"
-                                class="object-contain w-full h-full transition duration-300 main-image group-hover:scale-105 relative z-10 drop-shadow-lg"
+                                @load="isImageLoaded = true"
+                                :class="isImageLoaded ? 'opacity-100' : 'opacity-0'"
+                                class="object-contain w-full h-full transition-all duration-500 main-image group-hover:scale-105 relative z-10 drop-shadow-lg"
+                                loading="lazy"
                             />
 
                             <!-- 遮罩层 (提高 z-index 确保盖在所有元素上方) -->
