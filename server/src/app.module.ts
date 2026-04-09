@@ -29,6 +29,7 @@ import * as path from 'node:path'
 import type { YamlOssConfig } from './types'
 import { SseModule } from './sse/sse.module'
 import { EmailModule } from './email/email.module'
+import { SeoModule } from './seo/seo.module'
 
 @Module({
     imports: [
@@ -55,7 +56,8 @@ import { EmailModule } from './email/email.module'
         }),
         AiGeneratePictureModule,
         SseModule,
-        EmailModule
+        EmailModule,
+        SeoModule
     ],
     controllers: [AppController],
     providers: [AppService]

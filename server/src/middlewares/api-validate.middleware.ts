@@ -1,18 +1,16 @@
 import { Injectable, NestMiddleware } from '@nestjs/common'
 import type { NextFunction, Request, Response } from 'express'
-import * as md5 from 'md5'
+import * as md5Module from 'md5'
+
+const md5 = md5Module as unknown as (message: string) => string
 import { BusinessException } from '../custom-exception'
 import { BusinessStatus } from '../config'
-
 @Injectable()
 export class ApiValidateMiddleware implements NestMiddleware {
     use(req: Request, _res: Response, next: NextFunction) {
         const { headers, originalUrl } = req
-        if (
-            originalUrl.includes('message/stream') ||
-            originalUrl.includes('swagger') ||
-            originalUrl.includes('swagger-json')
-        ) {
+        const filterPath: string[] = ['message/stream', 'swagger', 'swagger-json', 'sitemap.xml', 'picture']
+        if (filterPath.some(path => originalUrl.includes(path))) {
             next()
             return
         }

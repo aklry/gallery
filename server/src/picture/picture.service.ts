@@ -36,6 +36,7 @@ import { PermissionGuard } from '../permission/permission.guard'
 import { PERMISSION_KEY } from '../permission/permission.decorator'
 import { AiGeneratePictureDto } from '../ai-generate-picture/dto'
 import { SseService } from '../sse/sse.service'
+import 'multer'
 
 @Injectable()
 export class PictureService {
@@ -230,7 +231,7 @@ export class PictureService {
         }
     }
 
-    async getById(id: string) {
+    async getById(id: string, returnUser: boolean = true) {
         const result = await this.prismaService.picture.findUnique({
             where: { id }
         })
@@ -240,7 +241,7 @@ export class PictureService {
         const user = await this.prismaService.user.findUnique({
             where: { id: result.userId }
         })
-        return {
+        const obj: GetPictureVoModel = {
             id: result.id,
             url: result.url,
             name: result.name,
@@ -253,18 +254,24 @@ export class PictureService {
             picScale: result.picScale,
             picFormat: result.picFormat,
             createTime: result.createTime.toISOString(),
-            userId: result.userId,
             spaceId: result.spaceId,
-            editTime: result.editTime.toISOString(),
-            user: {
-                id: user?.id,
-                userAccount: user?.userAccount,
-                userName: user?.userName,
-                userAvatar: user?.userAvatar,
-                userProfile: user?.userProfile,
-                userRole: user?.userRole
-            } as LoginVoModel
-        } as GetPictureVoModel
+            editTime: result.editTime.toISOString()
+        }
+        if (returnUser) {
+            return {
+                ...obj,
+                user: {
+                    id: user?.id,
+                    userAccount: user?.userAccount,
+                    userName: user?.userName,
+                    userAvatar: user?.userAvatar,
+                    userProfile: user?.userProfile,
+                    userRole: user?.userRole
+                } as LoginVoModel
+            } as GetPictureVoModel
+        } else {
+            return obj
+        }
     }
 
     async getByIds(ids: string[]) {

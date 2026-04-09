@@ -52,6 +52,7 @@ import { ValidationPipe } from '../pipe/validation.pipe'
 import { SpaceUserPermissionConstant } from 'src/permission/SpaceUserPermissionConstant'
 import { PermissionGuard } from '../permission/permission.guard'
 import { AiGeneratePictureDto } from '../ai-generate-picture/dto'
+import { RawResponse } from '../interceptors'
 
 @Controller({
     path: 'picture',
@@ -293,5 +294,11 @@ export class PictureController {
     async generateImage(@Param('taskId') taskId: string) {
         const result = await this.pictureService.genGenerateImage(taskId)
         return this.responseService.success(result)
+    }
+    @Get('/:picId')
+    @ApiOperation({ summary: '获取图片' })
+    @RawResponse()
+    getPicture(@Param('picId') picId: string) {
+        return this.pictureService.getById(picId, false)
     }
 }

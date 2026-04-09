@@ -6,4 +6,11 @@ const router = createRouter({
     routes
 })
 
+const DEFAULT_TITLE = '映刻'
+
+router.afterEach(to => {
+    const title = to.meta.title as string | undefined
+    document.title = title ? `${title} - ${DEFAULT_TITLE}` : DEFAULT_TITLE
+})
+
 export default router

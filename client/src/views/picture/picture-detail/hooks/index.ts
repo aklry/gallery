@@ -1,10 +1,65 @@
 ﻿import { message, Modal } from 'ant-design-vue'
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { pictureControllerDeletePictureV1 } from '@/api/picture'
 import { useRouter, useRoute } from 'vue-router'
 import { useUserStore } from '@/store/modules/user'
 import { downloadPicture as download } from '@/utils'
 import { pictureDetailCache } from '@/utils/picture-detail-cache'
+
+const SEO_SCRIPT_ID = 'picture-jsonld'
+
+function injectStructuredData(picture: API.GetPictureVoModel) {
+    removeStructuredData()
+    const jsonLd = {
+        '@context': 'https://schema.org',
+        '@type': 'ImageObject',
+        name: picture.name,
+        contentUrl: picture.url,
+        thumbnailUrl: picture.thumbnailUrl || picture.url,
+        description: picture.introduction || picture.name,
+        width: { '@type': 'QuantitativeValue', value: picture.picWidth },
+        height: { '@type': 'QuantitativeValue', value: picture.picHeight },
+        encodingFormat: picture.picFormat,
+        datePublished: picture.createTime,
+        dateModified: picture.editTime,
+        author: picture.user ? { '@type': 'Person', name: picture.user.userName } : undefined
+    }
+    const script = document.createElement('script')
+    script.id = SEO_SCRIPT_ID
+    script.type = 'application/ld+json'
+    script.textContent = JSON.stringify(jsonLd)
+    document.head.appendChild(script)
+}
+
+function removeStructuredData() {
+    const existing = document.getElementById(SEO_SCRIPT_ID)
+    if (existing) existing.remove()
+}
+
+function updatePageMeta(picture: API.GetPictureVoModel) {
+    document.title = `${picture.name} - 映刻`
+    const desc = picture.introduction || picture.name
+    setMeta('description', desc)
+    setMeta('og:title', picture.name, 'property')
+    setMeta('og:description', desc, 'property')
+    setMeta('og:image', picture.url, 'property')
+    setMeta('og:type', 'article', 'property')
+    setMeta('twitter:title', picture.name)
+    setMeta('twitter:description', desc)
+    setMeta('twitter:image', picture.url)
+}
+
+function setMeta(name: string, content: string, attr: 'name' | 'property' = 'name') {
+    let el = document.querySelector(`meta[${attr}="${name}"]`) as HTMLMetaElement | null
+    if (el) {
+        el.content = content
+    } else {
+        el = document.createElement('meta')
+        el.setAttribute(attr, name)
+        el.content = content
+        document.head.appendChild(el)
+    }
+}
 
 const usePictureDetail = (id: string) => {
     const picture = ref<API.GetPictureVoModel>()
@@ -21,6 +76,10 @@ const usePictureDetail = (id: string) => {
     const getPictureDetail = async () => {
         try {
             picture.value = await pictureDetailCache.get(id)
+            if (picture.value) {
+                updatePageMeta(picture.value)
+                injectStructuredData(picture.value)
+            }
         } catch (error) {
             message.error(error instanceof Error ? error.message : '获取图片详情失败')
         }
@@ -70,6 +129,9 @@ const usePictureDetail = (id: string) => {
     }
     onMounted(async () => {
         await getPictureDetail()
+    })
+    onUnmounted(() => {
+        removeStructuredData()
     })
     return {
         picture,

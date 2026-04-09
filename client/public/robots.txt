@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Allow: /picture/
+Disallow: /user/admin
+Disallow: /picture/admin
+Disallow: /space/admin
+Disallow: /picture/add
+Disallow: /space/add
+
+Sitemap: /api/v1/seo/sitemap.xml
