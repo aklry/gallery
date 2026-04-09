@@ -139,7 +139,7 @@ export class OssService {
             })
 
             // 获取图片信息
-            const imageInfo = await this.ossClient.get(thumbFileName, { process: 'image/info' })
+            const imageInfo = await this.ossClient.get(uploadFileName, { process: 'image/info' })
             const info = JSON.parse(imageInfo.content.toString()) as ImageInfo
 
             // 计算图片比例并格式化URL
