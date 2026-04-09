@@ -778,6 +778,20 @@ export class PictureService {
         return true
     }
 
+    async hardDeleteDeletedPicturesByIds(ids: string[]) {
+        const uniqueIds = Array.from(new Set(ids))
+        if (uniqueIds.length === 0) {
+            return 0
+        }
+
+        const deletedCount = await this.prismaService.$executeRaw(
+            Prisma.sql`DELETE FROM picture WHERE isDelete = 1 AND id IN (${Prisma.join(uniqueIds)})`
+        )
+
+        await this.redisCacheService.clear()
+        return Number(deletedCount)
+    }
+
     async deletePictureByIds(deleteBatchPictureDto: DeleteBatchPictureDto, req: Request) {
         const user = req.session.user
         if (!user) {
