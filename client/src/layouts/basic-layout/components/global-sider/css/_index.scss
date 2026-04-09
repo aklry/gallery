@@ -68,18 +68,54 @@
         }
     }
 
-    .sider-avatar {
-        @apply relative cursor-pointer mb-6 transform hover:scale-105 transition-all duration-300;
+    .sider-avatar-wrapper {
+        @apply relative flex justify-center w-full mb-6 z-10;
 
-        .avatar-status {
-            @apply absolute bottom-0 right-0 w-3 h-3 rounded-full;
+        .sider-avatar {
+            @apply relative cursor-pointer transform hover:scale-105 transition-all duration-300;
 
-            background-color: #52c41a;
-            border: 2px solid #fff;
+            .avatar-status {
+                @apply absolute bottom-0 right-0 w-3 h-3 rounded-full;
+
+                background-color: #52c41a;
+                border: 2px solid #fff;
+
+                &.is-online {
+                    background-color: #52c41a;
+                }
+            }
+
+            /* 未登录状态样式，符合极简与橙点提示 */
+            &.unlogin-avatar {
+                .login-avatar-bg {
+                    background-color: #f0f2f5;
+                    color: #8c8c8c;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+
+                    .unlogin-icon {
+                        font-size: 20px;
+                    }
+                }
+
+                /* 橙色提示点 */
+                .pulse-dot {
+                    position: absolute;
+                    top: 0;
+                    right: 2px;
+                    width: 8px;
+                    height: 8px;
+                    background-color: #fa8c16;
+                    border-radius: 50%;
+                    border: 1px solid #fff;
+                    animation: pulse-ring 2s infinite;
+                }
+            }
+
+            visibility: visible;
+            transition: all 0.3s ease;
         }
-
-        visibility: visible;
-        transition: all 0.3s ease;
     }
 
     .sider-nav {
@@ -112,5 +148,19 @@
 
     .sider-footer {
         @apply mt-auto;
+    }
+}
+
+@keyframes pulse-ring {
+    0% {
+        box-shadow: 0 0 0 0 rgb(250 140 22 / 70%);
+    }
+
+    70% {
+        box-shadow: 0 0 0 4px rgb(250 140 22 / 0%);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgb(250 140 22 / 0%);
     }
 }

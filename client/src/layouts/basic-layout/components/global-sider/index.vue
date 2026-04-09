@@ -64,13 +64,29 @@ const menuList = computed(() => {
             <component :is="isCollapsed ? RightOutlined : LeftOutlined" class="collapse-icon" />
         </div>
 
-        <!-- 用户头像 -->
-        <div class="sider-avatar" @click="handleAvatarClick">
-            <a-tooltip :title="loginUser?.id ? loginUser.userName || '个人中心' : '未登录，点击登录'" placement="right">
-                <a-avatar :size="40" :src="loginUser.userAvatar" v-if="loginUser?.userAvatar" />
-                <a-avatar :size="40" src="/logo.svg" v-else></a-avatar>
-            </a-tooltip>
-            <div class="avatar-status" :class="{ 'is-offline': !loginUser?.id }"></div>
+        <!-- 用户头像/登录入口 -->
+        <div class="sider-avatar-wrapper" @click="handleAvatarClick">
+            <!-- 已登录状态 -->
+            <template v-if="loginUser?.id">
+                <a-tooltip :title="loginUser.userName || '个人中心'" placement="right">
+                    <div class="sider-avatar">
+                        <a-avatar :size="40" :src="loginUser.userAvatar" />
+                        <div class="avatar-status is-online"></div>
+                    </div>
+                </a-tooltip>
+            </template>
+            <!-- 未登录状态 -->
+            <template v-else>
+                <a-tooltip title="请先登录 >" placement="right" color="#1677ff" :overlayStyle="{ cursor: 'pointer' }">
+                    <div class="sider-avatar unlogin-avatar">
+                        <a-avatar :size="40" class="login-avatar-bg">
+                            <template #icon><UserOutlined class="unlogin-icon" /></template>
+                        </a-avatar>
+                        <!-- 提示橙点 -->
+                        <div class="pulse-dot"></div>
+                    </div>
+                </a-tooltip>
+            </template>
         </div>
 
         <!-- 导航图标 -->

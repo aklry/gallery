@@ -125,10 +125,24 @@ const usePictureDetail = (id: string) => {
         }
     }
     const downloadPicture = (url?: string, filename?: string) => {
+        if (!userStore.loginUser.id) {
+            message.info('请先登录，登录后将自动为您下载')
+            const targetPath = route.fullPath + (route.fullPath.includes('?') ? '&' : '?') + 'action=download'
+            router.push(`/user/login?redirect=${encodeURIComponent(targetPath)}`)
+            return
+        }
         download(url, filename)
     }
     onMounted(async () => {
         await getPictureDetail()
+        // 登录回跳后自动触发下载逻辑
+        if (route.query.action === 'download' && userStore.loginUser.id && picture.value) {
+            downloadPicture(picture.value.url, picture.value.name)
+            // 清除 action 参数防刷新重复下载
+            const query = { ...route.query }
+            delete query.action
+            router.replace({ query })
+        }
     })
     onUnmounted(() => {
         removeStructuredData()
