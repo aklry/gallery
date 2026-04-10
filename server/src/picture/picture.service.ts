@@ -336,13 +336,24 @@ export class PictureService {
         const user = await this.prismaService.user.findUnique({
             where: { id: result.userId }
         })
-        const collectionPicture = await this.prismaService.picture_favorite.findFirst({
-            where: {
-                pictureId: id,
-                userId: req.session.user.id,
-                status: UserActionStatus.ACTIVE
-            }
-        })
+        const [collectionPicture, likePicture] = await Promise.all([
+            this.prismaService.picture_favorite.findFirst({
+                where: {
+                    pictureId: id,
+                    userId: req.session.user.id,
+                    status: UserActionStatus.ACTIVE,
+                    isDelete: 0
+                }
+            }),
+            this.prismaService.picture_like.findFirst({
+                where: {
+                    pictureId: id,
+                    userId: req.session.user.id,
+                    status: UserActionStatus.ACTIVE,
+                    isDelete: 0
+                }
+            })
+        ])
         // 获取权限列表
         const loginUser = req.session?.user
         const spaceId = result.spaceId
@@ -386,7 +397,8 @@ export class PictureService {
             spaceId: result.spaceId,
             editTime: result.editTime.toISOString(),
             thumbnailUrl: result.thumbnailUrl,
-            isCollect: collectionPicture ? true : false
+            isLike: !!likePicture,
+            isCollect: !!collectionPicture
         } as GetPictureVoModel
     }
 

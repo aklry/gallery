@@ -8,9 +8,8 @@ const props = defineProps<{
     id: string
 }>()
 
-const { picture, deletePicture, canEditOrDelete, editPicture, downloadPicture, handleCollect } = usePictureDetail(
-    props.id
-)
+const { picture, deletePicture, canEditOrDelete, editPicture, downloadPicture, handleLike, handleCollect } =
+    usePictureDetail(props.id)
 
 const previewVisible = ref(false)
 const isImageLoaded = ref(false)
@@ -91,6 +90,7 @@ const isImageLoaded = ref(false)
                     @download="downloadPicture(picture?.url, picture?.name)"
                     @edit="editPicture"
                     @delete="deletePicture"
+                    @like="handleLike"
                     @collect="handleCollect"
                 />
             </a-col>

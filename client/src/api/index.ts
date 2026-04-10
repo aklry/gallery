@@ -10,6 +10,7 @@ import * as message from './message'
 import * as analyze from './analyze'
 import * as spaceUser from './spaceUser'
 import * as pictureCollection from './pictureCollection'
+import * as pictureLike from './pictureLike'
 export default {
     app,
     user,
@@ -18,5 +19,6 @@ export default {
     message,
     analyze,
     spaceUser,
-    pictureCollection
+    pictureCollection,
+    pictureLike
 }

@@ -135,6 +135,15 @@ declare namespace API {
         status: 'ACTIVE' | 'CANCELLED'
     }
 
+    type CreatePictureLikeDto = {
+        /** 图片id */
+        pictureId: string
+        /** 用户id */
+        userId: string
+        /** 点赞状态 */
+        status: 'ACTIVE' | 'CANCELLED'
+    }
+
     type CreateSpaceDto = {
         /** 空间名称 */
         spaceName: string
@@ -469,6 +478,19 @@ declare namespace API {
         /** 消息 */
         message: string
         /** 图片信息 */
+        data: boolean
+        /** 时间戳 */
+        timestamp: string
+        /** 路径 */
+        path: string
+    }
+
+    type PictureLikeVo = {
+        /** 状态码 */
+        code: number
+        /** 消息 */
+        message: string
+        /** 点赞状态 */
         data: boolean
         /** 时间戳 */
         timestamp: string

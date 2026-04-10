@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import {
     DeleteOutlined,
     DownloadOutlined,
@@ -47,6 +47,25 @@ const isCollected = computed(() => Boolean(props.picture?.isCollect))
 const userStore = useUserStore()
 
 const { loginUser } = storeToRefs(userStore)
+
+const isLikeAnimating = ref(false)
+const isCollectAnimating = ref(false)
+
+const handleLike = () => {
+    isLikeAnimating.value = true
+    setTimeout(() => {
+        isLikeAnimating.value = false
+    }, 600)
+    emit('like')
+}
+
+const handleCollect = () => {
+    isCollectAnimating.value = true
+    setTimeout(() => {
+        isCollectAnimating.value = false
+    }, 600)
+    emit('collect', props.picture?.id as string, props.picture?.user.id as string)
+}
 </script>
 
 <template>
@@ -101,18 +120,20 @@ const { loginUser } = storeToRefs(userStore)
             </div>
 
             <div class="interaction-bar" v-if="loginUser.id !== picture?.user.id">
-                <a-button class="interact-btn" :class="{ 'interact-btn--active': isLiked }" @click="emit('like')">
+                <a-button class="interact-btn" :class="{ 'interact-btn--active': isLiked }" @click="handleLike">
+                    <svg class="anim-svg" v-if="isLikeAnimating" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="0" y="0" width="100%" height="100%" rx="8" ry="8" pathLength="100" />
+                    </svg>
                     <template #icon>
                         <LikeFilled v-if="isLiked" />
                         <LikeOutlined v-else />
                     </template>
                     点赞
                 </a-button>
-                <a-button
-                    class="interact-btn"
-                    :class="{ 'interact-btn--active': isCollected }"
-                    @click="emit('collect', picture?.id as string, picture?.user.id as string)"
-                >
+                <a-button class="interact-btn" :class="{ 'interact-btn--active': isCollected }" @click="handleCollect">
+                    <svg class="anim-svg" v-if="isCollectAnimating" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="0" y="0" width="100%" height="100%" rx="8" ry="8" pathLength="100" />
+                    </svg>
                     <template #icon>
                         <StarFilled v-if="isCollected" />
                         <StarOutlined v-else />
@@ -279,6 +300,7 @@ const { loginUser } = storeToRefs(userStore)
         border-top: 1px dashed #f0f0f0;
 
         .interact-btn {
+            position: relative;
             flex: 1;
             height: 40px;
             border-radius: 8px;
@@ -315,6 +337,41 @@ const { loginUser } = storeToRefs(userStore)
                 font-size: 18px;
                 margin-right: 4px;
             }
+
+            .anim-svg {
+                position: absolute;
+                top: -1px;
+                left: -1px;
+                width: calc(100% + 2px);
+                height: calc(100% + 2px);
+                pointer-events: none;
+                overflow: visible;
+
+                rect {
+                    fill: none;
+                    stroke: #1677ff;
+                    stroke-width: 2px;
+                    stroke-dasharray: 30 70;
+                    stroke-dashoffset: 100;
+                    animation: border-dash 0.6s ease-in-out forwards;
+                }
+            }
+        }
+    }
+
+    @keyframes border-dash {
+        0% {
+            stroke-dashoffset: 100;
+            opacity: 1;
+        }
+
+        80% {
+            opacity: 1;
+        }
+
+        100% {
+            stroke-dashoffset: 0;
+            opacity: 0;
         }
     }
 

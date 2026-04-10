@@ -2,6 +2,7 @@
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { pictureControllerDeletePictureV1 } from '@/api/picture'
 import { pictureCollectionControllerFavoritePictureCollectionV1 } from '@/api/pictureCollection'
+import { pictureLikeControllerLikePictureV1 } from '@/api/pictureLike'
 import { useRouter, useRoute } from 'vue-router'
 import { useUserStore } from '@/store/modules/user'
 import { downloadPicture as download } from '@/utils'
@@ -167,6 +168,32 @@ const usePictureDetail = (id: string) => {
             message.error(error instanceof Error ? error.message : '收藏失败')
         }
     }
+    const handleLike = async () => {
+        if (!userStore.loginUser.id) {
+            message.info('请先登录')
+            return
+        }
+        if (!picture.value?.id) {
+            message.error('图片信息不存在')
+            return
+        }
+        try {
+            const res = await pictureLikeControllerLikePictureV1({
+                pictureId: picture.value.id,
+                userId: userStore.loginUser.id,
+                status: picture.value?.isLike ? 'CANCELLED' : 'ACTIVE'
+            })
+            if (res.code !== 1) {
+                message.error(res.message || '点赞失败')
+                return
+            }
+            pictureDetailCache.invalidate(id)
+            await getPictureDetail()
+            message.success(res.message)
+        } catch (error) {
+            message.error(error instanceof Error ? error.message : '点赞失败')
+        }
+    }
     onUnmounted(() => {
         removeStructuredData()
     })
@@ -176,6 +203,7 @@ const usePictureDetail = (id: string) => {
         canEditOrDelete,
         editPicture,
         downloadPicture,
+        handleLike,
         handleCollect
     }
 }
