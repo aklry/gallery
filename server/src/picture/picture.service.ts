@@ -9,7 +9,7 @@ import { LoginVoModel } from '../user/vo'
 import { UserRole } from '../user/enum/user'
 import { Picture } from './entities/picture.entity'
 import { ReviewStatus } from './enum'
-import { MessageStatus, Prisma } from '@prisma/client'
+import { MessageStatus, Prisma, UserActionStatus } from '@prisma/client'
 import { ShowPictureModelVo, PictureVoModel, GetPictureVoModel, UploadPictureVoModel } from './vo'
 import { RedisCacheService } from '../cache/cache.service'
 import { SpaceService } from '../space/space.service'
@@ -213,7 +213,11 @@ export class PictureService {
             filename: item.name,
             picScale: item.picScale,
             thumbnailUrl: item.thumbnailUrl,
-            color: item.picColor
+            color: item.picColor,
+            viewNumber: item.viewNumber,
+            likeNumber: item.likeNumber,
+            downloadNumber: item.downloadNumber,
+            collectionNumber: item.collectionNumber
         }))
         // if (result.length > 0) {
         //     await this.redisCacheService.set(
@@ -332,6 +336,13 @@ export class PictureService {
         const user = await this.prismaService.user.findUnique({
             where: { id: result.userId }
         })
+        const collectionPicture = await this.prismaService.picture_favorite.findFirst({
+            where: {
+                pictureId: id,
+                userId: req.session.user.id,
+                status: UserActionStatus.ACTIVE
+            }
+        })
         // 获取权限列表
         const loginUser = req.session?.user
         const spaceId = result.spaceId
@@ -374,7 +385,8 @@ export class PictureService {
             },
             spaceId: result.spaceId,
             editTime: result.editTime.toISOString(),
-            thumbnailUrl: result.thumbnailUrl
+            thumbnailUrl: result.thumbnailUrl,
+            isCollect: collectionPicture ? true : false
         } as GetPictureVoModel
     }
 
@@ -888,7 +900,11 @@ export class PictureService {
             filename: item.name,
             picScale: item.picScale,
             thumbnailUrl: item.thumbnailUrl,
-            color: item.picColor
+            color: item.picColor,
+            viewNumber: item.viewNumber,
+            likeNumber: item.likeNumber,
+            downloadNumber: item.downloadNumber,
+            collectionNumber: item.collectionNumber
         }))
         return {
             list: result,

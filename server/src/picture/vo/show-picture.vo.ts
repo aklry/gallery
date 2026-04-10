@@ -28,6 +28,14 @@ export class ShowPictureModelVo {
     picScale: number
     @ApiProperty({ description: '缩略图url', required: true })
     thumbnailUrl: string
+    @ApiProperty({ description: '图片收藏数', required: true })
+    collectionNumber: number
+    @ApiProperty({ description: '图片下载数', required: true })
+    downloadNumber: number
+    @ApiProperty({ description: '图片浏览数', required: true })
+    viewNumber: number
+    @ApiProperty({ description: '图片点赞数', required: true })
+    likeNumber: number
 }
 
 export class ShowPictureVoType {

@@ -134,6 +134,7 @@ model picture_like {
     status     UserActionStatus @default(ACTIVE)
     createTime DateTime         @default(now()) @db.DateTime(0)
     updateTime DateTime         @default(now()) @db.DateTime(0)
+    isDelete   Int      @default(0) @db.TinyInt
 
     @@unique([pictureId, userId], map: "uk_picture_like_pictureId_userId")
     @@index([userId, status, createTime], map: "idx_picture_like_userId_status_createTime")
@@ -147,6 +148,7 @@ model picture_favorite {
     status     UserActionStatus @default(ACTIVE)
     createTime DateTime         @default(now()) @db.DateTime(0)
     updateTime DateTime         @default(now()) @db.DateTime(0)
+    isDelete   Int      @default(0) @db.TinyInt
 
     @@unique([pictureId, userId], map: "uk_picture_favorite_pictureId_userId")
     @@index([userId, status, createTime], map: "idx_picture_favorite_userId_status_createTime")
@@ -158,6 +160,7 @@ model picture_download {
     pictureId  String   @db.VarChar(256)
     userId     String   @db.VarChar(256)
     createTime DateTime @default(now()) @db.DateTime(0)
+    isDelete   Int      @default(0) @db.TinyInt
 
     @@index([userId, createTime], map: "idx_picture_download_userId_createTime")
     @@index([pictureId, createTime], map: "idx_picture_download_pictureId_createTime")

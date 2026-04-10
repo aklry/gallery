@@ -15,6 +15,6 @@ export class CreatePictureCollectionDto {
 
     @IsNotEmpty()
     @IsEnum(UserActionStatus)
-    @ApiProperty({ description: '收藏状态', required: true })
+    @ApiProperty({ description: '收藏状态', required: true, enum: UserActionStatus })
     status: UserActionStatus
 }

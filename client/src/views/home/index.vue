@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { DownloadOutlined, EyeOutlined, LikeOutlined, LoadingOutlined, StarOutlined } from '@ant-design/icons-vue'
 import useHomeHooks from './hooks'
 import Tabs from './components/tabs/index.vue'
 import { storeToRefs } from 'pinia'
@@ -7,8 +8,7 @@ import TagBars from './components/tag-bars/index.vue'
 import { LazyImg, Waterfall } from 'vue-waterfall-plugin-next'
 import 'vue-waterfall-plugin-next/dist/style.css'
 import { ref } from 'vue'
-import { LoadingOutlined } from '@ant-design/icons-vue'
-import { formatSize, toHexColor } from '@/utils'
+import { formatSize } from '@/utils'
 
 const pictureStore = usePictureStore()
 const { tag_category } = storeToRefs(pictureStore)
@@ -86,37 +86,33 @@ const handleMouseLeave = (e: MouseEvent) => {
                                 <LazyImg :url="item.thumbnailUrl" />
                                 <!-- 遮罩层 -->
                                 <div class="picture-card__overlay">
-                                    <div class="overlay-content">
-                                        <div class="info-row">
-                                            <div class="info-item">
-                                                <span class="label">格式:</span>
-                                                <span class="value">{{ (item.format || '未知').toUpperCase() }}</span>
-                                            </div>
-                                            <div class="info-item">
-                                                <span class="label">大小:</span>
-                                                <span class="value">{{ formatSize(item.fileSize) }}</span>
-                                            </div>
+                                    <!-- 顶部信息：格式 & 分辨率 -->
+                                    <div class="overlay-top">
+                                        <span class="tag">{{ (item.format || '未知').toUpperCase() }}</span>
+                                        <span class="tag">{{ item.width || 0 }} x {{ item.height || 0 }}</span>
+                                    </div>
+                                    <!-- 底部信息：信息 & 统计 -->
+                                    <div class="overlay-bottom">
+                                        <div class="main-info">
+                                            <span class="category">{{ item.category ?? '默认分类' }}</span>
+                                            <div class="size-info">{{ formatSize(item.fileSize) }}</div>
                                         </div>
-                                        <div class="info-row">
-                                            <div class="info-item">
-                                                <span class="label">分辨率:</span>
-                                                <span class="value">{{ item.width || 0 }}x{{ item.height || 0 }}</span>
+                                        <div class="stats-row">
+                                            <div class="stat-item" title="点赞">
+                                                <LikeOutlined />
+                                                <span>{{ item.likeNumber ?? 0 }}</span>
                                             </div>
-                                            <div class="info-item">
-                                                <span class="label">分类:</span>
-                                                <span class="value">{{ item.category ?? '默认' }}</span>
+                                            <div class="stat-item" title="收藏">
+                                                <StarOutlined />
+                                                <span>{{ item.collectionNumber ?? 0 }}</span>
                                             </div>
-                                        </div>
-                                        <div class="info-row" v-if="item.color">
-                                            <div class="info-item">
-                                                <span class="label">主色调:</span>
-                                                <span
-                                                    class="color-block"
-                                                    :style="{
-                                                        backgroundColor: toHexColor(item.color)
-                                                    }"
-                                                ></span>
-                                                <span class="value">{{ toHexColor(item.color)?.toUpperCase() }}</span>
+                                            <div class="stat-item" title="浏览">
+                                                <EyeOutlined />
+                                                <span>{{ item.viewNumber ?? 0 }}</span>
+                                            </div>
+                                            <div class="stat-item" title="下载">
+                                                <DownloadOutlined />
+                                                <span>{{ item.downloadNumber ?? 0 }}</span>
                                             </div>
                                         </div>
                                     </div>

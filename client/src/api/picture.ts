@@ -2,6 +2,20 @@
 /* eslint-disable */
 import ryRequest from '../services'
 
+/** 获取图片 GET /api/v1/picture/${param0} */
+export async function pictureControllerGetPictureV1(
+    // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
+    params: API.PictureControllerGetPictureV1Params,
+    options?: { [key: string]: any }
+) {
+    const { picId: param0, ...queryParams } = params
+    return ryRequest.request<any>(`/api/v1/picture/${param0}`, {
+        method: 'GET',
+        params: { ...queryParams },
+        ...(options || {})
+    })
+}
+
 /** 创建扩图任务 POST /api/v1/picture/ai/expand/create_task */
 export async function pictureControllerCreateAiExpandPictureTaskV1(
     body: API.AiExpandPictureDto,

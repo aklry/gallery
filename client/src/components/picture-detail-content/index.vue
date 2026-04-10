@@ -1,21 +1,29 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { DeleteOutlined, DownloadOutlined, EditOutlined, ExportOutlined } from '@ant-design/icons-vue'
+import {
+    DeleteOutlined,
+    DownloadOutlined,
+    EditOutlined,
+    LikeFilled,
+    LikeOutlined,
+    StarFilled,
+    StarOutlined
+} from '@ant-design/icons-vue'
 import { formatSize, formatTime, toHexColor } from '@/utils'
+import { useUserStore } from '@/store/modules/user'
+import { storeToRefs } from 'pinia'
 
 const props = withDefaults(
     defineProps<{
         picture: API.GetPictureVoModel | null
         canEdit?: boolean
         canDelete?: boolean
-        showOpenPageAction?: boolean
         compact?: boolean
         downloadText?: string
     }>(),
     {
         canEdit: false,
         canDelete: false,
-        showOpenPageAction: false,
         compact: false,
         downloadText: '下载原图'
     }
@@ -26,11 +34,19 @@ const emit = defineEmits<{
     (e: 'edit'): void
     (e: 'delete'): void
     (e: 'open-page'): void
+    (e: 'like'): void
+    (e: 'collect', pictureId: string, userId: string): void
 }>()
 
 const pictureTags = computed(() => props.picture?.tags ?? [])
 const pictureColor = computed(() => toHexColor(props.picture?.picColor))
 const showManageActions = computed(() => props.canEdit || props.canDelete)
+const isLiked = computed(() => Boolean(props.picture?.isLike))
+const isCollected = computed(() => Boolean(props.picture?.isCollect))
+
+const userStore = useUserStore()
+
+const { loginUser } = storeToRefs(userStore)
 </script>
 
 <template>
@@ -84,12 +100,29 @@ const showManageActions = computed(() => props.canEdit || props.canDelete)
                 </div>
             </div>
 
+            <div class="interaction-bar" v-if="loginUser.id !== picture?.user.id">
+                <a-button class="interact-btn" :class="{ 'interact-btn--active': isLiked }" @click="emit('like')">
+                    <template #icon>
+                        <LikeFilled v-if="isLiked" />
+                        <LikeOutlined v-else />
+                    </template>
+                    点赞
+                </a-button>
+                <a-button
+                    class="interact-btn"
+                    :class="{ 'interact-btn--active': isCollected }"
+                    @click="emit('collect', picture?.id as string, picture?.user.id as string)"
+                >
+                    <template #icon>
+                        <StarFilled v-if="isCollected" />
+                        <StarOutlined v-else />
+                    </template>
+                    收藏
+                </a-button>
+            </div>
+
             <div class="actions-wrapper">
                 <div class="action-btn-group">
-                    <a-button v-if="showOpenPageAction" class="action-btn view-btn" @click="emit('open-page')">
-                        <template #icon><ExportOutlined /></template>
-                        查看详情
-                    </a-button>
                     <a-button type="primary" class="action-btn download-btn" @click="emit('download')">
                         <template #icon><DownloadOutlined /></template>
                         {{ downloadText }}
@@ -238,8 +271,55 @@ const showManageActions = computed(() => props.canEdit || props.canDelete)
         }
     }
 
-    .actions-wrapper {
+    .interaction-bar {
+        display: flex;
+        gap: 12px;
         margin-top: 20px;
+        padding-top: 16px;
+        border-top: 1px dashed #f0f0f0;
+
+        .interact-btn {
+            flex: 1;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 500;
+            color: #4e5969;
+            border: 1px solid #e5e6eb;
+            transition: all 0.3s;
+            box-shadow: 0 2px 4px rgb(0 0 0 / 2%);
+
+            &:hover {
+                color: #1677ff;
+                border-color: #1677ff;
+                background-color: #f0f5ff;
+            }
+
+            &.interact-btn--active {
+                color: #1677ff;
+                border-color: #1677ff;
+                background-color: #f0f5ff;
+                box-shadow: 0 4px 10px rgb(22 119 255 / 12%);
+            }
+
+            &.interact-btn--active:hover {
+                color: #1677ff;
+                border-color: #1677ff;
+                background-color: #e6f4ff;
+            }
+
+            :deep(.anticon) {
+                font-size: 18px;
+                margin-right: 4px;
+            }
+        }
+    }
+
+    .actions-wrapper {
+        margin-top: 16px;
     }
 
     .action-btn-group {

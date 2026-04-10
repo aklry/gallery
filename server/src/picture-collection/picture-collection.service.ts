@@ -22,54 +22,60 @@ export class PictureCollectionService {
 
         const { pictureId, status } = createPictureCollectionDto
         const userId = user.id
+        const now = new Date()
+        const willActive = status === UserActionStatus.ACTIVE
 
-        await this.prisma.$transaction(async tx => {
-            const existing = await tx.picture_favorite.findUnique({
-                where: {
-                    pictureId_userId: {
-                        pictureId,
-                        userId
-                    }
+        const existing = await this.prisma.picture_favorite.findFirst({
+            where: {
+                pictureId,
+                userId,
+                isDelete: {
+                    in: [0, 1]
                 }
-            })
+            }
+        })
 
-            let increment = 0
+        const wasActive = !!existing && existing.status === UserActionStatus.ACTIVE && existing.isDelete === 0
+        const nextIsDelete = willActive ? 0 : 1
+        const increment = !wasActive && willActive ? 1 : wasActive && !willActive ? -1 : 0
 
-            if (!existing) {
-                await tx.picture_favorite.create({
+        if (!existing && !willActive) {
+            return this.response.success(false, '取消收藏成功')
+        }
+
+        const operations = []
+
+        if (!existing) {
+            operations.push(
+                this.prisma.picture_favorite.create({
                     data: {
                         pictureId,
                         userId,
                         status,
-                        createTime: new Date(),
-                        updateTime: new Date()
+                        isDelete: nextIsDelete,
+                        createTime: now,
+                        updateTime: now
                     }
                 })
-
-                if (status === UserActionStatus.ACTIVE) {
-                    increment = 1
-                }
-            } else {
-                if (existing.status !== status) {
-                    increment = status === UserActionStatus.ACTIVE ? 1 : -1
-                }
-
-                await tx.picture_favorite.update({
+            )
+        } else if (existing.status !== status || existing.isDelete !== nextIsDelete) {
+            operations.push(
+                this.prisma.picture_favorite.update({
                     where: {
-                        pictureId_userId: {
-                            pictureId,
-                            userId
-                        }
+                        id: existing.id
                     },
                     data: {
                         status,
-                        updateTime: new Date()
+                        isDelete: nextIsDelete,
+                        updateTime: now
                     }
                 })
-            }
+            )
+        }
 
-            if (increment !== 0) {
-                await tx.picture.update({
+        if (increment !== 0) {
+            operations.push(
+                this.prisma.picture.update({
                     where: {
                         id: pictureId
                     },
@@ -79,9 +85,13 @@ export class PictureCollectionService {
                         }
                     }
                 })
-            }
-        })
+            )
+        }
 
-        return this.response.success(null, status === UserActionStatus.ACTIVE ? '收藏成功' : '取消收藏成功')
+        if (operations.length > 0) {
+            await this.prisma.$transaction(operations)
+        }
+
+        return this.response.success(willActive, willActive ? '收藏成功' : '取消收藏成功')
     }
 }

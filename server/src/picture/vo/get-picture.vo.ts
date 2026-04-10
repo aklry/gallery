@@ -39,6 +39,10 @@ export class GetPictureVoModel {
     thumbnailUrl?: string
     @ApiProperty({ description: '权限列表', required: false })
     permissions?: string[]
+    @ApiProperty({ description: '是否点赞', required: false })
+    isLike?: boolean
+    @ApiProperty({ description: '是否收藏', required: false })
+    isCollect?: boolean
 }
 
 export class GetPictureVo extends ResponseVo<GetPictureVoModel> {

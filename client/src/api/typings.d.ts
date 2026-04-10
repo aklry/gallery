@@ -126,6 +126,15 @@ declare namespace API {
         output: Output
     }
 
+    type CreatePictureCollectionDto = {
+        /** 图片id */
+        pictureId: string
+        /** 用户id */
+        userId: string
+        /** 收藏状态 */
+        status: 'ACTIVE' | 'CANCELLED'
+    }
+
     type CreateSpaceDto = {
         /** 空间名称 */
         spaceName: string
@@ -380,6 +389,10 @@ declare namespace API {
         thumbnailUrl: string
         /** 权限列表 */
         permissions?: string[]
+        /** 是否点赞 */
+        isLike?: boolean
+        /** 是否收藏 */
+        isCollect?: boolean
     }
 
     type LoginCaptchaVo = {
@@ -450,6 +463,19 @@ declare namespace API {
         task_id: string
     }
 
+    type PictureCollectionVo = {
+        /** 状态码 */
+        code: number
+        /** 消息 */
+        message: string
+        /** 图片信息 */
+        data: boolean
+        /** 时间戳 */
+        timestamp: string
+        /** 路径 */
+        path: string
+    }
+
     type PictureControllerGenerateImageV1Params = {
         taskId: string
     }
@@ -469,6 +495,10 @@ declare namespace API {
     type PictureControllerGetPictureByColorV1Params = {
         spaceId: string
         color: string
+    }
+
+    type PictureControllerGetPictureV1Params = {
+        picId: string
     }
 
     type PictureVo = {
@@ -696,6 +726,14 @@ declare namespace API {
         picScale: number
         /** 缩略图url */
         thumbnailUrl: string
+        /** 图片收藏数 */
+        collectionNumber: number
+        /** 图片下载数 */
+        downloadNumber: number
+        /** 图片浏览数 */
+        viewNumber: number
+        /** 图片点赞数 */
+        likeNumber: number
     }
 
     type ShowPictureVo = {

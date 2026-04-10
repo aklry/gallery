@@ -1,6 +1,7 @@
 ﻿import { message, Modal } from 'ant-design-vue'
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { pictureControllerDeletePictureV1 } from '@/api/picture'
+import { pictureCollectionControllerFavoritePictureCollectionV1 } from '@/api/pictureCollection'
 import { useRouter, useRoute } from 'vue-router'
 import { useUserStore } from '@/store/modules/user'
 import { downloadPicture as download } from '@/utils'
@@ -144,6 +145,28 @@ const usePictureDetail = (id: string) => {
             router.replace({ query })
         }
     })
+    const handleCollect = async (pictureId: string, userId: string) => {
+        if (!userStore.loginUser.id) {
+            message.info('请先登录')
+            return
+        }
+        try {
+            const res = await pictureCollectionControllerFavoritePictureCollectionV1({
+                pictureId,
+                userId,
+                status: picture.value?.isCollect ? 'CANCELLED' : 'ACTIVE'
+            })
+            if (res.code !== 1) {
+                message.error(res.message || '收藏失败')
+                return
+            }
+            pictureDetailCache.invalidate(id)
+            await getPictureDetail()
+            message.success(res.message)
+        } catch (error) {
+            message.error(error instanceof Error ? error.message : '收藏失败')
+        }
+    }
     onUnmounted(() => {
         removeStructuredData()
     })
@@ -152,7 +175,8 @@ const usePictureDetail = (id: string) => {
         deletePicture,
         canEditOrDelete,
         editPicture,
-        downloadPicture
+        downloadPicture,
+        handleCollect
     }
 }
 
