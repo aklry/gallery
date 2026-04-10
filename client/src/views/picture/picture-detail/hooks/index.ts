@@ -2,6 +2,7 @@
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { pictureControllerDeletePictureV1 } from '@/api/picture'
 import { pictureCollectionControllerFavoritePictureCollectionV1 } from '@/api/pictureCollection'
+import { pictureDownloadControllerRecordPictureDownloadV1 } from '@/api/pictureDownload'
 import { pictureLikeControllerLikePictureV1 } from '@/api/pictureLike'
 import { useRouter, useRoute } from 'vue-router'
 import { useUserStore } from '@/store/modules/user'
@@ -126,12 +127,21 @@ const usePictureDetail = (id: string) => {
             router.push(`/picture/add?id=${id}`)
         }
     }
-    const downloadPicture = (url?: string, filename?: string) => {
+    const downloadPicture = async (url?: string, filename?: string) => {
         if (!userStore.loginUser.id) {
             message.info('请先登录，登录后将自动为您下载')
             const targetPath = route.fullPath + (route.fullPath.includes('?') ? '&' : '?') + 'action=download'
             router.push(`/user/login?redirect=${encodeURIComponent(targetPath)}`)
             return
+        }
+        if (picture.value?.id) {
+            try {
+                await pictureDownloadControllerRecordPictureDownloadV1({
+                    pictureId: picture.value.id
+                })
+            } catch {
+                // 下载本身不应依赖统计接口成功
+            }
         }
         download(url, filename)
     }
@@ -139,7 +149,7 @@ const usePictureDetail = (id: string) => {
         await getPictureDetail()
         // 登录回跳后自动触发下载逻辑
         if (route.query.action === 'download' && userStore.loginUser.id && picture.value) {
-            downloadPicture(picture.value.url, picture.value.name)
+            await downloadPicture(picture.value.url, picture.value.name)
             // 清除 action 参数防刷新重复下载
             const query = { ...route.query }
             delete query.action

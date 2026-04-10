@@ -32,6 +32,7 @@ import { EmailModule } from './email/email.module'
 import { SeoModule } from './seo/seo.module'
 import { PictureCollectionModule } from './picture-collection/picture-collection.module'
 import { PictureLikeModule } from './picture-like/picture-like.module'
+import { PictureDownloadModule } from './picture-download/picture-download.module'
 
 @Module({
     imports: [
@@ -61,7 +62,8 @@ import { PictureLikeModule } from './picture-like/picture-like.module'
         EmailModule,
         SeoModule,
         PictureCollectionModule,
-        PictureLikeModule
+        PictureLikeModule,
+        PictureDownloadModule
     ],
     controllers: [AppController],
     providers: [AppService]
