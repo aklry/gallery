@@ -637,6 +637,10 @@ declare namespace API {
         reviewMessage?: string
         /** 是否为公共图库 */
         nullSpaceId?: boolean
+        /** 是否查询当前用户点赞的图片 */
+        queryMyLike?: boolean
+        /** 是否查询当前用户收藏的图片 */
+        queryMyCollection?: boolean
         /** 开始编辑时间 */
         startEditTime?: string
         /** 结束编辑时间 */

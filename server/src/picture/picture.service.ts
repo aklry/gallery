@@ -127,9 +127,21 @@ export class PictureService {
     }
 
     async getPictureByPageVo(queryPictureDto: QueryPictureDto, req: Request) {
-        const { current, pageSize, searchText, startEditTime, endEditTime, ...filters } = queryPictureDto
+        const {
+            current,
+            pageSize,
+            searchText,
+            startEditTime,
+            endEditTime,
+            queryMyLike,
+            queryMyCollection,
+            ...filters
+        } = queryPictureDto
         if (Number(pageSize) > 20) {
             throw new BusinessException(BusinessStatus.OPERATION_ERROR.message, BusinessStatus.OPERATION_ERROR.code)
+        }
+        if (queryMyLike && queryMyCollection) {
+            throw new BusinessException('不能同时查询我的点赞和我的收藏', BusinessStatus.PARAMS_ERROR.code)
         }
         if (!filters.spaceId) {
             filters.reviewStatus = 1
@@ -190,17 +202,7 @@ export class PictureService {
               }
             : undefined
 
-        // Get paginated results and total count in parallel
-        const [data, total] = await Promise.all([
-            this.prismaService.picture.findMany({
-                where,
-                orderBy,
-                skip: (Number(current) - 1) * Number(pageSize),
-                take: Number(pageSize)
-            }),
-            this.prismaService.picture.count({ where })
-        ])
-        const result: ShowPictureModelVo[] = data.map(item => ({
+        const buildShowPicture = (item: any): ShowPictureModelVo => ({
             id: item.id,
             url: item.url,
             introduction: item.introduction,
@@ -218,7 +220,91 @@ export class PictureService {
             likeNumber: item.likeNumber,
             downloadNumber: item.downloadNumber,
             collectionNumber: item.collectionNumber
-        }))
+        })
+
+        if (queryMyLike || queryMyCollection) {
+            const loginUser = req.session?.user
+            if (!loginUser?.id) {
+                throw new BusinessException('未登录', BusinessStatus.NOT_LOGIN_ERROR.code)
+            }
+
+            const actionWhere = {
+                userId: loginUser.id,
+                status: UserActionStatus.ACTIVE,
+                isDelete: 0
+            }
+
+            const actionRecords = queryMyLike
+                ? await this.prismaService.picture_like.findMany({
+                      where: actionWhere,
+                      orderBy: { createTime: 'desc' },
+                      select: { pictureId: true }
+                  })
+                : await this.prismaService.picture_favorite.findMany({
+                      where: actionWhere,
+                      orderBy: { createTime: 'desc' },
+                      select: { pictureId: true }
+                  })
+
+            const orderedPictureIds = actionRecords.map(item => item.pictureId)
+            if (orderedPictureIds.length === 0) {
+                return {
+                    list: [],
+                    total: 0
+                }
+            }
+
+            const accessiblePictures = await this.prismaService.picture.findMany({
+                where: {
+                    ...where,
+                    id: { in: orderedPictureIds }
+                },
+                select: { id: true }
+            })
+
+            const accessibleIdSet = new Set(accessiblePictures.map(item => item.id))
+            const filteredOrderedIds = orderedPictureIds.filter(id => accessibleIdSet.has(id))
+            const skip = (Number(current) - 1) * Number(pageSize)
+            const take = Number(pageSize)
+            const pagePictureIds = filteredOrderedIds.slice(skip, skip + take)
+
+            if (pagePictureIds.length === 0) {
+                return {
+                    list: [],
+                    total: filteredOrderedIds.length
+                }
+            }
+
+            const pagePictures = await this.prismaService.picture.findMany({
+                where: {
+                    ...where,
+                    id: { in: pagePictureIds }
+                }
+            })
+
+            const pictureMap = new Map(pagePictures.map(item => [item.id, item]))
+            const result = pagePictureIds
+                .map(id => pictureMap.get(id))
+                .filter((item): item is (typeof pagePictures)[number] => !!item)
+                .map(buildShowPicture)
+
+            return {
+                list: result,
+                total: filteredOrderedIds.length
+            }
+        }
+
+        // Get paginated results and total count in parallel
+        const [data, total] = await Promise.all([
+            this.prismaService.picture.findMany({
+                where,
+                orderBy,
+                skip: (Number(current) - 1) * Number(pageSize),
+                take: Number(pageSize)
+            }),
+            this.prismaService.picture.count({ where })
+        ])
+        const result: ShowPictureModelVo[] = data.map(buildShowPicture)
         // if (result.length > 0) {
         //     await this.redisCacheService.set(
         //         cacheKey,

@@ -71,6 +71,14 @@ export class QueryPictureDto extends PageRequest {
     @IsOptional()
     @ApiProperty({ description: '是否为公共图库', required: false })
     nullSpaceId?: boolean
+    @IsBoolean()
+    @IsOptional()
+    @ApiProperty({ description: '是否查询当前用户点赞的图片', required: false })
+    queryMyLike?: boolean
+    @IsBoolean()
+    @IsOptional()
+    @ApiProperty({ description: '是否查询当前用户收藏的图片', required: false })
+    queryMyCollection?: boolean
     @ApiProperty({ description: '开始编辑时间', required: false })
     startEditTime?: string
     @ApiProperty({ description: '结束编辑时间', required: false })

@@ -1,4 +1,4 @@
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
 export const useGlobalSider = () => {
@@ -17,6 +17,16 @@ export const useGlobalSider = () => {
             current.value = [path]
         }
     })
+
+    watch(
+        () => router.currentRoute.value,
+        newVal => {
+            current.value = [newVal.path]
+        },
+        {
+            immediate: true
+        }
+    )
 
     return { handleClick, current }
 }
