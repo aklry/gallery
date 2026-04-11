@@ -1,6 +1,6 @@
 ﻿import { message, Modal } from 'ant-design-vue'
 import { computed, onMounted, onUnmounted, ref } from 'vue'
-import { pictureControllerDeletePictureV1 } from '@/api/picture'
+import { pictureControllerDeletePictureV1, pictureControllerRecordPictureViewV1 } from '@/api/picture'
 import { pictureCollectionControllerFavoritePictureCollectionV1 } from '@/api/pictureCollection'
 import { pictureDownloadControllerRecordPictureDownloadV1 } from '@/api/pictureDownload'
 import { pictureLikeControllerLikePictureV1 } from '@/api/pictureLike'
@@ -87,6 +87,18 @@ const usePictureDetail = (id: string) => {
             message.error(error instanceof Error ? error.message : '获取图片详情失败')
         }
     }
+    const recordPictureView = async () => {
+        try {
+            const res = await pictureControllerRecordPictureViewV1({
+                pictureId: id
+            })
+            if (res.code === 1 && res.data && picture.value) {
+                picture.value.viewNumber = (picture.value.viewNumber ?? 0) + 1
+            }
+        } catch {
+            // 浏览统计失败不应影响详情加载
+        }
+    }
     const deletePicture = async () => {
         Modal.confirm({
             title: '确定要删除这张图片吗？',
@@ -147,6 +159,7 @@ const usePictureDetail = (id: string) => {
     }
     onMounted(async () => {
         await getPictureDetail()
+        void recordPictureView()
         // 登录回跳后自动触发下载逻辑
         if (route.query.action === 'download' && userStore.loginUser.id && picture.value) {
             await downloadPicture(picture.value.url, picture.value.name)

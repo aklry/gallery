@@ -57,6 +57,7 @@
     "commitlint",
     "cuid",
     "datasource",
+    "dedup",
     "echarts",
     "genid",
     "hoverable",

@@ -144,6 +144,11 @@ declare namespace API {
         status: 'ACTIVE' | 'CANCELLED'
     }
 
+    type CreatePictureViewDto = {
+        /** 图片id */
+        pictureId: string
+    }
+
     type CreateSpaceDto = {
         /** 空间名称 */
         spaceName: string
@@ -386,6 +391,8 @@ declare namespace API {
         picFormat: string
         /** 图片颜色 */
         picColor: string
+        /** 图片浏览数 */
+        viewNumber: number
         /** 创建时间 */
         createTime: string
         /** 用户信息 */
@@ -498,6 +505,19 @@ declare namespace API {
         path: string
     }
 
+    type PictureViewVo = {
+        /** 状态码 */
+        code: number
+        /** 消息 */
+        message: string
+        /** 浏览记录结果 */
+        data: boolean
+        /** 时间戳 */
+        timestamp: string
+        /** 路径 */
+        path: string
+    }
+
     type PictureControllerGenerateImageV1Params = {
         taskId: string
     }
@@ -521,6 +541,10 @@ declare namespace API {
 
     type PictureControllerGetPictureV1Params = {
         picId: string
+    }
+
+    type PictureControllerRecordPictureViewV1Params = {
+        pictureId: string
     }
 
     type PictureVo = {

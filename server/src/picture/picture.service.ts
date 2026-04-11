@@ -15,6 +15,7 @@ import { RedisCacheService } from '../cache/cache.service'
 import { SpaceService } from '../space/space.service'
 import { hexToRgb, euclideanDistance, normalizeDistance } from '../utils'
 import {
+    CreatePictureViewDto,
     EditPictureByBatchDto,
     PartialQueryPictureDto,
     QueryPictureDto,
@@ -36,7 +37,10 @@ import { PermissionGuard } from '../permission/permission.guard'
 import { PERMISSION_KEY } from '../permission/permission.decorator'
 import { AiGeneratePictureDto } from '../ai-generate-picture/dto'
 import { SseService } from '../sse/sse.service'
+import { RedisService } from '../redis/redis.service'
 import 'multer'
+
+const PICTURE_VIEW_DEDUP_TTL_SECONDS = 30 * 60
 
 @Injectable()
 export class PictureService {
@@ -49,8 +53,33 @@ export class PictureService {
         private readonly aiGeneratePictureService: AiGeneratePictureService,
         private readonly spaceUserAuthManager: SpaceUserAuthManager,
         private readonly permissionGuard: PermissionGuard,
-        private readonly sseService: SseService
+        private readonly sseService: SseService,
+        private readonly redisService: RedisService
     ) {}
+
+    private async getAccessiblePictureOrThrow(id: string, req: Request) {
+        const picture = await this.prismaService.picture.findUnique({
+            where: { id }
+        })
+        if (!picture) {
+            throw new BusinessException('图片不存在', BusinessStatus.OPERATION_ERROR.code)
+        }
+
+        const loginUser = req.session?.user
+        if (picture.spaceId !== null) {
+            if (!loginUser || !loginUser.id) {
+                throw new BusinessException('未登录', BusinessStatus.NOT_LOGIN_ERROR.code)
+            }
+            const hasPermission = await this.permissionGuard.hasPermission(loginUser.id, PERMISSION_KEY, req, [
+                SpaceUserPermissionConstant.PICTURE_VIEW
+            ])
+            if (!hasPermission) {
+                throw new BusinessException('无权限查看', BusinessStatus.NOT_AUTH_ERROR.code)
+            }
+        }
+
+        return picture
+    }
 
     async getPictureByPage(queryPictureDto: QueryPictureDto) {
         const { current, pageSize, searchText, ...filters } = queryPictureDto
@@ -343,6 +372,7 @@ export class PictureService {
             picHeight: result.picHeight,
             picScale: result.picScale,
             picFormat: result.picFormat,
+            viewNumber: result.viewNumber ?? 0,
             createTime: result.createTime.toISOString(),
             spaceId: result.spaceId,
             editTime: result.editTime.toISOString()
@@ -413,12 +443,7 @@ export class PictureService {
     }
 
     async getByIdVo(id: string, req: Request) {
-        const result = await this.prismaService.picture.findUnique({
-            where: { id }
-        })
-        if (!result) {
-            throw new BusinessException('图片不存在', BusinessStatus.OPERATION_ERROR.code)
-        }
+        const result = await this.getAccessiblePictureOrThrow(id, req)
         const user = await this.prismaService.user.findUnique({
             where: { id: result.userId }
         })
@@ -445,15 +470,6 @@ export class PictureService {
         const spaceId = result.spaceId
         let space: Space | null = null
         if (spaceId !== null) {
-            if (!loginUser || !loginUser.id) {
-                throw new BusinessException('未登录', BusinessStatus.NOT_LOGIN_ERROR.code)
-            }
-            const hasPermission = await this.permissionGuard.hasPermission(loginUser.id, PERMISSION_KEY, req, [
-                SpaceUserPermissionConstant.PICTURE_VIEW
-            ])
-            if (!hasPermission) {
-                throw new BusinessException('无权限查看', BusinessStatus.NOT_AUTH_ERROR.code)
-            }
             space = await this.spaceService.getById(result.spaceId)
         }
         const permissionList = await this.spaceUserAuthManager.getPermissionList(space, loginUser)
@@ -470,6 +486,7 @@ export class PictureService {
             picScale: result.picScale,
             picFormat: result.picFormat,
             picColor: result.picColor,
+            viewNumber: result.viewNumber ?? 0,
             createTime: result.createTime.toISOString(),
             permissions: permissionList,
             user: {
@@ -486,6 +503,39 @@ export class PictureService {
             isLike: !!likePicture,
             isCollect: !!collectionPicture
         } as GetPictureVoModel
+    }
+
+    async recordPictureView(createPictureViewDto: CreatePictureViewDto, req: Request) {
+        const user = req.session?.user
+        if (!user?.id) {
+            throw new BusinessException('用户未登录', BusinessStatus.NOT_LOGIN_ERROR.code)
+        }
+
+        const { pictureId } = createPictureViewDto
+        await this.getAccessiblePictureOrThrow(pictureId, req)
+
+        const dedupKey = `picture:view:${pictureId}:user:${user.id}`
+        const setResult = await this.redisService.getClient().set(dedupKey, '1', {
+            EX: PICTURE_VIEW_DEDUP_TTL_SECONDS,
+            NX: true
+        })
+
+        if (setResult !== 'OK') {
+            return false
+        }
+
+        await this.prismaService.picture.update({
+            where: {
+                id: pictureId
+            },
+            data: {
+                viewNumber: {
+                    increment: 1
+                }
+            }
+        })
+
+        return true
     }
 
     async delete(deletePicture: DeletePictureDto, req: Request) {

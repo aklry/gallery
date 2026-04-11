@@ -27,6 +27,8 @@ export class GetPictureVoModel {
     picFormat?: string
     @ApiProperty({ description: '图片颜色' })
     picColor?: string
+    @ApiProperty({ description: '图片浏览数' })
+    viewNumber?: number
     @ApiProperty({ description: '创建时间' })
     createTime?: string
     @ApiProperty({ description: '用户信息', type: LoginVoModel })

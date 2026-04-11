@@ -20,6 +20,7 @@ import {
     DeletePictureVo,
     EditPictureBatchVo,
     GetPictureVo,
+    PictureViewVo,
     PictureVo,
     ShowPictureVo,
     TagCategoryListVo,
@@ -37,6 +38,7 @@ import { Permission } from '../permission/permission.decorator'
 import { UserRole } from '../user/enum/user'
 import {
     AiExpandPictureDto,
+    CreatePictureViewDto,
     DeleteBatchPictureDto,
     DeletePictureDto,
     EditPictureByBatchDto,
@@ -111,6 +113,18 @@ export class PictureController {
     async getByIdVo(@Param('id') id: string, @Req() req: Request) {
         const result = await this.pictureService.getByIdVo(id, req)
         return this.responseService.success(result)
+    }
+
+    @Post('/view/record')
+    @UseGuards(AuthGuard)
+    @ApiResponse({ type: PictureViewVo })
+    @ApiOperation({ summary: '记录图片浏览' })
+    async recordPictureView(
+        @Body(new ValidationPipe()) createPictureViewDto: CreatePictureViewDto,
+        @Req() req: Request
+    ) {
+        const recorded = await this.pictureService.recordPictureView(createPictureViewDto, req)
+        return this.responseService.success(recorded, recorded ? '记录浏览成功' : '浏览已记录')
     }
 
     @Post('/delete')
