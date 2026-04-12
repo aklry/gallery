@@ -44,7 +44,9 @@
         "prisma": "6.0.1",
         "redis": "^4.7.0",
         "reflect-metadata": "^0.2.0",
-        "rxjs": "^7.8.1"
+        "rxjs": "^7.8.1",
+        "sharp": "^0.34.5",
+        "svg-captcha": "^1.4.0"
     },
     "devDependencies": {
         "@nestjs/cli": "^10.0.0",

@@ -1,6 +1,7 @@
 //业务配置
 export const BusinessStatus = {
     SUCCESS: { code: 1, message: '操作成功' },
+    TOO_MANY_REQUESTS_ERROR: { code: 42900, message: '请求过于频繁' },
     PARAMS_ERROR: { code: 40000, message: '请求参数错误' },
     PARAMS_VALIDATION_ERROR: { code: 40001, message: '请求参数验证失败' },
     NOT_LOGIN_ERROR: { code: 40100, message: '未登录' },

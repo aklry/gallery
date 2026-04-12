@@ -416,7 +416,7 @@ declare namespace API {
         code: number
         /** 消息 */
         message: string
-        /** 登录验证码 */
+        /** 登录验证码图片 data URL */
         data: string
         /** 时间戳 */
         timestamp: string

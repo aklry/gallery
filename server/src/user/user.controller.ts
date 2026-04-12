@@ -78,8 +78,8 @@ export class UserController {
     @Post('/register/email/code')
     @ApiResponse({ type: EmailValidateVo })
     @ApiOperation({ summary: '发送注册验证码(邮箱)' })
-    async userRegisterByEmailCode(@Body(new ValidationPipe()) emailValidateDto: EmailValidateDto) {
-        const isSend = await this.userService.sendEmailValidateCode(emailValidateDto.userEmail)
+    async userRegisterByEmailCode(@Req() req: Request, @Body(new ValidationPipe()) emailValidateDto: EmailValidateDto) {
+        const isSend = await this.userService.sendEmailValidateCode(req, emailValidateDto.userEmail)
         return this.responseService.success(isSend)
     }
 
@@ -96,7 +96,7 @@ export class UserController {
     @ApiResponse({ type: UserLoginVo })
     @ApiOperation({ summary: '用户登录' })
     async userLogin(@Req() req: Request, @Body(new ValidationPipe()) userLoginDto: UserLoginDto) {
-        const data = await this.userService.userLogin(userLoginDto)
+        const data = await this.userService.userLogin(req, userLoginDto)
         req.session.user = data
         this.permissionKit.setSession(data.id, data)
         this.permissionKit.login(data.id)
@@ -107,7 +107,7 @@ export class UserController {
     @ApiResponse({ type: UserLoginVo })
     @ApiOperation({ summary: '用户登录(邮箱)' })
     async userLoginByEmail(@Req() req: Request, @Body(new ValidationPipe()) userLoginByEmailDto: UserLoginByEmailDto) {
-        const data = await this.userService.userLoginByEmail(userLoginByEmailDto)
+        const data = await this.userService.userLoginByEmail(req, userLoginByEmailDto)
         req.session.user = data
         this.permissionKit.setSession(data.id, data)
         this.permissionKit.login(data.id)
@@ -117,8 +117,8 @@ export class UserController {
     @Get('/login/get/code')
     @ApiResponse({ type: LoginCaptchaVo })
     @ApiOperation({ summary: '获取登录验证码' })
-    async getLoginCaptcha() {
-        const data = await this.userService.generateLoginCaptcha()
+    async getLoginCaptcha(@Req() req: Request) {
+        const data = await this.userService.generateLoginCaptcha(req)
         return this.responseService.success(data)
     }
 

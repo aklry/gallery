@@ -22,6 +22,6 @@ export class UserLoginVo extends ResponseVo<LoginVoModel> {
 }
 
 export class LoginCaptchaVo extends ResponseVo<string> {
-    @ApiProperty({ description: '登录验证码', type: 'string' })
+    @ApiProperty({ description: '登录验证码图片 data URL', type: 'string' })
     data: string
 }

@@ -79,11 +79,13 @@
                                             :disabled="captchaLoading"
                                             @click="refreshCaptcha()"
                                         >
-                                            <canvas
-                                                ref="captchaCanvasRef"
-                                                class="captcha-canvas"
-                                                aria-label="登录验证码"
-                                            ></canvas>
+                                            <img
+                                                v-if="captchaImageUrl"
+                                                :src="captchaImageUrl"
+                                                class="captcha-image"
+                                                alt="登录验证码"
+                                            />
+                                            <span v-else class="captcha-placeholder">点击加载</span>
                                             <span class="captcha-refresh">
                                                 <ReloadOutlined :spin="captchaLoading" />
                                                 <span>{{ captchaLoading ? '加载中' : '换一张' }}</span>
@@ -175,11 +177,13 @@
                                             :disabled="captchaLoading"
                                             @click="refreshCaptcha()"
                                         >
-                                            <canvas
-                                                ref="captchaCanvasRef"
-                                                class="captcha-canvas"
-                                                aria-label="登录验证码"
-                                            ></canvas>
+                                            <img
+                                                v-if="captchaImageUrl"
+                                                :src="captchaImageUrl"
+                                                class="captcha-image"
+                                                alt="登录验证码"
+                                            />
+                                            <span v-else class="captcha-placeholder">点击加载</span>
                                             <span class="captcha-refresh">
                                                 <ReloadOutlined :spin="captchaLoading" />
                                                 <span>{{ captchaLoading ? '加载中' : '换一张' }}</span>
@@ -222,9 +226,7 @@
 import { LockOutlined, ReloadOutlined, SafetyCertificateOutlined, UserOutlined } from '@ant-design/icons-vue'
 import useLogin from './hooks'
 
-const { tabKey, loginForm, handleSubmit, loading, captchaLoading, captchaCanvasRef, refreshCaptcha } = useLogin()
-
-void captchaCanvasRef
+const { tabKey, loginForm, handleSubmit, loading, captchaLoading, captchaImageUrl, refreshCaptcha } = useLogin()
 </script>
 
 <style lang="scss" scoped>
@@ -302,10 +304,24 @@ void captchaCanvasRef
     }
 }
 
-.captcha-canvas {
+.captcha-image,
+.captcha-placeholder {
     display: block;
     width: 100%;
     height: 48px;
+}
+
+.captcha-image {
+    object-fit: cover;
+}
+
+.captcha-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #94a3b8;
+    font-size: 13px;
+    font-weight: 600;
 }
 
 .captcha-refresh {

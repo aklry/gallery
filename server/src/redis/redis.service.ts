@@ -39,6 +39,18 @@ export class RedisService implements OnModuleInit {
         return value ? JSON.parse(value) : null
     }
 
+    async incr(key: string) {
+        return await this.redisClient.incr(key)
+    }
+
+    async expire(key: string, ttl: number) {
+        return await this.redisClient.expire(key, ttl)
+    }
+
+    async ttl(key: string) {
+        return await this.redisClient.ttl(key)
+    }
+
     async del(key: string) {
         return await this.redisClient.del(key)
     }

@@ -21,10 +21,37 @@ import { OssService } from '../oss/oss.service'
 import { EmailService } from '../email/email.service'
 import { RedisService } from '../redis/redis.service'
 import { BusinessException } from '../custom-exception'
-import { LOGIN_REDIS_KEY, USER_RANDOM_PREFIX } from './constant'
+import { LOGIN_REDIS_KEY, REGISTER_EMAIL_CODE_REDIS_KEY, USER_RANDOM_PREFIX } from './constant'
+import * as svgCaptcha from 'svg-captcha'
+import * as sharpModule from 'sharp'
+
+const sharp = sharpModule as unknown as (
+    input?: sharpModule.SharpInput | Array<sharpModule.SharpInput>,
+    options?: sharpModule.SharpOptions
+) => sharpModule.Sharp
 
 @Injectable()
 export class UserService {
+    private readonly captchaIpLimit = 20
+    private readonly captchaIpWindowSeconds = 10 * 60
+    private readonly captchaSessionLimit = 10
+    private readonly captchaSessionWindowSeconds = 5 * 60
+    private readonly emailRegisterCodeIpLimit = 10
+    private readonly emailRegisterCodeIpWindowSeconds = 10 * 60
+    private readonly emailRegisterCodeSessionLimit = 5
+    private readonly emailRegisterCodeSessionWindowSeconds = 10 * 60
+    private readonly emailRegisterCodeTargetLimit = 3
+    private readonly emailRegisterCodeTargetWindowSeconds = 30 * 60
+    private readonly loginIpLimit = 15
+    private readonly loginIpWindowSeconds = 10 * 60
+    private readonly loginSessionLimit = 8
+    private readonly loginSessionWindowSeconds = 10 * 60
+    private readonly loginIdentityLimit = 10
+    private readonly loginIdentityWindowSeconds = 10 * 60
+    private readonly loginFailureWindowSeconds = 15 * 60
+    private readonly loginFailureBlockThreshold = 5
+    private readonly loginFailureBlockSeconds = 15 * 60
+
     constructor(
         private readonly prismaService: PrismaService,
         private readonly ossService: OssService,
@@ -89,32 +116,33 @@ export class UserService {
         return true
     }
 
-    async userLogin(userLoginDto: UserLoginDto) {
+    async userLogin(req: Request, userLoginDto: UserLoginDto) {
         const { userAccount, userPassword, code } = userLoginDto
-        const storedCode = await this.redisService.get(LOGIN_REDIS_KEY)
-        if (code !== storedCode && code.toLowerCase() !== storedCode.toLowerCase()) {
-            throw new BusinessException('验证码错误', BusinessStatus.PARAMS_ERROR.code)
-        }
-        const user = await this.prismaService.user.findUnique({
-            where: {
-                userAccount
+        const identity = this.normalizeRateLimitValue(userAccount)
+
+        return await this.executeLoginAttempt(req, identity, async () => {
+            await this.validateLoginCaptcha(req, code)
+            const user = await this.prismaService.user.findUnique({
+                where: {
+                    userAccount
+                }
+            })
+            if (!user) {
+                throw new BusinessException('用户不存在', BusinessStatus.PARAMS_ERROR.code)
             }
+            const isMatch = await bcrypt.compare(userPassword, user.userPassword)
+            if (!isMatch) {
+                throw new BusinessException('密码错误', BusinessStatus.PARAMS_ERROR.code)
+            }
+            return {
+                id: user.id,
+                userAccount: user.userAccount,
+                userName: user.userName,
+                userAvatar: user.userAvatar,
+                userProfile: user.userProfile,
+                userRole: user.userRole
+            } as LoginVoModel
         })
-        if (!user) {
-            throw new BusinessException('用户不存在', BusinessStatus.PARAMS_ERROR.code)
-        }
-        const isMatch = await bcrypt.compare(userPassword, user.userPassword)
-        if (!isMatch) {
-            throw new BusinessException('密码错误', BusinessStatus.PARAMS_ERROR.code)
-        }
-        return {
-            id: user.id,
-            userAccount: user.userAccount,
-            userName: user.userName,
-            userAvatar: user.userAvatar,
-            userProfile: user.userProfile,
-            userRole: user.userRole
-        } as LoginVoModel
     }
 
     async getUserByPage(findUserDto: FindUserDto) {
@@ -263,8 +291,10 @@ export class UserService {
         return true
     }
 
-    async sendEmailValidateCode(email: string) {
-        let code = await this.redisService.get(email)
+    async sendEmailValidateCode(req: Request, email: string) {
+        await this.assertRegisterEmailCodeRateLimit(req, email)
+
+        let code = await this.redisService.get(this.getRegisterEmailCodeKey(email))
         if (code) {
             throw new BusinessException('验证码已发送，请5分钟后再试', BusinessStatus.PARAMS_ERROR.code)
         }
@@ -284,13 +314,13 @@ export class UserService {
         `
         )
         // 存储验证码到redis，设置5分钟过期
-        await this.redisService.set(email, code, 60 * 5)
+        await this.redisService.set(this.getRegisterEmailCodeKey(email), code, 60 * 5)
         return true
     }
     // 邮箱注册
     async userRegisterByEmail(userRegisterByEmailDto: UserRegisterByEmailDto) {
         const { userEmail, code, userPassword, checkedPassword } = userRegisterByEmailDto
-        const storedCode = (await this.redisService.get(userEmail)) as string
+        const storedCode = (await this.redisService.get(this.getRegisterEmailCodeKey(userEmail))) as string
         if (storedCode !== code) {
             throw new BusinessException('验证码错误', BusinessStatus.PARAMS_ERROR.code)
         }
@@ -309,40 +339,56 @@ export class UserService {
     }
 
     // 邮箱登录
-    async userLoginByEmail(userLoginByEmailDto: UserLoginByEmailDto) {
+    async userLoginByEmail(req: Request, userLoginByEmailDto: UserLoginByEmailDto) {
         const { userEmail, userPassword, code } = userLoginByEmailDto
-        const storedCode = (await this.redisService.get(LOGIN_REDIS_KEY)) as string
-        if (code !== storedCode && code.toLowerCase() !== storedCode.toLowerCase()) {
-            throw new BusinessException('验证码错误', BusinessStatus.PARAMS_ERROR.code)
-        }
-        const user = await this.prismaService.user.findUnique({
-            where: {
-                userEmail
+        const identity = this.normalizeRateLimitValue(userEmail)
+
+        return await this.executeLoginAttempt(req, identity, async () => {
+            await this.validateLoginCaptcha(req, code)
+            const user = await this.prismaService.user.findUnique({
+                where: {
+                    userEmail
+                }
+            })
+            if (!user) {
+                throw new BusinessException('用户不存在', BusinessStatus.PARAMS_ERROR.code)
             }
+            const isPasswordValid = await bcrypt.compare(userPassword, user.userPassword)
+            if (!isPasswordValid) {
+                throw new BusinessException('密码错误', BusinessStatus.PARAMS_ERROR.code)
+            }
+            return {
+                id: user.id,
+                userAccount: user.userAccount,
+                userEmail: user.userEmail,
+                userName: user.userName,
+                userAvatar: user.userAvatar,
+                userProfile: user.userProfile,
+                userRole: user.userRole
+            } as LoginVoModel
         })
-        if (!user) {
-            throw new BusinessException('用户不存在', BusinessStatus.PARAMS_ERROR.code)
-        }
-        const isPasswordValid = await bcrypt.compare(userPassword, user.userPassword)
-        if (!isPasswordValid) {
-            throw new BusinessException('密码错误', BusinessStatus.PARAMS_ERROR.code)
-        }
-        return {
-            id: user.id,
-            userAccount: user.userAccount,
-            userEmail: user.userEmail,
-            userName: user.userName,
-            userAvatar: user.userAvatar,
-            userProfile: user.userProfile,
-            userRole: user.userRole
-        } as LoginVoModel
     }
 
     //生成登录页面的验证码
-    async generateLoginCaptcha() {
-        const code = this.generateStringCode()
-        this.redisService.set(LOGIN_REDIS_KEY, code, 60 * 5)
-        return code
+    async generateLoginCaptcha(req: Request) {
+        await this.assertCaptchaRateLimit(req)
+
+        const captcha = svgCaptcha.create({
+            size: 4,
+            width: 132,
+            height: 48,
+            fontSize: 40,
+            noise: 4,
+            color: true,
+            background: '#f8fafc',
+            ignoreChars: '0o1ilI',
+            charPreset: 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789'
+        })
+
+        await this.redisService.set(this.getLoginCaptchaKey(req), captcha.text, 60 * 5)
+
+        const imageBuffer = await sharp(Buffer.from(captcha.data)).png().toBuffer()
+        return `data:image/png;base64,${imageBuffer.toString('base64')}`
     }
 
     // 生成 6位随机数字验证码
@@ -350,20 +396,225 @@ export class UserService {
         return Math.floor(100000 + Math.random() * 900000).toString()
     }
 
-    // 生成4位随机字符串验证码
-    private generateStringCode(): string {
-        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
-        let result = ''
-        for (let i = 0; i < 4; i++) {
-            result += chars.charAt(Math.floor(Math.random() * chars.length))
-        }
-        return result
-    }
     // 生成随机用户名
     private generateUsername(): string {
         const prefix = USER_RANDOM_PREFIX
         const randomSuffix = Math.floor(1000 + Math.random() * 9000).toString()
         return prefix + '_' + randomSuffix
+    }
+
+    private getLoginCaptchaKey(req: Request) {
+        return `${LOGIN_REDIS_KEY}:${req.sessionID}`
+    }
+
+    private getRegisterEmailCodeKey(email: string) {
+        return `${REGISTER_EMAIL_CODE_REDIS_KEY}:${this.normalizeRateLimitValue(email)}`
+    }
+
+    private getCaptchaRateLimitKey(req: Request, scope: 'ip' | 'session') {
+        if (scope === 'ip') {
+            return `${LOGIN_REDIS_KEY}:rate:get:ip:${this.normalizeRateLimitValue(this.getRequestIp(req))}`
+        }
+        return `${LOGIN_REDIS_KEY}:rate:get:session:${this.normalizeRateLimitValue(req.sessionID)}`
+    }
+
+    private getRegisterEmailCodeRateLimitKey(scope: 'ip' | 'session' | 'email', value: string) {
+        return `${REGISTER_EMAIL_CODE_REDIS_KEY}:rate:${scope}:${value}`
+    }
+
+    private getLoginAttemptRateLimitKey(scope: 'ip' | 'session' | 'identity', value: string) {
+        return `${LOGIN_REDIS_KEY}:rate:login:${scope}:${value}`
+    }
+
+    private getLoginFailureCountKey(scope: 'ip' | 'session' | 'identity', value: string) {
+        return `${LOGIN_REDIS_KEY}:fail:login:${scope}:${value}`
+    }
+
+    private getLoginFailureBlockKey(scope: 'ip' | 'session' | 'identity', value: string) {
+        return `${LOGIN_REDIS_KEY}:block:login:${scope}:${value}`
+    }
+
+    private getRequestIp(req: Request) {
+        const forwardedFor = req.headers['x-forwarded-for']
+        const forwardedIp = Array.isArray(forwardedFor) ? forwardedFor[0] : forwardedFor
+        return forwardedIp?.split(',')[0]?.trim() || req.ip || 'unknown'
+    }
+
+    private normalizeRateLimitValue(value: string) {
+        return encodeURIComponent(value.trim().toLowerCase())
+    }
+
+    private getLoginRateTargets(req: Request, identity: string) {
+        return [
+            { scope: 'ip' as const, value: this.normalizeRateLimitValue(this.getRequestIp(req)) },
+            { scope: 'session' as const, value: this.normalizeRateLimitValue(req.sessionID) },
+            { scope: 'identity' as const, value: identity }
+        ]
+    }
+
+    private async executeLoginAttempt<T>(req: Request, identity: string, action: () => Promise<T>) {
+        await this.assertLoginFailureBlock(req, identity)
+        await this.assertLoginRateLimit(req, identity)
+
+        try {
+            const result = await action()
+            await this.clearLoginFailureState(req, identity)
+            return result
+        } catch (error) {
+            if (this.shouldRecordLoginFailure(error)) {
+                await this.recordLoginFailure(req, identity)
+            }
+            throw error
+        }
+    }
+
+    private async assertCaptchaRateLimit(req: Request) {
+        await Promise.all([
+            this.consumeRateLimit(
+                this.getCaptchaRateLimitKey(req, 'ip'),
+                this.captchaIpLimit,
+                this.captchaIpWindowSeconds,
+                '验证码获取过于频繁，请稍后再试'
+            ),
+            this.consumeRateLimit(
+                this.getCaptchaRateLimitKey(req, 'session'),
+                this.captchaSessionLimit,
+                this.captchaSessionWindowSeconds,
+                '验证码获取过于频繁，请稍后再试'
+            )
+        ])
+    }
+
+    private async assertRegisterEmailCodeRateLimit(req: Request, email: string) {
+        const normalizedEmail = this.normalizeRateLimitValue(email)
+        await Promise.all([
+            this.consumeRateLimit(
+                this.getRegisterEmailCodeRateLimitKey('ip', this.normalizeRateLimitValue(this.getRequestIp(req))),
+                this.emailRegisterCodeIpLimit,
+                this.emailRegisterCodeIpWindowSeconds,
+                '注册验证码发送过于频繁，请稍后再试'
+            ),
+            this.consumeRateLimit(
+                this.getRegisterEmailCodeRateLimitKey('session', this.normalizeRateLimitValue(req.sessionID)),
+                this.emailRegisterCodeSessionLimit,
+                this.emailRegisterCodeSessionWindowSeconds,
+                '注册验证码发送过于频繁，请稍后再试'
+            ),
+            this.consumeRateLimit(
+                this.getRegisterEmailCodeRateLimitKey('email', normalizedEmail),
+                this.emailRegisterCodeTargetLimit,
+                this.emailRegisterCodeTargetWindowSeconds,
+                '该邮箱验证码发送过于频繁，请稍后再试'
+            )
+        ])
+    }
+
+    private async assertLoginRateLimit(req: Request, identity: string) {
+        const targets = this.getLoginRateTargets(req, identity)
+        await Promise.all([
+            this.consumeRateLimit(
+                this.getLoginAttemptRateLimitKey(targets[0].scope, targets[0].value),
+                this.loginIpLimit,
+                this.loginIpWindowSeconds,
+                '登录请求过于频繁，请稍后再试'
+            ),
+            this.consumeRateLimit(
+                this.getLoginAttemptRateLimitKey(targets[1].scope, targets[1].value),
+                this.loginSessionLimit,
+                this.loginSessionWindowSeconds,
+                '登录请求过于频繁，请稍后再试'
+            ),
+            this.consumeRateLimit(
+                this.getLoginAttemptRateLimitKey(targets[2].scope, targets[2].value),
+                this.loginIdentityLimit,
+                this.loginIdentityWindowSeconds,
+                '登录请求过于频繁，请稍后再试'
+            )
+        ])
+    }
+
+    private async assertLoginFailureBlock(req: Request, identity: string) {
+        const targets = this.getLoginRateTargets(req, identity)
+        for (const target of targets) {
+            const blockKey = this.getLoginFailureBlockKey(target.scope, target.value)
+            const blocked = await this.redisService.get(blockKey)
+            if (blocked) {
+                const ttl = await this.redisService.ttl(blockKey)
+                const waitSeconds = ttl > 0 ? ttl : this.loginFailureBlockSeconds
+                throw new BusinessException(
+                    `登录失败次数过多，请在 ${waitSeconds} 秒后重试`,
+                    BusinessStatus.TOO_MANY_REQUESTS_ERROR.code
+                )
+            }
+        }
+    }
+
+    private async recordLoginFailure(req: Request, identity: string) {
+        const targets = this.getLoginRateTargets(req, identity)
+        for (const target of targets) {
+            const failureKey = this.getLoginFailureCountKey(target.scope, target.value)
+            const count = await this.incrementCounter(failureKey, this.loginFailureWindowSeconds)
+            if (count >= this.loginFailureBlockThreshold) {
+                await this.redisService.set(
+                    this.getLoginFailureBlockKey(target.scope, target.value),
+                    true,
+                    this.loginFailureBlockSeconds
+                )
+            }
+        }
+    }
+
+    private async clearLoginFailureState(req: Request, identity: string) {
+        const targets = this.getLoginRateTargets(req, identity)
+        await Promise.all(
+            targets.flatMap(target => [
+                this.redisService.del(this.getLoginFailureCountKey(target.scope, target.value)),
+                this.redisService.del(this.getLoginFailureBlockKey(target.scope, target.value))
+            ])
+        )
+    }
+
+    private shouldRecordLoginFailure(error: unknown) {
+        if (!(error instanceof BusinessException)) {
+            return false
+        }
+        return ['验证码错误', '用户不存在', '密码错误'].includes(error.message)
+    }
+
+    private async consumeRateLimit(key: string, limit: number, windowSeconds: number, message: string) {
+        const count = await this.incrementCounter(key, windowSeconds)
+        if (count <= limit) {
+            return
+        }
+
+        const ttl = await this.redisService.ttl(key)
+        const waitSeconds = ttl > 0 ? ttl : windowSeconds
+        throw new BusinessException(
+            `${message}，请在 ${waitSeconds} 秒后重试`,
+            BusinessStatus.TOO_MANY_REQUESTS_ERROR.code
+        )
+    }
+
+    private async incrementCounter(key: string, windowSeconds: number) {
+        const count = await this.redisService.incr(key)
+        const ttl = await this.redisService.ttl(key)
+        if (count === 1 || ttl < 0) {
+            await this.redisService.expire(key, windowSeconds)
+        }
+        return count
+    }
+
+    private async validateLoginCaptcha(req: Request, code: string) {
+        const storedCode = (await this.redisService.get(this.getLoginCaptchaKey(req))) as string | null
+        if (!storedCode) {
+            throw new BusinessException('验证码已过期，请刷新后重试', BusinessStatus.PARAMS_ERROR.code)
+        }
+
+        await this.redisService.del(this.getLoginCaptchaKey(req))
+
+        if (code.trim().toLowerCase() !== storedCode.trim().toLowerCase()) {
+            throw new BusinessException('验证码错误', BusinessStatus.PARAMS_ERROR.code)
+        }
     }
 
     private async encryptPassword(password: string) {
