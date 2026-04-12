@@ -12,6 +12,10 @@ export class MessageVoModel {
     hasRead: MessageStatus
     @ApiProperty({ description: '所属用户', required: true })
     userId: string
+    @ApiProperty({ description: '创建时间', required: true })
+    createTime: Date
+    @ApiProperty({ description: '审核结果', required: true })
+    result: number
 }
 
 export class MessageVoType {

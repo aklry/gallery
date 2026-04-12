@@ -1,6 +1,7 @@
 // client/src/hooks/useMessageStream.ts
 import { onMounted, onUnmounted } from 'vue'
 import { notification } from 'ant-design-vue'
+import { messageControllerReadMessageV1 } from '@/api/message'
 
 export function useMessageStream() {
     let eventSource: EventSource | null = null
@@ -13,7 +14,7 @@ export function useMessageStream() {
             }
         )
 
-        eventSource.addEventListener('message', e => {
+        eventSource.addEventListener('message', async e => {
             const data = JSON.parse(e.data)
             // 弹出通知
             notification.info({
@@ -21,12 +22,11 @@ export function useMessageStream() {
                 description: data.content,
                 placement: 'topRight'
             })
-            // 可以同时更新 store 中的未读计数
+            // 更新消息状态为已读
+            await messageControllerReadMessageV1({
+                id: data.id
+            })
         })
-
-        eventSource.onerror = () => {
-            // 浏览器会自动重连，这里可以做日志
-        }
     })
 
     onUnmounted(() => {

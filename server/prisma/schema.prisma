@@ -72,6 +72,7 @@ model message {
     isDelete   Int           @default(0) @db.TinyInt
     hasRead    MessageStatus @default(UNREAD)
     title      String?       @db.VarChar(128)
+    pictureId  String       @db.VarChar(256)
 
     @@index([userId], map: "idx_userId")
     @@index([content], map: "idx_content")

@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
+import { messageControllerFindAllNewMessageV1 } from '@/api/message'
+import { useRoute } from 'vue-router'
 import {
     HomeFilled,
     FileOutlined,
@@ -22,6 +24,39 @@ const userStore = useUserStore()
 const { loginUser } = storeToRefs(userStore)
 
 const isCollapsed = ref(false)
+const unreadCount = ref(0)
+const route = useRoute()
+
+const fetchUnreadCount = async () => {
+    if (loginUser.value && loginUser.value.id) {
+        try {
+            const res = await messageControllerFindAllNewMessageV1({ page: 1, pageSize: 1 } as any)
+            unreadCount.value = res.data.total || 0
+        } catch (error) {
+            // ignore
+        }
+    } else {
+        unreadCount.value = 0
+    }
+}
+
+onMounted(() => {
+    fetchUnreadCount()
+})
+
+watch(
+    () => route.path,
+    () => {
+        fetchUnreadCount()
+    }
+)
+
+watch(
+    () => loginUser.value,
+    () => {
+        fetchUnreadCount()
+    }
+)
 
 const handleAvatarClick = () => {
     if (loginUser.value && loginUser.value.id) {
@@ -93,7 +128,21 @@ const menuList = computed(() => {
         <nav class="sider-nav">
             <a-tooltip v-for="item in menuList" :key="item.key" :title="item.title" placement="right">
                 <div class="nav-item" :class="{ active: current.includes(item.key) }" @click="handleClick(item.key)">
-                    <component :is="item.icon" class="nav-icon" />
+                    <a-badge
+                        v-if="item.key === '/user/message'"
+                        :count="unreadCount"
+                        :numberStyle="{
+                            fontSize: '10px',
+                            minWidth: '16px',
+                            height: '16px',
+                            lineHeight: '16px',
+                            padding: '0 4px'
+                        }"
+                        :offset="[2, 0]"
+                    >
+                        <component :is="item.icon" class="nav-icon" />
+                    </a-badge>
+                    <component v-else :is="item.icon" class="nav-icon" />
                 </div>
             </a-tooltip>
         </nav>

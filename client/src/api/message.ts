@@ -3,17 +3,31 @@
 import ryRequest from '../services'
 
 /** 获取历史消息 GET /api/v1/message/history/message */
-export async function messageControllerFindAllHistoryMessageV1(options?: { [key: string]: any }) {
+export async function messageControllerFindAllHistoryMessageV1(
+    // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
+    params: API.MessageControllerFindAllHistoryMessageV1Params,
+    options?: { [key: string]: any }
+) {
     return ryRequest.request<API.MessageVo>('/api/v1/message/history/message', {
         method: 'GET',
+        params: {
+            ...params
+        },
         ...(options || {})
     })
 }
 
 /** 获取最新消息 GET /api/v1/message/new/message */
-export async function messageControllerFindAllNewMessageV1(options?: { [key: string]: any }) {
+export async function messageControllerFindAllNewMessageV1(
+    // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
+    params: API.MessageControllerFindAllNewMessageV1Params,
+    options?: { [key: string]: any }
+) {
     return ryRequest.request<API.MessageVo>('/api/v1/message/new/message', {
         method: 'GET',
+        params: {
+            ...params
+        },
         ...(options || {})
     })
 }

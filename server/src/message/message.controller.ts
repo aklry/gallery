@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, UseGuards, Req, Sse, MessageEvent } from '@nestjs/common'
+import { Controller, Get, Post, Body, UseGuards, Req, Sse, MessageEvent, Query } from '@nestjs/common'
 import { MessageService } from './message.service'
 import { ApiOperation, ApiResponse } from '@nestjs/swagger'
 import { MessageVo } from './vo/message.vo'
@@ -25,8 +25,10 @@ export class MessageController {
     @ApiOperation({ summary: '获取最新消息' })
     @ApiResponse({ type: MessageVo })
     @UseGuards(AuthGuard)
-    async findAllNewMessage(@Req() req: Request) {
-        const { list, total } = await this.messageService.findAllNewMessage(req)
+    async findAllNewMessage(@Req() req: Request, @Query('page') page?: string, @Query('pageSize') pageSize?: string) {
+        const pageNum = page ? parseInt(page, 10) : 1
+        const pageSizeNum = pageSize ? parseInt(pageSize, 10) : 50
+        const { list, total } = await this.messageService.findAllNewMessage(req, pageNum, pageSizeNum)
         return this.responseService.success({
             list,
             total
@@ -37,8 +39,14 @@ export class MessageController {
     @ApiOperation({ summary: '获取历史消息' })
     @ApiResponse({ type: MessageVo })
     @UseGuards(AuthGuard)
-    async findAllHistoryMessage(@Req() req: Request) {
-        const { list, total } = await this.messageService.findAllHistoryMessage(req)
+    async findAllHistoryMessage(
+        @Req() req: Request,
+        @Query('page') page?: string,
+        @Query('pageSize') pageSize?: string
+    ) {
+        const pageNum = page ? parseInt(page, 10) : 1
+        const pageSizeNum = pageSize ? parseInt(pageSize, 10) : 50
+        const { list, total } = await this.messageService.findAllHistoryMessage(req, pageNum, pageSizeNum)
         return this.responseService.success({
             list,
             total

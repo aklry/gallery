@@ -7,8 +7,8 @@ import { PrismaService } from '../prisma/prisma.service'
 import { ReadMessageDto } from './dto/read-message.dto'
 import { MessageVoModel } from './vo/message.vo'
 import { SseService } from '../sse/sse.service'
-import { Sse, MessageEvent } from '@nestjs/common'
-import { Observable, map } from 'rxjs'
+import { MessageEvent } from '@nestjs/common'
+import { map } from 'rxjs'
 
 @Injectable()
 export class MessageService {
@@ -17,24 +17,33 @@ export class MessageService {
         private readonly sseService: SseService
     ) {}
 
-    async findAllNewMessage(req: Request) {
+    async findAllNewMessage(req: Request, page: number = 1, pageSize: number = 50) {
         const user = req.session.user
+        const whereCondition = {
+            userId: user.id,
+            hasRead: MessageStatus.UNREAD
+        }
+
         const [data, total] = await Promise.all([
             this.prisma.message.findMany({
-                where: {
-                    createTime: {
-                        equals: new Date().toISOString()
-                    },
-                    userId: user.id
-                }
+                where: whereCondition,
+                orderBy: { createTime: 'desc' },
+                skip: (page - 1) * pageSize,
+                take: pageSize
             }),
             this.prisma.message.count({
-                where: {
-                    userId: user.id
-                }
+                where: whereCondition
             })
         ])
+
         if (data.length > 0) {
+            const pictureIds = data.map(item => item.pictureId).filter(id => id !== null) as string[]
+            const pictures = await this.prisma.picture.findMany({
+                where: {
+                    id: { in: pictureIds }
+                }
+            })
+            const pictureMap = new Map(pictures.map(picture => [picture.id, picture.reviewStatus]))
             return {
                 list: data.map(
                     item =>
@@ -43,7 +52,9 @@ export class MessageService {
                             content: item.content,
                             userId: item.userId,
                             hasRead: item.hasRead,
-                            title: item.title
+                            title: item.title,
+                            createTime: item.createTime,
+                            result: pictureMap.get(item.pictureId) || 0
                         }) as MessageVoModel
                 ),
                 total
@@ -55,24 +66,31 @@ export class MessageService {
         }
     }
 
-    async findAllHistoryMessage(req: Request) {
+    async findAllHistoryMessage(req: Request, page: number = 1, pageSize: number = 50) {
         const user = req.session.user
+        const whereCondition = {
+            userId: user.id,
+            hasRead: MessageStatus.READ
+        }
         const [data, total] = await Promise.all([
             this.prisma.message.findMany({
-                where: {
-                    userId: user.id,
-                    createTime: {
-                        lte: new Date().toISOString()
-                    }
-                }
+                where: whereCondition,
+                orderBy: { createTime: 'desc' },
+                skip: (page - 1) * pageSize,
+                take: pageSize
             }),
             this.prisma.message.count({
-                where: {
-                    userId: user.id
-                }
+                where: whereCondition
             })
         ])
         if (data.length > 0) {
+            const pictureIds = data.map(item => item.pictureId).filter(id => id !== null) as string[]
+            const pictures = await this.prisma.picture.findMany({
+                where: {
+                    id: { in: pictureIds }
+                }
+            })
+            const pictureMap = new Map(pictures.map(picture => [picture.id, picture.reviewStatus]))
             return {
                 list: data.map(
                     item =>
@@ -81,7 +99,9 @@ export class MessageService {
                             content: item.content,
                             userId: item.userId,
                             hasRead: item.hasRead,
-                            title: item.title
+                            title: item.title,
+                            createTime: item.createTime,
+                            result: pictureMap.get(item.pictureId) || 0
                         }) as MessageVoModel
                 ),
                 total

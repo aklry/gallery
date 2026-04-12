@@ -11,6 +11,7 @@ import * as analyze from './analyze'
 import * as spaceUser from './spaceUser'
 import * as pictureCollection from './pictureCollection'
 import * as pictureLike from './pictureLike'
+import * as pictureDownload from './pictureDownload'
 export default {
     app,
     user,
@@ -20,5 +21,6 @@ export default {
     analyze,
     spaceUser,
     pictureCollection,
-    pictureLike
+    pictureLike,
+    pictureDownload
 }

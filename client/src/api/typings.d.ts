@@ -135,6 +135,11 @@ declare namespace API {
         status: 'ACTIVE' | 'CANCELLED'
     }
 
+    type CreatePictureDownloadDto = {
+        /** 图片id */
+        pictureId: string
+    }
+
     type CreatePictureLikeDto = {
         /** 图片id */
         pictureId: string
@@ -441,6 +446,16 @@ declare namespace API {
         userRole: string
     }
 
+    type MessageControllerFindAllHistoryMessageV1Params = {
+        page: string
+        pageSize: string
+    }
+
+    type MessageControllerFindAllNewMessageV1Params = {
+        page: string
+        pageSize: string
+    }
+
     type MessageVo = {
         /** 状态码 */
         code: number
@@ -465,6 +480,10 @@ declare namespace API {
         hasRead: string
         /** 所属用户 */
         userId: string
+        /** 创建时间 */
+        createTime: string
+        /** 审核结果 */
+        result: number
     }
 
     type MessageVoType = {
@@ -485,32 +504,6 @@ declare namespace API {
         /** 消息 */
         message: string
         /** 图片信息 */
-        data: boolean
-        /** 时间戳 */
-        timestamp: string
-        /** 路径 */
-        path: string
-    }
-
-    type PictureLikeVo = {
-        /** 状态码 */
-        code: number
-        /** 消息 */
-        message: string
-        /** 点赞状态 */
-        data: boolean
-        /** 时间戳 */
-        timestamp: string
-        /** 路径 */
-        path: string
-    }
-
-    type PictureViewVo = {
-        /** 状态码 */
-        code: number
-        /** 消息 */
-        message: string
-        /** 浏览记录结果 */
         data: boolean
         /** 时间戳 */
         timestamp: string
@@ -543,8 +536,43 @@ declare namespace API {
         picId: string
     }
 
-    type PictureControllerRecordPictureViewV1Params = {
-        pictureId: string
+    type PictureDownloadVo = {
+        /** 状态码 */
+        code: number
+        /** 消息 */
+        message: string
+        /** 记录下载结果 */
+        data: boolean
+        /** 时间戳 */
+        timestamp: string
+        /** 路径 */
+        path: string
+    }
+
+    type PictureLikeVo = {
+        /** 状态码 */
+        code: number
+        /** 消息 */
+        message: string
+        /** 点赞状态 */
+        data: boolean
+        /** 时间戳 */
+        timestamp: string
+        /** 路径 */
+        path: string
+    }
+
+    type PictureViewVo = {
+        /** 状态码 */
+        code: number
+        /** 消息 */
+        message: string
+        /** 记录浏览结果 */
+        data: boolean
+        /** 时间戳 */
+        timestamp: string
+        /** 路径 */
+        path: string
     }
 
     type PictureVo = {

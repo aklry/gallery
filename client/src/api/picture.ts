@@ -159,21 +159,6 @@ export async function pictureControllerGetByIdVoV1(
     })
 }
 
-/** 记录图片浏览 POST /api/v1/picture/view/record */
-export async function pictureControllerRecordPictureViewV1(
-    body: API.CreatePictureViewDto,
-    options?: { [key: string]: any }
-) {
-    return ryRequest.request<API.PictureViewVo>('/api/v1/picture/view/record', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        data: body,
-        ...(options || {})
-    })
-}
-
 /** 根据颜色值获取相似图片 GET /api/v1/picture/list/color */
 export async function pictureControllerGetPictureByColorV1(
     // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
@@ -288,7 +273,7 @@ export async function pictureControllerUploadFileV1(
                 if (item instanceof Array) {
                     item.forEach(f => formData.append(ele, f || ''))
                 } else {
-                    formData.append(ele, new Blob([JSON.stringify(item)], { type: 'application/json' }))
+                    formData.append(ele, JSON.stringify(item))
                 }
             } else {
                 formData.append(ele, item)
@@ -324,6 +309,21 @@ export async function pictureControllerUploadFileByUrlV1(
     options?: { [key: string]: any }
 ) {
     return ryRequest.request<API.UploadPictureVo>('/api/v1/picture/upload/url', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        data: body,
+        ...(options || {})
+    })
+}
+
+/** 记录图片浏览 POST /api/v1/picture/view/record */
+export async function pictureControllerRecordPictureViewV1(
+    body: API.CreatePictureViewDto,
+    options?: { [key: string]: any }
+) {
+    return ryRequest.request<API.PictureViewVo>('/api/v1/picture/view/record', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'

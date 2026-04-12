@@ -891,7 +891,8 @@ export class PictureService {
                     userId: picture.userId,
                     content: reviewMessage,
                     hasRead: MessageStatus.UNREAD,
-                    title: '图片审核结果'
+                    title: '图片审核结果',
+                    pictureId: id
                 }
             })
             this.sseService.emit({
