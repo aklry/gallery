@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Body, UseGuards, Req, Sse, MessageEvent, Query } from '@nestjs/common'
 import { MessageService } from './message.service'
-import { ApiOperation, ApiResponse } from '@nestjs/swagger'
+import { ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swagger'
 import { MessageVo } from './vo/message.vo'
 import { ResponseService } from '../response/response.service'
 import { AuthGuard } from '../auth/auth.guard'
@@ -11,6 +11,7 @@ import { ValidationPipe } from '../pipe/validation.pipe'
 import { ReadAllMessageVo } from './vo/read-all-message.vo'
 import { Observable } from 'rxjs'
 import { version } from '../config'
+import { PageRequestPick } from '../common/page.dto'
 @Controller({
     path: 'message',
     version
@@ -25,9 +26,9 @@ export class MessageController {
     @ApiOperation({ summary: '获取最新消息' })
     @ApiResponse({ type: MessageVo })
     @UseGuards(AuthGuard)
-    async findAllNewMessage(@Req() req: Request, @Query('page') page?: string, @Query('pageSize') pageSize?: string) {
-        const pageNum = page ? parseInt(page, 10) : 1
-        const pageSizeNum = pageSize ? parseInt(pageSize, 10) : 50
+    async findAllNewMessage(@Req() req: Request, @Body(new ValidationPipe()) pageDto: PageRequestPick) {
+        const pageNum = pageDto.current ? parseInt(pageDto.current, 10) : 1
+        const pageSizeNum = pageDto.pageSize ? parseInt(pageDto.pageSize, 10) : 50
         const { list, total } = await this.messageService.findAllNewMessage(req, pageNum, pageSizeNum)
         return this.responseService.success({
             list,
@@ -39,13 +40,9 @@ export class MessageController {
     @ApiOperation({ summary: '获取历史消息' })
     @ApiResponse({ type: MessageVo })
     @UseGuards(AuthGuard)
-    async findAllHistoryMessage(
-        @Req() req: Request,
-        @Query('page') page?: string,
-        @Query('pageSize') pageSize?: string
-    ) {
-        const pageNum = page ? parseInt(page, 10) : 1
-        const pageSizeNum = pageSize ? parseInt(pageSize, 10) : 50
+    async findAllHistoryMessage(@Req() req: Request, @Body(new ValidationPipe()) pageDto: PageRequestPick) {
+        const pageNum = pageDto.current ? parseInt(pageDto.current, 10) : 1
+        const pageSizeNum = pageDto.pageSize ? parseInt(pageDto.pageSize, 10) : 50
         const { list, total } = await this.messageService.findAllHistoryMessage(req, pageNum, pageSizeNum)
         return this.responseService.success({
             list,

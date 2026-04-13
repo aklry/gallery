@@ -19,3 +19,14 @@ export class PageRequest {
     @IsString()
     sortOrder?: string
 }
+
+export class PageRequestPick {
+    @ApiProperty({ description: '当前页', required: false })
+    @IsString()
+    @IsNotEmpty()
+    current?: string
+    @ApiProperty({ description: '每页条数', required: false })
+    @IsString()
+    @IsNotEmpty()
+    pageSize?: string
+}

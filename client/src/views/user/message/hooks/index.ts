@@ -19,7 +19,7 @@ const useMessage = () => {
     const getNewMessageList = async () => {
         loading.value = true
         try {
-            const res = await messageControllerFindAllNewMessageV1()
+            const res = await messageControllerFindAllNewMessageV1({})
             newMessageList.value = res.data.list
             newMessageTotal.value = res.data.total
         } finally {
@@ -30,7 +30,7 @@ const useMessage = () => {
     const getHistoryMessageList = async () => {
         loading.value = true
         try {
-            const res = await messageControllerFindAllHistoryMessageV1()
+            const res = await messageControllerFindAllHistoryMessageV1({})
             historyMessageList.value = res.data.list
             historyMessageTotal.value = res.data.total
         } finally {

@@ -446,16 +446,6 @@ declare namespace API {
         userRole: string
     }
 
-    type MessageControllerFindAllHistoryMessageV1Params = {
-        page: string
-        pageSize: string
-    }
-
-    type MessageControllerFindAllNewMessageV1Params = {
-        page: string
-        pageSize: string
-    }
-
     type MessageVo = {
         /** 状态码 */
         code: number
@@ -496,6 +486,13 @@ declare namespace API {
     type Output = {
         task_status: string
         task_id: string
+    }
+
+    type PageRequestPick = {
+        /** 当前页 */
+        current?: string
+        /** 每页条数 */
+        pageSize?: string
     }
 
     type PictureCollectionVo = {
