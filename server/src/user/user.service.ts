@@ -32,6 +32,7 @@ const sharp = sharpModule as unknown as (
 
 @Injectable()
 export class UserService {
+    private readonly loginCaptchaExpireSeconds = 5 * 60
     private readonly captchaIpLimit = 20
     private readonly captchaIpWindowSeconds = 10 * 60
     private readonly captchaSessionLimit = 10
@@ -385,7 +386,8 @@ export class UserService {
             charPreset: 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789'
         })
 
-        await this.redisService.set(this.getLoginCaptchaKey(req), captcha.text, 60 * 5)
+        req.session.loginCaptcha = captcha.text
+        req.session.loginCaptchaExpiresAt = Date.now() + this.loginCaptchaExpireSeconds * 1000
 
         const imageBuffer = await sharp(Buffer.from(captcha.data)).png().toBuffer()
         return `data:image/png;base64,${imageBuffer.toString('base64')}`
@@ -401,10 +403,6 @@ export class UserService {
         const prefix = USER_RANDOM_PREFIX
         const randomSuffix = Math.floor(1000 + Math.random() * 9000).toString()
         return prefix + '_' + randomSuffix
-    }
-
-    private getLoginCaptchaKey(req: Request) {
-        return `${LOGIN_REDIS_KEY}:${req.sessionID}`
     }
 
     private getRegisterEmailCodeKey(email: string) {
@@ -605,12 +603,16 @@ export class UserService {
     }
 
     private async validateLoginCaptcha(req: Request, code: string) {
-        const storedCode = (await this.redisService.get(this.getLoginCaptchaKey(req))) as string | null
-        if (!storedCode) {
+        const storedCode = req.session.loginCaptcha
+        const expiresAt = req.session.loginCaptchaExpiresAt ?? 0
+        if (!storedCode || Date.now() > expiresAt) {
+            delete req.session.loginCaptcha
+            delete req.session.loginCaptchaExpiresAt
             throw new BusinessException('验证码已过期，请刷新后重试', BusinessStatus.PARAMS_ERROR.code)
         }
 
-        await this.redisService.del(this.getLoginCaptchaKey(req))
+        delete req.session.loginCaptcha
+        delete req.session.loginCaptchaExpiresAt
 
         if (code.trim().toLowerCase() !== storedCode.trim().toLowerCase()) {
             throw new BusinessException('验证码错误', BusinessStatus.PARAMS_ERROR.code)
