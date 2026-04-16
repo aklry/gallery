@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config'
 import { BusinessException } from '../custom-exception'
 import { AI_MODEL, AI_MODEL_GENERATION, BusinessStatus } from '../config'
 import { AiExpandPictureCreateTaskDto, AiGeneratePictureDto } from './dto'
+import OpenAI from 'openai'
 import {
     AiExpandPictureCreatePictureVo,
     AiExpandPictureQueryPictureVo,
@@ -13,6 +14,7 @@ import {
 @Injectable()
 export class AiService {
     private readonly apiKey: string
+    private readonly client: OpenAI
 
     private static readonly CREATE_OUT_PAINTING_TASK_URL =
         'https://dashscope.aliyuncs.com/api/v1/services/aigc/image2image/out-painting'
@@ -26,6 +28,10 @@ export class AiService {
 
     constructor(private readonly configService: ConfigService) {
         this.apiKey = this.configService.get<string>('bailian.apiKey')
+        this.client = new OpenAI({
+            apiKey: this.apiKey,
+            baseURL: 'https://dashscope.aliyuncs.com/compatible-mode/v1'
+        })
     }
 
     // ==========================================
@@ -75,7 +81,7 @@ export class AiService {
             })
             const res: AiExpandPictureQueryPictureVo = await data.json()
             return res
-        } catch (error) {
+        } catch (error: any) {
             console.log(error.response?.data)
             throw new BusinessException('获取扩图任务失败', BusinessStatus.OPERATION_ERROR.code)
         }
@@ -131,6 +137,59 @@ export class AiService {
         } catch (error: any) {
             console.log(error)
             throw new BusinessException(error.message, BusinessStatus.OPERATION_ERROR.code)
+        }
+    }
+
+    // ==========================================
+    // AI 自动生成标签
+    // ==========================================
+    async generateTags(imageUrl: string): Promise<string[]> {
+        try {
+            const response = await this.client.chat.completions.create({
+                model: 'qwen-vl-max', // 阿里云的视觉多模态大模型
+                messages: [
+                    {
+                        role: 'system',
+                        content:
+                            '你是一个专业的图像打标签助手。请根据提供的图片，提取出最核心、最相关的5个中文标签。只返回一个JSON数组格式的纯文本，例如 ["风景", "二次元", "天空"]，不要包含任何多余的回应文字或Markdown代码块标识。'
+                    },
+                    {
+                        role: 'user',
+                        content: [
+                            {
+                                type: 'image_url',
+                                image_url: {
+                                    url: imageUrl
+                                }
+                            }
+                        ]
+                    }
+                ]
+            })
+
+            const content = response.choices[0]?.message?.content
+            if (!content) {
+                return []
+            }
+            // 安全解析JSON
+            try {
+                // 剔除可能大模型习惯性附带的 markdown 格式标识符
+                const jsonStr = content
+                    .replace(/```json/g, '')
+                    .replace(/```/g, '')
+                    .trim()
+                const tags = JSON.parse(jsonStr)
+                if (Array.isArray(tags)) {
+                    return tags
+                }
+                return []
+            } catch (e) {
+                console.log('AI 返回的标签解析失败:', content)
+                return []
+            }
+        } catch (error: any) {
+            console.log(error)
+            throw new BusinessException(error.message || 'AI 分析图片失败', BusinessStatus.OPERATION_ERROR.code)
         }
     }
 }

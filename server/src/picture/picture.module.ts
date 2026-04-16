@@ -6,11 +6,12 @@ import { SpaceModule } from '../space/space.module'
 import { PermissionModule } from '../permission/permission.module'
 import { AiModule } from '../ai/ai.module'
 import { SseModule } from '../sse/sse.module'
+import { TagModule } from '../tag/tag.module'
 
 @Module({
     controllers: [PictureController],
     providers: [PictureService],
-    imports: [ExtractModule, SpaceModule, PermissionModule, AiModule, SseModule],
+    imports: [ExtractModule, SpaceModule, PermissionModule, AiModule, SseModule, TagModule],
     exports: [PictureService]
 })
 export class PictureModule {}

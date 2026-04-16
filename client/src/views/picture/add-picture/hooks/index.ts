@@ -1,4 +1,4 @@
-﻿import { ref, reactive, onMounted, useTemplateRef } from 'vue'
+import { ref, reactive, onMounted, useTemplateRef } from 'vue'
 import {
     pictureControllerUpdatePictureV1,
     pictureControllerEditPictureV1,
@@ -33,10 +33,23 @@ const useAddPicture = () => {
     const { handleGenerateImageTaskByAi, text, loading: generateLoading } = useGenerateImageByAi(setUrl)
     const openCropperModal = ref(false)
     const openExpandModal = ref(false)
-    const handleUploadSuccess = (result: API.UploadPictureVoModel) => {
+    // 把后端 AI 生成的新标签合并进表单和全局 store
+    const mergeTags = (tags?: string[]) => {
+        if (!tags || tags.length === 0) return
+        pictureInfo.tags = [...tags] // 填入表单
+        // 动态推入 Store 的静态下拉配置里，避免由于配置不存在导致无法显示下拉高亮
+        const existingTags = new Set(tag_category.value.tagList.map((item: any) => item.value))
+        tags.forEach(tag => {
+            if (!existingTags.has(tag)) {
+                tag_category.value.tagList.push({ value: tag } as any)
+            }
+        })
+    }
+    const handleUploadSuccess = (result: API.UploadPictureVoModel | any) => {
         picture.value = result
         pictureInfo.name = result.filename
         pictureInfo.id = result.id
+        mergeTags(result.tags)
     }
     const loading = ref<boolean>(false)
     const uploadLoading = ref<boolean>(false)
@@ -88,6 +101,9 @@ const useAddPicture = () => {
                 pictureInfo.id = res.data.id
                 pictureInfo.url = res.data.url
                 pictureInfo.thumbnailUrl = res.data.thumbnailUrl
+                if ((res.data as any).tags) {
+                    mergeTags((res.data as any).tags)
+                }
                 picture.value = {
                     id: res.data.id,
                     url: res.data.url,
@@ -110,9 +126,10 @@ const useAddPicture = () => {
         }
     }
 
-    const handleCropSuccess = (cropPicture: API.UploadPictureVoModel) => {
+    const handleCropSuccess = (cropPicture: API.UploadPictureVoModel | any) => {
         pictureInfo.name = cropPicture.filename
         pictureInfo.id = cropPicture.id
+        mergeTags(cropPicture.tags)
         picture.value = {
             id: cropPicture.id,
             url: cropPicture.url,

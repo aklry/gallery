@@ -37,6 +37,7 @@ import { PERMISSION_KEY } from '../permission/permission.decorator'
 import { AiGeneratePictureDto } from '../ai/dto'
 import { SseService } from '../sse/sse.service'
 import { RedisService } from '../redis/redis.service'
+import { TagService } from '../tag/tag.service'
 import 'multer'
 
 const PICTURE_VIEW_DEDUP_TTL_SECONDS = 30 * 60
@@ -52,7 +53,8 @@ export class PictureService {
         private readonly spaceUserAuthManager: SpaceUserAuthManager,
         private readonly permissionGuard: PermissionGuard,
         private readonly sseService: SseService,
-        private readonly redisService: RedisService
+        private readonly redisService: RedisService,
+        private readonly tagService: TagService
     ) {}
 
     private async getAccessiblePictureOrThrow(id: string, req: Request) {
@@ -646,46 +648,103 @@ export class PictureService {
         const ossResult = await this.ossService.uploadFile(name, buffer, spaceId ? 'space' : 'public')
         const reviewStatus = user.userRole === UserRole.ADMIN ? 1 : 0
         const reviewTime = user.userRole === UserRole.ADMIN ? new Date() : undefined
-        const picture = pictureId
-            ? await this.prismaService.picture.update({
-                  where: {
-                      id: pictureId
-                  },
-                  data: {
-                      url: ossResult.url,
-                      picScale: ossResult.picScale,
-                      picSize: BigInt(ossResult.fileSize),
-                      picFormat: ossResult.format,
-                      picWidth: Number(ossResult.width),
-                      picHeight: Number(ossResult.height),
-                      picColor: ossResult.color,
-                      name: ossResult.filename,
-                      editTime: new Date(),
-                      userId: user?.id || '',
-                      spaceId,
-                      reviewStatus,
-                      reviewTime,
-                      thumbnailUrl: ossResult.thumbnailUrl
-                  }
-              })
-            : await this.prismaService.picture.create({
-                  data: {
-                      url: ossResult.url,
-                      picScale: ossResult.picScale,
-                      picSize: BigInt(ossResult.fileSize),
-                      picFormat: ossResult.format,
-                      picWidth: Number(ossResult.width),
-                      picHeight: Number(ossResult.height),
-                      picColor: ossResult.color,
-                      name: ossResult.filename,
-                      userId: user?.id || '',
-                      spaceId,
-                      tags: '',
-                      category: '',
-                      introduction: '',
-                      thumbnailUrl: ossResult.thumbnailUrl
-                  }
-              })
+        let picture: Picture
+        let tags: string[] = [] // 初始化为空数组防卫
+        if (pictureId) {
+            picture = await this.prismaService.picture.update({
+                where: {
+                    id: pictureId
+                },
+                data: {
+                    url: ossResult.url,
+                    picScale: ossResult.picScale,
+                    picSize: BigInt(ossResult.fileSize),
+                    picFormat: ossResult.format,
+                    picWidth: Number(ossResult.width),
+                    picHeight: Number(ossResult.height),
+                    picColor: ossResult.color,
+                    name: ossResult.filename,
+                    editTime: new Date(),
+                    userId: user?.id || '',
+                    spaceId,
+                    reviewStatus,
+                    reviewTime,
+                    thumbnailUrl: ossResult.thumbnailUrl
+                    // 移除了 tags: '' 的手误，防止破坏已有标签数据库
+                }
+            })
+            // 补充回原有的 Tags 到返回对象中防止前端解析失败
+            try {
+                if (picture.tags) {
+                    tags = JSON.parse(picture.tags)
+                }
+            } catch (e) {
+                tags = []
+            }
+        } else {
+            // 获取图片标签，增加 Try-Catch 防护罩，防止 AI 崩溃吞掉正常上传请求
+            try {
+                tags = await this.tagService.aiCreateTag({
+                    picUrl: ossResult.url
+                })
+            } catch (error) {
+                console.error('AI 打标签出现波动，系统已安全降级，空标签入库:', error)
+                tags = [] // 降级置空，让图片先安全入库
+            }
+
+            picture = await this.prismaService.picture.create({
+                data: {
+                    url: ossResult.url,
+                    picScale: ossResult.picScale,
+                    picSize: BigInt(ossResult.fileSize),
+                    picFormat: ossResult.format,
+                    picWidth: Number(ossResult.width),
+                    picHeight: Number(ossResult.height),
+                    picColor: ossResult.color,
+                    name: ossResult.filename,
+                    userId: user?.id || '',
+                    spaceId,
+                    tags: JSON.stringify(tags),
+                    category: '',
+                    introduction: '',
+                    thumbnailUrl: ossResult.thumbnailUrl
+                }
+            })
+
+            // 只有 AI 真正返回了标签，再去插关系表，省开销
+            if (tags && tags.length > 0) {
+                // 保存到tag表
+                await this.prismaService.tag.createMany({
+                    data: tags.map(tagName => ({
+                        tagName,
+                        isSystem: 1,
+                        userId: user.id,
+                        useCount: 1
+                    })),
+                    skipDuplicates: true
+                })
+                // 【新增同步更新用量】针对库里面本来就在这次被 AI 选中的老标签，增加他们的热度
+                await this.prismaService.tag.updateMany({
+                    where: { tagName: { in: tags } },
+                    data: { useCount: { increment: 1 } }
+                })
+                // 保存到picture_tag表
+                const dbTags = await this.prismaService.tag.findMany({
+                    where: {
+                        tagName: {
+                            in: tags
+                        }
+                    }
+                })
+                await this.prismaService.picture_tag.createMany({
+                    data: dbTags.map(tag => ({
+                        tagId: tag.id,
+                        pictureId: picture.id
+                    })),
+                    skipDuplicates: true
+                })
+            }
+        }
         if (!picture) {
             throw new BusinessException('图片上传失败', BusinessStatus.OPERATION_ERROR.code)
         }
@@ -730,8 +789,14 @@ export class PictureService {
             filename: picture.name,
             thumbnailUrl: picture.thumbnailUrl,
             spaceId: picture.spaceId,
-            color: picture.picColor
+            color: picture.picColor,
+            tags
         } as UploadPictureVoModel
+    }
+
+    async getPictureTags() {
+        const pictureTags = await this.tagService.getPictureTags()
+        return pictureTags.map(tag => tag.tagName)
     }
 
     validatePicture(file: Express.Multer.File) {

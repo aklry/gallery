@@ -24,6 +24,8 @@ export class UploadPictureVoModel {
     thumbnailUrl: string
     @ApiProperty({ description: '空间id', required: false })
     spaceId: string | null
+    @ApiProperty({ description: '图片标签', required: true })
+    tags: string[]
 }
 
 export class UploadPictureVo extends ResponseVo<UploadPictureVoModel> {

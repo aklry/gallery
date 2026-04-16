@@ -21,8 +21,8 @@ async function bootstrap() {
     // 注册全局异常过滤器
     app.useGlobalFilters(new AllExceptionsFilter(), new HttpExceptionFilter(), new BusinessExceptionFilter())
     // 注册全局中间件
-    const apiValidateMiddleware = new ApiValidateMiddleware()
-    app.use(apiValidateMiddleware.use)
+    // const apiValidateMiddleware = new ApiValidateMiddleware()
+    // app.use(apiValidateMiddleware.use)
     // 注册swagger
     if (process.env.ENV === 'development') {
         const config = new DocumentBuilder().setTitle('接口文档').setVersion('1.0').setDescription('源空间').build()

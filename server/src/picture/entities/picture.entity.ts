@@ -111,4 +111,9 @@ export class Picture {
      */
     @ApiProperty({ description: '是否删除', required: true })
     isDelete: number
+    /**
+     * 缩略图url
+     */
+    @ApiProperty({ description: '缩略图url', required: true })
+    thumbnailUrl: string
 }

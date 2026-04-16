@@ -1,0 +1,7 @@
+POST http://localhost:3000/api/v1/tag/ai-create
+Content-Type: application/json
+Cookie: connect.sid=s%3Auser%3A1763299396809.1FMy%2B7QY7uMWoQlai9o818Gq0IE73K%2BLbI4u086i1gs
+
+{
+    "picUrl": "https://img.xueyuanjun.com/wp-content/uploads/2024/03/2024032710414017.jpg"
+}
