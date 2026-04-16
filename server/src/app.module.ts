@@ -33,6 +33,8 @@ import { SeoModule } from './seo/seo.module'
 import { PictureCollectionModule } from './picture-collection/picture-collection.module'
 import { PictureLikeModule } from './picture-like/picture-like.module'
 import { PictureDownloadModule } from './picture-download/picture-download.module'
+import { TagModule } from './tag/tag.module'
+import { AiModule } from './ai/ai.module'
 
 @Module({
     imports: [
@@ -63,7 +65,9 @@ import { PictureDownloadModule } from './picture-download/picture-download.modul
         SeoModule,
         PictureCollectionModule,
         PictureLikeModule,
-        PictureDownloadModule
+        PictureDownloadModule,
+        TagModule,
+        AiModule
     ],
     controllers: [AppController],
     providers: [AppService]

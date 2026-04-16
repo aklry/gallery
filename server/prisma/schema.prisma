@@ -1,168 +1,200 @@
 generator client {
-    provider = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-    provider = "mysql"
-    url      = env("DATABASE_URL")
+  provider     = "mysql"
+  url          = env("DATABASE_URL")
+  relationMode = "prisma"
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model user {
-    id           String   @id @default(cuid())
-    userAccount  String   @unique(map: "uk_userAccount") @db.VarChar(256)
-    userPassword String   @db.VarChar(512)
-    userEmail    String?  @unique(map: "uk_userEmail") @db.VarChar(256)
-    userName     String?  @db.VarChar(256)
-    userAvatar   String?  @db.VarChar(1024)
-    userProfile  String?  @db.VarChar(512)
-    userRole     String   @default("user") @db.VarChar(256)
-    editTime     DateTime @default(now()) @db.DateTime(0)
-    createTime   DateTime @default(now()) @db.DateTime(0)
-    updateTime   DateTime @default(now()) @db.DateTime(0)
-    isDelete     Int      @default(0) @db.TinyInt
+  id           String   @id @default(cuid())
+  userAccount  String   @unique(map: "uk_userAccount") @db.VarChar(256)
+  userPassword String   @db.VarChar(512)
+  userEmail    String?  @unique(map: "uk_userEmail") @db.VarChar(256)
+  userName     String?  @db.VarChar(256)
+  userAvatar   String?  @db.VarChar(1024)
+  userProfile  String?  @db.VarChar(512)
+  userRole     String   @default("user") @db.VarChar(256)
+  editTime     DateTime @default(now()) @db.DateTime(0)
+  createTime   DateTime @default(now()) @db.DateTime(0)
+  updateTime   DateTime @default(now()) @db.DateTime(0)
+  isDelete     Int      @default(0) @db.TinyInt
 
-    @@index([userName], map: "idx_userName")
+  @@index([userName], map: "idx_userName")
 }
 
 model picture {
-    id               String   @id @default(cuid())
-    url              String   @db.VarChar(512)
-    name             String   @db.VarChar(128)
-    introduction     String   @db.VarChar(256)
-    category         String   @db.VarChar(64)
-    tags             String   @db.VarChar(512)
-    picSize          BigInt
-    picWidth         Int
-    picHeight        Int
-    picScale         Float
-    picFormat        String   @db.VarChar(32)
-    picColor         String   @default("") @db.VarChar(10)
-    userId           String   @db.VarChar(256)
-    spaceId          String?  @db.VarChar(256)
-    viewNumber       Int?     @default(0) @db.Int
-    likeNumber       Int?     @default(0) @db.Int
-    collectionNumber Int?     @default(0) @db.Int
-    downloadNumber   Int?     @default(0) @db.Int
-    createTime       DateTime @default(now()) @db.DateTime(0)
-    editTime         DateTime @default(now()) @db.DateTime(0)
-    updateTime       DateTime @default(now()) @db.DateTime(0)
-    reviewStatus     Int      @default(0) @db.TinyInt
-    reviewMessage    String   @default("") @db.VarChar(512)
-    reviewerId       String   @default("") @db.VarChar(256)
-    reviewTime       DateTime @default(now()) @db.DateTime(0)
-    isDelete         Int      @default(0) @db.TinyInt
-    thumbnailUrl     String?  @db.VarChar(512)
+  id               String        @id @default(cuid())
+  url              String        @db.VarChar(512)
+  name             String        @db.VarChar(128)
+  introduction     String        @db.VarChar(256)
+  category         String        @db.VarChar(64)
+  tags             String        @db.VarChar(512)
+  picSize          BigInt
+  picWidth         Int
+  picHeight        Int
+  picScale         Float
+  picFormat        String        @db.VarChar(32)
+  picColor         String        @default("") @db.VarChar(10)
+  userId           String        @db.VarChar(256)
+  spaceId          String?       @db.VarChar(256)
+  viewNumber       Int?          @default(0) @db.Int
+  likeNumber       Int?          @default(0) @db.Int
+  collectionNumber Int?          @default(0) @db.Int
+  downloadNumber   Int?          @default(0) @db.Int
+  createTime       DateTime      @default(now()) @db.DateTime(0)
+  editTime         DateTime      @default(now()) @db.DateTime(0)
+  updateTime       DateTime      @default(now()) @db.DateTime(0)
+  reviewStatus     Int           @default(0) @db.TinyInt
+  reviewMessage    String        @default("") @db.VarChar(512)
+  reviewerId       String        @default("") @db.VarChar(256)
+  reviewTime       DateTime      @default(now()) @db.DateTime(0)
+  isDelete         Int           @default(0) @db.TinyInt
+  thumbnailUrl     String?       @db.VarChar(512)
+  PictureTags      picture_tag[]
 
-    @@index([name], map: "idx_name")
-    @@index([introduction], map: "idx_introduction")
-    @@index([category], map: "idx_category")
-    @@index([tags], map: "idx_tags")
-    @@index([userId], map: "idx_userId")
-    @@index([reviewStatus], map: "idx_reviewStatus")
-    @@index([spaceId], map: "idx_spaceId")
+  @@index([name], map: "idx_name")
+  @@index([introduction], map: "idx_introduction")
+  @@index([category], map: "idx_category")
+  @@index([tags], map: "idx_tags")
+  @@index([userId], map: "idx_userId")
+  @@index([reviewStatus], map: "idx_reviewStatus")
+  @@index([spaceId], map: "idx_spaceId")
 }
 
 model message {
-    id         String        @id @default(cuid())
-    content    String        @db.VarChar(512)
-    userId     String        @db.VarChar(256)
-    createTime DateTime      @default(now()) @db.DateTime(0)
-    updateTime DateTime      @default(now()) @db.DateTime(0)
-    isDelete   Int           @default(0) @db.TinyInt
-    hasRead    MessageStatus @default(UNREAD)
-    title      String?       @db.VarChar(128)
-    pictureId  String       @db.VarChar(256)
+  id         String        @id @default(cuid())
+  content    String        @db.VarChar(512)
+  userId     String        @db.VarChar(256)
+  createTime DateTime      @default(now()) @db.DateTime(0)
+  updateTime DateTime      @default(now()) @db.DateTime(0)
+  isDelete   Int           @default(0) @db.TinyInt
+  hasRead    MessageStatus @default(UNREAD)
+  title      String?       @db.VarChar(128)
+  pictureId  String        @db.VarChar(256)
 
-    @@index([userId], map: "idx_userId")
-    @@index([content], map: "idx_content")
+  @@index([userId], map: "idx_userId")
+  @@index([content], map: "idx_content")
 }
 
 enum MessageStatus {
-    UNREAD
-    READ
+  UNREAD
+  READ
 }
 
 model space {
-    id         String   @id @default(cuid())
-    spaceName  String?  @db.VarChar(128)
-    spaceLevel Int?     @default(0)
-    maxSize    BigInt?  @default(0)
-    maxCount   BigInt?  @default(0)
-    totalSize  BigInt?  @default(0)
-    totalCount BigInt?  @default(0)
-    spaceType  Int      @default(0)
-    userId     String   @db.VarChar(256)
-    createTime DateTime @default(now()) @db.DateTime(0)
-    editTime   DateTime @default(now()) @db.DateTime(0)
-    updateTime DateTime @default(now()) @db.DateTime(0)
-    isDelete   Int      @default(0) @db.TinyInt
+  id         String   @id @default(cuid())
+  spaceName  String?  @db.VarChar(128)
+  spaceLevel Int?     @default(0)
+  maxSize    BigInt?  @default(0)
+  maxCount   BigInt?  @default(0)
+  totalSize  BigInt?  @default(0)
+  totalCount BigInt?  @default(0)
+  spaceType  Int      @default(0)
+  userId     String   @db.VarChar(256)
+  createTime DateTime @default(now()) @db.DateTime(0)
+  editTime   DateTime @default(now()) @db.DateTime(0)
+  updateTime DateTime @default(now()) @db.DateTime(0)
+  isDelete   Int      @default(0) @db.TinyInt
 
-    @@index([userId], map: "idx_userId")
-    @@index([spaceName], map: "idx_spaceName")
-    @@index([spaceLevel], map: "idx_spaceLevel")
-    @@index([spaceType], map: "idx_spaceType")
+  @@index([userId], map: "idx_userId")
+  @@index([spaceName], map: "idx_spaceName")
+  @@index([spaceLevel], map: "idx_spaceLevel")
+  @@index([spaceType], map: "idx_spaceType")
 }
 
 enum SpaceRole {
-    viewer
-    editor
-    admin
+  viewer
+  editor
+  admin
 }
 
 model space_user {
-    id         String    @id @default(cuid())
-    spaceId    String    @db.VarChar(256)
-    userId     String    @db.VarChar(256)
-    spaceRole  SpaceRole @default(viewer)
-    createTime DateTime  @default(now()) @db.DateTime(0)
-    updateTime DateTime  @default(now()) @db.DateTime(0)
+  id         String    @id @default(cuid())
+  spaceId    String    @db.VarChar(256)
+  userId     String    @db.VarChar(256)
+  spaceRole  SpaceRole @default(viewer)
+  createTime DateTime  @default(now()) @db.DateTime(0)
+  updateTime DateTime  @default(now()) @db.DateTime(0)
 
-    @@unique([spaceId, userId], map: "uk_spaceId_userId")
-    @@index([spaceId], map: "idx_spaceId")
-    @@index([userId], map: "idx_userId")
+  @@unique([spaceId, userId], map: "uk_spaceId_userId")
+  @@index([spaceId], map: "idx_spaceId")
+  @@index([userId], map: "idx_userId")
 }
 
 enum UserActionStatus {
-    ACTIVE
-    CANCELLED
+  ACTIVE
+  CANCELLED
 }
 
 model picture_like {
-    id         String           @id @default(cuid())
-    pictureId  String           @db.VarChar(256)
-    userId     String           @db.VarChar(256)
-    status     UserActionStatus @default(ACTIVE)
-    createTime DateTime         @default(now()) @db.DateTime(0)
-    updateTime DateTime         @default(now()) @db.DateTime(0)
-    isDelete   Int      @default(0) @db.TinyInt
+  id         String           @id @default(cuid())
+  pictureId  String           @db.VarChar(256)
+  userId     String           @db.VarChar(256)
+  status     UserActionStatus @default(ACTIVE)
+  createTime DateTime         @default(now()) @db.DateTime(0)
+  updateTime DateTime         @default(now()) @db.DateTime(0)
+  isDelete   Int              @default(0) @db.TinyInt
 
-    @@unique([pictureId, userId], map: "uk_picture_like_pictureId_userId")
-    @@index([userId, status, createTime], map: "idx_picture_like_userId_status_createTime")
-    @@index([pictureId, status], map: "idx_picture_like_pictureId_status")
+  @@unique([pictureId, userId], map: "uk_picture_like_pictureId_userId")
+  @@index([userId, status, createTime], map: "idx_picture_like_userId_status_createTime")
+  @@index([pictureId, status], map: "idx_picture_like_pictureId_status")
 }
 
 model picture_favorite {
-    id         String           @id @default(cuid())
-    pictureId  String           @db.VarChar(256)
-    userId     String           @db.VarChar(256)
-    status     UserActionStatus @default(ACTIVE)
-    createTime DateTime         @default(now()) @db.DateTime(0)
-    updateTime DateTime         @default(now()) @db.DateTime(0)
-    isDelete   Int      @default(0) @db.TinyInt
+  id         String           @id @default(cuid())
+  pictureId  String           @db.VarChar(256)
+  userId     String           @db.VarChar(256)
+  status     UserActionStatus @default(ACTIVE)
+  createTime DateTime         @default(now()) @db.DateTime(0)
+  updateTime DateTime         @default(now()) @db.DateTime(0)
+  isDelete   Int              @default(0) @db.TinyInt
 
-    @@unique([pictureId, userId], map: "uk_picture_favorite_pictureId_userId")
-    @@index([userId, status, createTime], map: "idx_picture_favorite_userId_status_createTime")
-    @@index([pictureId, status], map: "idx_picture_favorite_pictureId_status")
+  @@unique([pictureId, userId], map: "uk_picture_favorite_pictureId_userId")
+  @@index([userId, status, createTime], map: "idx_picture_favorite_userId_status_createTime")
+  @@index([pictureId, status], map: "idx_picture_favorite_pictureId_status")
 }
 
 model picture_download {
-    id         String   @id @default(cuid())
-    pictureId  String   @db.VarChar(256)
-    userId     String   @db.VarChar(256)
-    createTime DateTime @default(now()) @db.DateTime(0)
-    isDelete   Int      @default(0) @db.TinyInt
+  id         String   @id @default(cuid())
+  pictureId  String   @db.VarChar(256)
+  userId     String   @db.VarChar(256)
+  createTime DateTime @default(now()) @db.DateTime(0)
+  isDelete   Int      @default(0) @db.TinyInt
 
-    @@index([userId, createTime], map: "idx_picture_download_userId_createTime")
-    @@index([pictureId, createTime], map: "idx_picture_download_pictureId_createTime")
+  @@index([userId, createTime], map: "idx_picture_download_userId_createTime")
+  @@index([pictureId, createTime], map: "idx_picture_download_pictureId_createTime")
+}
+
+model tag {
+  id          String        @id @default(cuid())
+  tagName     String        @unique(map: "uk_tagName") @db.VarChar(128) // 标签名称全局唯一
+  userId      String        @db.VarChar(256) // 首次创建该标签的用户 ID
+  useCount    Int           @default(0) @db.Int // 标签被使用的次数（用于满足文档中的“热门标签云查询”需求）
+  isSystem    Int           @default(0) @db.TinyInt // 是否为系统/AI生成的默认标签 (0: 用户自定义, 1: AI/系统预设)
+  createTime  DateTime      @default(now()) @db.DateTime(0)
+  updateTime  DateTime      @default(now()) @db.DateTime(0)
+  PictureTags picture_tag[]
+  isDelete    Int           @default(0) @db.TinyInt
+
+  @@index([tagName], map: "idx_tagName")
+  @@index([useCount], map: "idx_useCount") // 添加使用量索引，方便快速查询热门趋势
+}
+
+model picture_tag {
+  id         String   @id @default(cuid())
+  pictureId  String   @db.VarChar(256)
+  tagId      String   @db.VarChar(256)
+  createTime DateTime @default(now()) @db.DateTime(0)
+  // 给 TS 用的虚拟对象映射，绝不会在 MySQL 生成物理外键
+  picture    picture  @relation(fields: [pictureId], references: [id])
+  tag        tag      @relation(fields: [tagId], references: [id])
+
+  @@unique([pictureId, tagId], map: "uk_pictureId_tagId")
+  // relationMode = "prisma" 模式下，必须为声明了 relation 的外键标量补充索引，否则会飘红报错
+  @@index([pictureId], map: "idx_fk_pictureId")
+  @@index([tagId], map: "idx_fk_tagId")
 }
