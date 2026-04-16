@@ -1,4 +1,4 @@
-import { AiExpandPictureQueryPictureVo } from '../../ai-expand-picture/vo'
+import { AiExpandPictureQueryPictureVo } from '../../ai/vo'
 import { ApiProperty } from '@nestjs/swagger'
 import { ResponseVo } from '../../common/response.vo'
 

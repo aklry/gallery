@@ -53,7 +53,7 @@ import {
 import { ValidationPipe } from '../pipe/validation.pipe'
 import { SpaceUserPermissionConstant } from 'src/permission/SpaceUserPermissionConstant'
 import { PermissionGuard } from '../permission/permission.guard'
-import { AiGeneratePictureDto } from '../ai-generate-picture/dto'
+import { AiGeneratePictureDto } from '../ai/dto'
 import { RawResponse } from '../interceptors'
 
 @Controller({

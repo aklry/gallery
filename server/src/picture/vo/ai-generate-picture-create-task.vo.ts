@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { AiGeneratePictureVo } from '../../ai-generate-picture/vo'
+import { AiGeneratePictureVo } from '../../ai/vo'
 import { ResponseVo } from '../../common/response.vo'
 
 export class AiGenerateImageCreateTaskVo extends ResponseVo<AiGeneratePictureVo> {

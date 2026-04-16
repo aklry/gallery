@@ -18,11 +18,9 @@ import { CleanModule } from './clean/clean.module'
 import { ScheduleModule } from '@nestjs/schedule'
 import { RedisCacheModule } from './cache/cache.module'
 import { SpaceModule } from './space/space.module'
-import { AiExpandPictureModule } from './ai-expand-picture/ai-expand-picture.module'
 import { AnalyzeModule } from './analyze/analyze.module'
 import { SpaceUserModule } from './space-user/space-user.module'
 import { PermissionModule } from './permission/permission.module'
-import { AiGeneratePictureModule } from './ai-generate-picture/ai-generate-picture.module'
 import { load } from 'js-yaml'
 import * as fs from 'node:fs'
 import * as path from 'node:path'
@@ -50,7 +48,6 @@ import { AiModule } from './ai/ai.module'
         ScheduleModule.forRoot(),
         RedisCacheModule,
         SpaceModule,
-        AiExpandPictureModule,
         AnalyzeModule,
         SpaceUserModule,
         PermissionModule,
@@ -59,7 +56,6 @@ import { AiModule } from './ai/ai.module'
             isGlobal: true,
             load: [() => load(fs.readFileSync(path.resolve(process.cwd(), 'config.yaml'), 'utf8')) as YamlOssConfig]
         }),
-        AiGeneratePictureModule,
         SseModule,
         EmailModule,
         SeoModule,

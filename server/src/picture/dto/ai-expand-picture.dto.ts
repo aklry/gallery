@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { AiExpandPictureCreateTaskDto } from '../../ai-expand-picture/dto'
+import { AiExpandPictureCreateTaskDto } from '../../ai/dto'
 import { IsNotEmpty, IsString, ValidateNested } from 'class-validator'
 import { Type } from 'class-transformer'
 

@@ -28,14 +28,13 @@ import {
     AiExpandPictureDto,
     DeleteBatchPictureDto
 } from './dto'
-import { AiExpandPictureService } from '../ai-expand-picture/ai-expand-picture.service'
-import { AiGeneratePictureService } from '../ai-generate-picture/ai-generate-picture.service'
+import { AiService } from '../ai/ai.service'
 import { SpaceUserAuthManager } from '../permission/SpaceUserAuthManager'
 import { SpaceUserPermissionConstant } from '../permission/SpaceUserPermissionConstant'
 import { Space } from '../space/entities/space.entity'
 import { PermissionGuard } from '../permission/permission.guard'
 import { PERMISSION_KEY } from '../permission/permission.decorator'
-import { AiGeneratePictureDto } from '../ai-generate-picture/dto'
+import { AiGeneratePictureDto } from '../ai/dto'
 import { SseService } from '../sse/sse.service'
 import { RedisService } from '../redis/redis.service'
 import 'multer'
@@ -49,8 +48,7 @@ export class PictureService {
         private readonly ossService: OssService,
         private readonly redisCacheService: RedisCacheService,
         private readonly spaceService: SpaceService,
-        private readonly aiExpandPictureService: AiExpandPictureService,
-        private readonly aiGeneratePictureService: AiGeneratePictureService,
+        private readonly aiService: AiService,
         private readonly spaceUserAuthManager: SpaceUserAuthManager,
         private readonly permissionGuard: PermissionGuard,
         private readonly sseService: SseService,
@@ -1160,20 +1158,20 @@ export class PictureService {
             throw new BusinessException('图片不存在', BusinessStatus.PARAMS_ERROR.code)
         }
         this.checkPictureAuth(user, picture)
-        return await this.aiExpandPictureService.createOutPaintingTask(aiExpandPictureCreateDto)
+        return await this.aiService.createOutPaintingTask(aiExpandPictureCreateDto)
     }
 
     // 获取扩图任务
     async getAiExpandPictureTask(taskId: string) {
-        return await this.aiExpandPictureService.getOutPaintingTask(taskId)
+        return await this.aiService.getOutPaintingTask(taskId)
     }
 
     // 获取生成图片任务
     async getGenerateImageTask(aiGeneratePictureDto: AiGeneratePictureDto) {
-        return await this.aiGeneratePictureService.getGenerateImageTask(aiGeneratePictureDto)
+        return await this.aiService.getGenerateImageTask(aiGeneratePictureDto)
     }
 
     async genGenerateImage(taskId: string) {
-        return await this.aiGeneratePictureService.generateImage(taskId)
+        return await this.aiService.generateImage(taskId)
     }
 }
