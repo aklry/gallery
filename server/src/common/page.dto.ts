@@ -23,10 +23,10 @@ export class PageRequest {
 export class PageRequestPick {
     @ApiProperty({ description: '当前页', required: false })
     @IsString()
-    @IsNotEmpty()
+    @IsOptional()
     current?: string
     @ApiProperty({ description: '每页条数', required: false })
     @IsString()
-    @IsNotEmpty()
+    @IsOptional()
     pageSize?: string
 }

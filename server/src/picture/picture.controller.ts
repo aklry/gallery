@@ -210,9 +210,8 @@ export class PictureController {
     @ApiResponse({ type: TagCategoryListVo })
     @ApiOperation({ summary: '获取图片标签和分类' })
     async listPictureTagCategory() {
-        const tags = ['热门', '搞笑', '生活', '高清', '艺术', '校园', '背景', '简历', '创意']
         const pictureTags = await this.pictureService.getPictureTags()
-        const allTags = Array.from(new Set([...tags, ...pictureTags]))
+        const allTags = Array.from(new Set([...pictureTags]))
         const category = ['模板', '电商', '表情包', '素材', '海报']
         return this.responseService.success({ tagList: allTags, categoryList: category })
     }

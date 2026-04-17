@@ -13,6 +13,7 @@ import { storeToRefs } from 'pinia'
 import { UserRole } from '@/constants'
 import ImageExpand from '@/components/image-expand/index.vue'
 import { useGenerateImageByAi } from './useGenerateImage'
+import { tagControllerAiCreateTagV1 } from '@/api/tag'
 import { pictureDetailCache } from '@/utils/picture-detail-cache'
 
 const useAddPicture = () => {
@@ -182,6 +183,33 @@ const useAddPicture = () => {
             }
         }
     })
+
+    const generateTagsLoading = ref(false)
+    const handleGenerateTags = async () => {
+        const picUrl = picture.value?.url
+        if (!picUrl) {
+            message.warning('请先成功上传图片')
+            return
+        }
+        generateTagsLoading.value = true
+        try {
+            const res = await tagControllerAiCreateTagV1({
+                picUrl,
+                picId: picture.value?.id as string
+            })
+            if (res.code === 1 && Array.isArray(res.data) && res.data.length > 0) {
+                mergeTags(res.data)
+                message.success('AI 标签提取成功！')
+            } else {
+                message.info('AI 未能识别出新标签')
+            }
+        } catch (e) {
+            message.error('AI 标签提取失败')
+        } finally {
+            generateTagsLoading.value = false
+        }
+    }
+
     return {
         pictureInfo,
         picture,
@@ -200,7 +228,9 @@ const useAddPicture = () => {
         handleGenerateImageTaskByAi,
         openExpandModal,
         text,
-        generateLoading
+        generateLoading,
+        handleGenerateTags,
+        generateTagsLoading
     }
 }
 

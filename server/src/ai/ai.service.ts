@@ -146,12 +146,12 @@ export class AiService {
     async generateTags(imageUrl: string): Promise<string[]> {
         try {
             const response = await this.client.chat.completions.create({
-                model: 'qwen-vl-max', // 阿里云的视觉多模态大模型
+                model: 'qwen3-vl-flash', // 阿里云的视觉多模态大模型
                 messages: [
                     {
                         role: 'system',
                         content:
-                            '你是一个专业的图像打标签助手。请根据提供的图片，提取出最核心、最相关的5个中文标签。只返回一个JSON数组格式的纯文本，例如 ["风景", "二次元", "天空"]，不要包含任何多余的回应文字或Markdown代码块标识。'
+                            '你是一个专业的图像打标签助手。请根据提供的图片，提取出最核心、最相关的3个中文标签。只返回一个JSON数组格式的纯文本，例如 ["风景", "二次元", "天空"]，不要包含任何多余的回应文字或Markdown代码块标识。'
                     },
                     {
                         role: 'user',

@@ -34,6 +34,26 @@ declare namespace API {
         path: string
     }
 
+    type AiCreateTagDto = {
+        /** 图片url */
+        picUrl: string
+        /** 图片id */
+        picId: string
+    }
+
+    type AiCreateTagVo = {
+        /** 状态码 */
+        code: number
+        /** 消息 */
+        message: string
+        /** 标签列表 */
+        data: string[]
+        /** 时间戳 */
+        timestamp: string
+        /** 路径 */
+        path: string
+    }
+
     type AiExpandCreatePictureVo = {
         /** 状态码 */
         code: number

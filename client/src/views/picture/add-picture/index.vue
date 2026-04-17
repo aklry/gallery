@@ -30,7 +30,9 @@ const {
     openExpandModal,
     text,
     handleGenerateImageTaskByAi,
-    generateLoading
+    generateLoading,
+    handleGenerateTags,
+    generateTagsLoading
 } = useAddPicture()
 </script>
 
@@ -255,13 +257,25 @@ const {
                                 />
                             </a-form-item>
                             <a-form-item label="图片标签" name="tags">
-                                <a-select
-                                    v-model:value="pictureInfo.tags"
-                                    :options="tag_category?.tagList"
-                                    mode="tags"
-                                    placeholder="请输入或选择标签"
-                                    allow-clear
-                                />
+                                <div class="flex gap-2">
+                                    <a-select
+                                        v-model:value="pictureInfo.tags"
+                                        :options="tag_category?.tagList"
+                                        mode="tags"
+                                        placeholder="请输入或选择标签"
+                                        allow-clear
+                                        class="flex-1"
+                                    />
+                                    <a-button
+                                        @click="handleGenerateTags"
+                                        :loading="generateTagsLoading"
+                                        :disabled="!picture?.url"
+                                        class="flex items-center justify-center gap-1.5 shadow-sm border-blue-200 text-blue-600 hover:text-blue-700 hover:border-blue-400"
+                                    >
+                                        <RobotOutlined v-if="!generateTagsLoading" />
+                                        智能提取
+                                    </a-button>
+                                </div>
                             </a-form-item>
 
                             <!-- 操作按钮组 -->
