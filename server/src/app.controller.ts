@@ -1,7 +1,7 @@
-import { version } from './config'
+import { version } from '@core/config'
 import { Controller, Get } from '@nestjs/common'
 import { AppService } from './app.service'
-import { ResponseService } from './response/response.service'
+import { ResponseService } from '@core/response/response.service'
 @Controller({
     path: '/app',
     version

@@ -6,7 +6,7 @@
     "private": true,
     "license": "UNLICENSED",
     "scripts": {
-        "build": "nest build",
+        "build": "nest build && node ./scripts/rewrite-dist-aliases.cjs",
         "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
         "start": "nest start",
         "start:dev": "nest start --watch",
@@ -83,6 +83,15 @@
         "testRegex": ".*\\.spec\\.ts$",
         "transform": {
             "^.+\\.(t|j)s$": "ts-jest"
+        },
+        "moduleNameMapper": {
+            "^@core/(.*)$": "<rootDir>/core/$1",
+            "^@shared/(.*)$": "<rootDir>/shared/$1",
+            "^@infra/(.*)$": "<rootDir>/infrastructure/$1",
+            "^@identity/(.*)$": "<rootDir>/modules/identity/$1",
+            "^@gallery/(.*)$": "<rootDir>/modules/gallery/$1",
+            "^@space/(.*)$": "<rootDir>/modules/space/$1",
+            "^@tools/(.*)$": "<rootDir>/modules/tools/$1"
         },
         "collectCoverageFrom": [
             "**/*.(t|j)s"

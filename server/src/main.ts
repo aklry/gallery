@@ -1,10 +1,10 @@
 import { NestFactory } from '@nestjs/core'
 import { AppModule } from './app.module'
-import { SetResponseDataInterceptor } from './interceptors'
+import { SetResponseDataInterceptor } from '@shared/interceptors'
 import { VersioningType } from '@nestjs/common'
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger'
-import { HttpExceptionFilter, BusinessExceptionFilter, AllExceptionsFilter } from './filters'
-import { ApiValidateMiddleware } from './middlewares/api-validate.middleware'
+import { HttpExceptionFilter, BusinessExceptionFilter, AllExceptionsFilter } from '@shared/filters'
+import { ApiValidateMiddleware } from '@shared/middlewares/api-validate.middleware'
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule)

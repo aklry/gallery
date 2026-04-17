@@ -5,5 +5,14 @@
   "testRegex": ".e2e-spec.ts$",
   "transform": {
     "^.+\\.(t|j)s$": "ts-jest"
+  },
+  "moduleNameMapper": {
+    "^@core/(.*)$": "<rootDir>/../src/core/$1",
+    "^@shared/(.*)$": "<rootDir>/../src/shared/$1",
+    "^@infra/(.*)$": "<rootDir>/../src/infrastructure/$1",
+    "^@identity/(.*)$": "<rootDir>/../src/modules/identity/$1",
+    "^@gallery/(.*)$": "<rootDir>/../src/modules/gallery/$1",
+    "^@space/(.*)$": "<rootDir>/../src/modules/space/$1",
+    "^@tools/(.*)$": "<rootDir>/../src/modules/tools/$1"
   }
 }
