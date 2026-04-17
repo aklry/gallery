@@ -15,6 +15,7 @@ import { SpaceService } from '@space/core/space.service'
 import { Prisma } from '@prisma/client'
 import { LoginVoModel } from '@identity/user/vo'
 import { PrismaService } from '@core/prisma/prisma.service'
+import { SpaceUserPermissionConstant } from '@identity/permission/SpaceUserPermissionConstant'
 import {
     SpaceUsageAnalyzeModelVo,
     SpaceCategoryAnalyzeModelVo,
@@ -46,7 +47,12 @@ export class AnalyzeService {
             if (!space) {
                 throw new BusinessException('空间不存在', BusinessStatus.PARAMS_ERROR.code)
             }
-            this.spaceService.checkSpaceAuth(space, user)
+            await this.spaceService.checkSpacePermission(
+                space,
+                user,
+                SpaceUserPermissionConstant.SPACE_ANALYZE,
+                '无权访问空间分析'
+            )
         }
     }
 
@@ -120,7 +126,12 @@ export class AnalyzeService {
             if (!space) {
                 throw new BusinessException('空间不存在', BusinessStatus.PARAMS_ERROR.code)
             }
-            this.spaceService.checkSpaceAuth(space, user)
+            await this.spaceService.checkSpacePermission(
+                space,
+                user,
+                SpaceUserPermissionConstant.SPACE_ANALYZE,
+                '无权访问空间分析'
+            )
             const totalSize = space.totalSize
             const totalCount = space.totalCount
             const sizeUsageRatio = parseFloat(((Number(totalSize) / Number(space.maxSize)) * 100).toFixed(2))

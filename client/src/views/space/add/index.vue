@@ -5,6 +5,17 @@ import { SpaceLevelOptions } from '@/constants'
 import { CloudUploadOutlined, InfoCircleOutlined, PlusOutlined } from '@ant-design/icons-vue'
 
 const { form, handleCreateSpace, loading, spaceLevelList } = useAddSpace()
+
+const spaceTypeOptions = [
+    {
+        label: '私人空间',
+        value: 0
+    },
+    {
+        label: '团队空间',
+        value: 1
+    }
+]
 </script>
 
 <template>
@@ -38,6 +49,21 @@ const { form, handleCreateSpace, loading, spaceLevelList } = useAddSpace()
                             allow-clear
                             class="rounded-lg h-12"
                         />
+                    </a-form-item>
+                    <a-form-item
+                        label="空间类型"
+                        name="spaceType"
+                        :rules="[{ required: true, message: '请选择空间类型' }]"
+                    >
+                        <a-radio-group v-model:value="form.spaceType" class="space-type-group">
+                            <a-radio-button
+                                v-for="option in spaceTypeOptions"
+                                :key="option.value"
+                                :value="option.value"
+                            >
+                                {{ option.label }}
+                            </a-radio-button>
+                        </a-radio-group>
                     </a-form-item>
                     <a-form-item
                         label="空间等级"
@@ -125,6 +151,19 @@ const { form, handleCreateSpace, loading, spaceLevelList } = useAddSpace()
 
 .no-scrollbar {
     scrollbar-width: none;
+}
+
+.space-type-group {
+    display: flex;
+    width: 100%;
+}
+
+.space-type-group :deep(.ant-radio-button-wrapper) {
+    flex: 1;
+    height: 3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 /* 覆盖 Ant Design 下拉框高度 */

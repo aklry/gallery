@@ -12,55 +12,68 @@ export class SpaceUserAuthContext {
     private spaceUser: SpaceUser
 
     public static getAuthContextByRequest(request: any) {
-        const { method, body, params, query, url } = request
+        const { method, body = {}, params = {}, query = {}, url = '' } = request
         const spaceUserAuthContext = new SpaceUserAuthContext()
-        switch (method) {
-            case 'POST':
-                if (body.id) {
-                    spaceUserAuthContext.id = body.id
-                }
-                break
-            case 'GET':
-                if (params.id) {
-                    spaceUserAuthContext.id = params.id
-                } else if (query.id) {
-                    spaceUserAuthContext.id = query.id
-                }
-                break
+        const source = method === 'GET' ? { ...query, ...params } : body
+
+        if (source.id) {
+            spaceUserAuthContext.id = source.id
         }
-        const id = spaceUserAuthContext.id
-        const reg = /\/api\/v1\/([^/]+)/
-        if (reg.test(url)) {
-            const [, field] = url.match(reg)
+        if (source.pictureId) {
+            spaceUserAuthContext.pictureId = source.pictureId
+        }
+        if (source.spaceId) {
+            spaceUserAuthContext.spaceId = source.spaceId
+        }
+        if (source.spaceUserId) {
+            spaceUserAuthContext.spaceUserId = source.spaceUserId
+        }
+
+        const match = url.match(/\/api\/v1\/([^/?]+)/)
+        if (match) {
+            const [, field] = match
             switch (field) {
                 case 'picture':
-                    spaceUserAuthContext.pictureId = id
+                    if (spaceUserAuthContext.id && !spaceUserAuthContext.pictureId) {
+                        spaceUserAuthContext.pictureId = spaceUserAuthContext.id
+                    }
                     break
                 case 'space':
-                    spaceUserAuthContext.spaceId = id
+                    if (spaceUserAuthContext.id && !spaceUserAuthContext.spaceId) {
+                        spaceUserAuthContext.spaceId = spaceUserAuthContext.id
+                    }
                     break
                 case 'space-user':
-                    spaceUserAuthContext.spaceUserId = id
+                    if (spaceUserAuthContext.id && !spaceUserAuthContext.spaceUserId) {
+                        spaceUserAuthContext.spaceUserId = spaceUserAuthContext.id
+                    }
                     break
             }
         }
+
         return spaceUserAuthContext
     }
+
     public getId() {
         return this.id
     }
+
     public getPictureId() {
         return this.pictureId
     }
+
     public getSpaceId() {
         return this.spaceId
     }
+
     public getSpaceUserId() {
         return this.spaceUserId
     }
+
     public getPicture() {
         return this.picture
     }
+
     public getSpaceUser() {
         return this.spaceUser
     }

@@ -119,6 +119,7 @@ model space_user {
   spaceRole  SpaceRole @default(viewer)
   createTime DateTime  @default(now()) @db.DateTime(0)
   updateTime DateTime  @default(now()) @db.DateTime(0)
+  isDelete   Int       @default(0) @db.TinyInt
 
   @@unique([spaceId, userId], map: "uk_spaceId_userId")
   @@index([spaceId], map: "idx_spaceId")

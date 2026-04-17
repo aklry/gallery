@@ -1,17 +1,18 @@
 import { Injectable } from '@nestjs/common'
-import { AddSpaceUserDto, DeleteSpaceUserDto, EditSpaceUserDto, QuerySpaceUserDto } from './dto'
-import { SpaceUser } from './entities/space-user.entity'
-import { BusinessException } from '@shared/custom-exception'
+import { Prisma, SpaceRole } from '@prisma/client'
+import type { Request } from 'express'
 import { BusinessStatus } from '@core/config'
-import { SpaceService } from '@space/core/space.service'
-import { UserService } from '@identity/user/user.service'
-import { SpaceRoleHelper } from './enum/space-role'
 import { PrismaService } from '@core/prisma/prisma.service'
-import { type Request } from 'express'
-import { SpaceUserModelVo } from './vo'
+import { UserService } from '@identity/user/user.service'
 import { UserVoModel } from '@identity/user/vo'
+import { SpaceTypeEnum, getSpaceTypeEnumByValue } from '@space/core/enum'
+import { SpaceService } from '@space/core/space.service'
 import { SpaceModelVo } from '@space/core/vo'
-import { Prisma } from '@prisma/client'
+import { BusinessException } from '@shared/custom-exception'
+import { AddSpaceUserDto, DeleteSpaceUserDto, EditSpaceUserDto, QuerySpaceUserDto, QuitSpaceUserDto } from './dto'
+import { SpaceRoleHelper } from './enum/space-role'
+import { SpaceUser } from './entities/space-user.entity'
+import { SpaceUserModelVo } from './vo'
 
 @Injectable()
 export class SpaceUserService {
@@ -21,15 +22,19 @@ export class SpaceUserService {
         private readonly prisma: PrismaService
     ) {}
 
-    // 添加空间成员
     async addSpaceUser(addSpaceUserDto: AddSpaceUserDto) {
-        const spaceUser = new SpaceUser()
-        spaceUser.userId = addSpaceUserDto.userId
-        spaceUser.spaceId = addSpaceUserDto.spaceId
-        spaceUser.spaceRole = addSpaceUserDto.spaceRole
-        this.validateSpaceUser(spaceUser, true)
+        const { userId, spaceId, spaceRole } = addSpaceUserDto
+        this.validateSpaceRole(spaceRole)
+        await this.getTeamSpaceOrThrow(spaceId)
+        await this.ensureUserExists(userId)
+        await this.ensureMembershipNotExists(spaceId, userId)
+
         const result = await this.prisma.space_user.create({
-            data: spaceUser
+            data: {
+                userId,
+                spaceId,
+                spaceRole
+            }
         })
         if (!result) {
             throw new BusinessException('添加空间成员失败', BusinessStatus.SYSTEM_ERROR.code)
@@ -37,15 +42,15 @@ export class SpaceUserService {
         return result.id
     }
 
-    // 删除空间成员
     async deleteSpaceUser(deleteSpaceUserDto: DeleteSpaceUserDto) {
-        const { id } = deleteSpaceUserDto
-        if (!id) {
-            throw new BusinessException('空间成员id不能为空', BusinessStatus.PARAMS_ERROR.code)
-        }
+        const targetSpaceUser = await this.getByIdOrThrow(deleteSpaceUserDto.id)
+        const space = await this.getTeamSpaceOrThrow(targetSpaceUser.spaceId)
+        this.ensureSpaceOwnerProtected(space.userId, targetSpaceUser.userId, '移除')
+        await this.ensureAdminCountSafeForRemoval(targetSpaceUser)
+
         const result = await this.prisma.space_user.delete({
             where: {
-                id
+                id: deleteSpaceUserDto.id
             }
         })
         if (!result) {
@@ -54,48 +59,11 @@ export class SpaceUserService {
         return true
     }
 
-    async getSpaceUser(spaceUser: SpaceUser, req: Request) {
-        const user = req.session.user
-        const userId = user.id
-        const spaceUserVo = {} as SpaceUserModelVo
-        if (userId) {
-            const loginUser = await this.userService.getUserById(userId)
-            spaceUserVo.user = {
-                id: loginUser.id,
-                userAccount: loginUser.userAccount,
-                userName: loginUser.userName,
-                userAvatar: loginUser.userAvatar,
-                userProfile: loginUser.userProfile,
-                userRole: loginUser.userRole
-            } as UserVoModel
-        }
-        const spaceId = spaceUser.spaceId
-        if (spaceId) {
-            const space = await this.spaceService.getById(spaceId)
-            spaceUserVo.space = {
-                id: space.id,
-                spaceName: space.spaceName,
-                spaceType: space.spaceType,
-                maxCount: space.maxCount,
-                maxSize: space.maxSize,
-                totalCount: space.totalCount,
-                totalSize: space.totalSize,
-                userId: space.userId,
-                user: spaceUserVo.user,
-                createTime: space.createTime,
-                editTime: space.editTime,
-                updateTime: space.updateTime
-            } as SpaceModelVo
-        }
-        return spaceUserVo
-    }
-
-    // 获取空间成员列表
     async getSpaceUserVoList(spaceUserList: Array<SpaceUser>) {
         if (spaceUserList.length === 0) {
             return []
         }
-        // 对象列表 -> 对象vo列表
+
         const spaceUserVoList = spaceUserList.map(
             spaceUser =>
                 ({
@@ -109,44 +77,35 @@ export class SpaceUserService {
                     space: null
                 }) as SpaceUserModelVo
         )
-        const userIdList = spaceUserList.map(spaceUser => spaceUser.userId)
-        const spaceIdList = spaceUserList.map(spaceUser => spaceUser.spaceId)
-        // 批量查询用户和空间
-        const userList = await this.userService.getUserByIds(userIdList)
-        const spaceList = await this.spaceService.getByIds(spaceIdList)
-        const userListMap = userList.reduce((map, user) => {
-            if (!map.has(user.id)) {
-                map.set(user.id, [])
-            }
-            map.get(user.id).push(user)
-            return map
-        }, new Map<string, UserVoModel[]>())
-        const spaceListMap = spaceList.reduce((map, space) => {
-            if (!map.has(space.id)) {
-                map.set(space.id, [])
-            }
-            map.get(space.id).push(space)
-            return map
-        }, new Map<string, SpaceModelVo[]>())
+
+        const userIdList = Array.from(new Set(spaceUserList.map(spaceUser => spaceUser.userId)))
+        const spaceIdList = Array.from(new Set(spaceUserList.map(spaceUser => spaceUser.spaceId)))
+        const [userList, spaceList] = await Promise.all([
+            this.userService.getUserByIds(userIdList),
+            this.spaceService.getByIds(spaceIdList)
+        ])
+
+        const userMap = new Map<string, UserVoModel>(userList.map(user => [user.id, user]))
+        const spaceMap = new Map<string, SpaceModelVo>(spaceList.map(space => [space.id, space]))
+
         spaceUserVoList.forEach(spaceUserVo => {
-            const userId = spaceUserVo.userId
-            const spaceId = spaceUserVo.spaceId
-            if (userListMap.has(userId)) {
-                spaceUserVo.user = userListMap.get(userId)[0]
+            if (userMap.has(spaceUserVo.userId)) {
+                spaceUserVo.user = userMap.get(spaceUserVo.userId) ?? null
             }
-            if (spaceListMap.has(spaceId)) {
-                spaceUserVo.space = spaceListMap.get(spaceId)[0]
+            if (spaceMap.has(spaceUserVo.spaceId)) {
+                spaceUserVo.space = spaceMap.get(spaceUserVo.spaceId) ?? null
             }
         })
+
         return spaceUserVoList
     }
 
-    // 查询某个成员在某个空间的信息
     async getOneSpaceUser(querySpaceUserDto: QuerySpaceUserDto) {
-        const { userId, spaceId } = querySpaceUserDto
-        if (!spaceId || !userId) {
-            throw new BusinessException('空间成员对象参数不能为空', BusinessStatus.PARAMS_ERROR.code)
+        const { id, userId, spaceId } = querySpaceUserDto
+        if (!id && (!spaceId || !userId)) {
+            throw new BusinessException('空间成员查询参数不能为空', BusinessStatus.PARAMS_ERROR.code)
         }
+
         const result = await this.prisma.space_user.findFirst({
             where: SpaceUserService.buildQuery(querySpaceUserDto)
         })
@@ -156,73 +115,102 @@ export class SpaceUserService {
         return result as SpaceUser
     }
 
-    async getSpaceUserList(querySpaceUserDto: QuerySpaceUserDto, req: Request) {
-        const result = await this.prisma.space_user.findMany({
-            where: SpaceUserService.buildQuery(querySpaceUserDto)
-        })
-        return this.getSpaceUserVoList(result)
-    }
-    // 修改空间成员信息(设置权限)
-    async editSpaceUser(editSpaceUserDto: EditSpaceUserDto, req: Request) {
-        const spaceUser = new SpaceUser()
-        Object.assign(spaceUser, editSpaceUserDto)
-        this.validateSpaceUser(spaceUser)
-        const { id } = editSpaceUserDto
-        const oldSpaceUser = await this.getById(id)
-        if (!oldSpaceUser) {
-            throw new BusinessException('空间成员不存在', BusinessStatus.PARAMS_ERROR.code)
+    async getSpaceUserList(querySpaceUserDto: QuerySpaceUserDto) {
+        const { spaceId } = querySpaceUserDto
+        if (!spaceId) {
+            throw new BusinessException('spaceId 不能为空', BusinessStatus.PARAMS_ERROR.code)
         }
-        const result = await this.prisma.space_user.update({
-            where: {
-                id
-            },
-            data: spaceUser
-        })
-        if (!result) {
-            throw new BusinessException('设置权限失败', BusinessStatus.SYSTEM_ERROR.code)
-        }
-        return true
-    }
-    // 获取我加入的空间
-    async getMyAddTeam(req: Request) {
-        const user = req.session.user
-        const querySpaceUserDto = new QuerySpaceUserDto()
-        querySpaceUserDto.userId = user.id
+
+        await this.getTeamSpaceOrThrow(spaceId)
         const result = await this.prisma.space_user.findMany({
-            where: SpaceUserService.buildQuery(querySpaceUserDto)
+            where: SpaceUserService.buildQuery(querySpaceUserDto),
+            orderBy: {
+                createTime: 'asc'
+            }
         })
         return this.getSpaceUserVoList(result)
     }
 
-    // 校验空间成员对象
-    validateSpaceUser(spaceUser: SpaceUser, add: boolean = true) {
-        if (!spaceUser) {
-            throw new BusinessException('空间成员对象不能为空', BusinessStatus.PARAMS_ERROR.code)
+    async editSpaceUser(editSpaceUserDto: EditSpaceUserDto) {
+        const { id, spaceRole } = editSpaceUserDto
+        this.validateSpaceRole(spaceRole)
+
+        const oldSpaceUser = await this.getByIdOrThrow(id)
+        const space = await this.getTeamSpaceOrThrow(oldSpaceUser.spaceId)
+        if (oldSpaceUser.spaceRole === spaceRole) {
+            return true
         }
-        const { userId, spaceId, spaceRole } = spaceUser
-        if (add) {
-            // 添加空间成员
-            if (!userId || !spaceId || !spaceRole) {
-                throw new BusinessException('空间成员对象参数不能为空', BusinessStatus.PARAMS_ERROR.code)
+
+        this.ensureSpaceOwnerProtected(space.userId, oldSpaceUser.userId, '调整角色')
+        if (oldSpaceUser.spaceRole === SpaceRole.admin && spaceRole !== SpaceRole.admin) {
+            await this.ensureAdminCountSafeForRemoval(oldSpaceUser)
+        }
+
+        const result = await this.prisma.space_user.update({
+            where: {
+                id
+            },
+            data: {
+                spaceRole
             }
-            this.userService.getUserById(userId).then(user => {
-                if (!user) {
-                    throw new BusinessException('用户不存在', BusinessStatus.PARAMS_ERROR.code)
-                }
-            })
-            this.spaceService.getById(spaceId).then(space => {
-                if (!space) {
-                    throw new BusinessException('空间不存在', BusinessStatus.PARAMS_ERROR.code)
-                }
-            })
+        })
+        if (!result) {
+            throw new BusinessException('设置成员角色失败', BusinessStatus.SYSTEM_ERROR.code)
         }
+        return true
+    }
+
+    async quitSpace(quitSpaceUserDto: QuitSpaceUserDto, req: Request) {
+        const user = req.session.user
+        const { spaceId } = quitSpaceUserDto
+        const space = await this.getTeamSpaceOrThrow(spaceId)
+        if (space.userId === user.id) {
+            throw new BusinessException('空间创建者不能退出团队空间', BusinessStatus.PARAMS_ERROR.code)
+        }
+
+        const targetSpaceUser = await this.prisma.space_user.findFirst({
+            where: {
+                spaceId,
+                userId: user.id
+            }
+        })
+        if (!targetSpaceUser) {
+            throw new BusinessException('你不是该空间成员', BusinessStatus.PARAMS_ERROR.code)
+        }
+
+        await this.ensureAdminCountSafeForRemoval(targetSpaceUser)
+        const result = await this.prisma.space_user.delete({
+            where: {
+                id: targetSpaceUser.id
+            }
+        })
+        if (!result) {
+            throw new BusinessException('退出团队空间失败', BusinessStatus.SYSTEM_ERROR.code)
+        }
+        return true
+    }
+
+    async getMyAddTeam(req: Request) {
+        const user = req.session.user
+        const result = await this.prisma.space_user.findMany({
+            where: {
+                userId: user.id
+            },
+            orderBy: {
+                createTime: 'desc'
+            }
+        })
+        const spaceUserVoList = await this.getSpaceUserVoList(result)
+        return spaceUserVoList.filter(item => item.space?.spaceType === SpaceTypeEnum.TEAM)
+    }
+
+    validateSpaceRole(spaceRole: SpaceRole) {
         const spaceRoleEnum = SpaceRoleHelper.getEnumByValue(spaceRole)
         if (spaceRole !== null && !spaceRoleEnum) {
             throw new BusinessException('空间角色不存在', BusinessStatus.PARAMS_ERROR.code)
         }
     }
 
-    // 构造查询条件
     static buildQuery(querySpaceUser: QuerySpaceUserDto) {
         const { userId, spaceId, spaceRole, id } = querySpaceUser
         const where: Prisma.space_userWhereInput = {}
@@ -248,5 +236,71 @@ export class SpaceUserService {
                 id
             }
         })
+    }
+
+    private async getByIdOrThrow(id: string) {
+        if (!id) {
+            throw new BusinessException('空间成员 id 不能为空', BusinessStatus.PARAMS_ERROR.code)
+        }
+        const spaceUser = await this.getById(id)
+        if (!spaceUser) {
+            throw new BusinessException('空间成员不存在', BusinessStatus.PARAMS_ERROR.code)
+        }
+        return spaceUser
+    }
+
+    private async getTeamSpaceOrThrow(spaceId: string) {
+        if (!spaceId) {
+            throw new BusinessException('spaceId 不能为空', BusinessStatus.PARAMS_ERROR.code)
+        }
+        const space = await this.spaceService.getById(spaceId)
+        const spaceType = getSpaceTypeEnumByValue(space.spaceType)
+        if (spaceType?.value !== SpaceTypeEnum.TEAM) {
+            throw new BusinessException('仅团队空间支持成员管理', BusinessStatus.PARAMS_ERROR.code)
+        }
+        return space
+    }
+
+    private async ensureUserExists(userId: string) {
+        if (!userId) {
+            throw new BusinessException('用户 id 不能为空', BusinessStatus.PARAMS_ERROR.code)
+        }
+        const user = await this.userService.getUserById(userId)
+        if (!user) {
+            throw new BusinessException('用户不存在', BusinessStatus.PARAMS_ERROR.code)
+        }
+    }
+
+    private async ensureMembershipNotExists(spaceId: string, userId: string) {
+        const existed = await this.prisma.space_user.findFirst({
+            where: {
+                spaceId,
+                userId
+            }
+        })
+        if (existed) {
+            throw new BusinessException('该用户已经是空间成员', BusinessStatus.PARAMS_ERROR.code)
+        }
+    }
+
+    private ensureSpaceOwnerProtected(spaceOwnerUserId: string, targetUserId: string, action: string) {
+        if (spaceOwnerUserId === targetUserId) {
+            throw new BusinessException(`空间创建者不能被${action}`, BusinessStatus.PARAMS_ERROR.code)
+        }
+    }
+
+    private async ensureAdminCountSafeForRemoval(spaceUser: SpaceUser) {
+        if (spaceUser.spaceRole !== SpaceRole.admin) {
+            return
+        }
+        const adminCount = await this.prisma.space_user.count({
+            where: {
+                spaceId: spaceUser.spaceId,
+                spaceRole: SpaceRole.admin
+            }
+        })
+        if (adminCount <= 1) {
+            throw new BusinessException('至少保留一个空间管理员', BusinessStatus.PARAMS_ERROR.code)
+        }
     }
 }

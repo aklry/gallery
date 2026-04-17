@@ -12,6 +12,7 @@ import { SpaceModelVo } from './vo'
 import { LoginVoModel } from '@identity/user/vo'
 import { SpaceRoleMap } from '@space/user/enum/space-role'
 import { SpaceUserAuthManager } from '@identity/permission/SpaceUserAuthManager'
+import { SpaceUserPermissionConstant } from '@identity/permission/SpaceUserPermissionConstant'
 
 @Injectable()
 export class SpaceService {
@@ -263,10 +264,8 @@ export class SpaceService {
         if (!id) {
             throw new BusinessException('空间ID不能为空', BusinessStatus.PARAMS_ERROR.code)
         }
-        if (id !== user.id) {
-            throw new BusinessException('无权限编辑空间', BusinessStatus.NOT_AUTH_ERROR.code)
-        }
         const space = await this.getById(id)
+        await this.checkSpaceEditAuth(space, user)
         this.validateSpace(space, false)
         const result = await this.prismaService.space.update({
             where: {
@@ -281,7 +280,6 @@ export class SpaceService {
         }
         return true
     }
-
     async getSpaceVoById(id: string, req: Request) {
         const user = req.session.user
         const space = await this.getById(id)
@@ -289,8 +287,9 @@ export class SpaceService {
             throw new BusinessException('空间不存在', BusinessStatus.PARAMS_ERROR.code)
         }
         const spaceVo = new SpaceModelVo()
+        const permissionList = await this.checkSpaceAuth(space, user)
         Object.assign(spaceVo, space)
-        spaceVo.permissions = await this.spaceUserAuthManager.getPermissionList(space, user)
+        spaceVo.permissions = permissionList
         return spaceVo
     }
 
@@ -340,9 +339,25 @@ export class SpaceService {
         }
     }
 
-    checkSpaceAuth(space: Space, user: LoginVoModel) {
-        if (space.userId !== user.id && user.userRole !== UserRole.ADMIN) {
-            throw new BusinessException('无权访问空间', BusinessStatus.NOT_AUTH_ERROR.code)
+    async checkSpaceAuth(space: Space, user: LoginVoModel) {
+        return this.checkSpacePermission(space, user, SpaceUserPermissionConstant.SPACE_VIEW, '无权访问空间')
+    }
+
+    async checkSpacePermission(space: Space, user: LoginVoModel, needPermission: string, errorMessage = '无权限') {
+        const permissionList = await this.spaceUserAuthManager.getPermissionList(space, user)
+        if (!permissionList.includes(needPermission)) {
+            throw new BusinessException(errorMessage, BusinessStatus.NOT_AUTH_ERROR.code)
+        }
+        return permissionList
+    }
+
+    private async checkSpaceEditAuth(space: Space, user: LoginVoModel) {
+        if (user.userRole === UserRole.ADMIN || space.userId === user.id) {
+            return
+        }
+        const permissionList = await this.spaceUserAuthManager.getPermissionList(space, user)
+        if (!permissionList.includes(SpaceUserPermissionConstant.SPACE_USER_MANAGE)) {
+            throw new BusinessException('无权限编辑空间', BusinessStatus.NOT_AUTH_ERROR.code)
         }
     }
 }

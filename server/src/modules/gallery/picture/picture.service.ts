@@ -180,13 +180,7 @@ export class PictureService {
             if (!user || !user.id) {
                 throw new BusinessException('未登录', BusinessStatus.NOT_LOGIN_ERROR.code)
             }
-            const space = await this.spaceService.getById(filters.spaceId)
-            if (!space) {
-                throw new BusinessException('空间不存在', BusinessStatus.PARAMS_ERROR.code)
-            }
-            if (space.userId !== user.id) {
-                throw new BusinessException('无权限', BusinessStatus.NOT_AUTH_ERROR.code)
-            }
+            await this.ensureSpacePermission(filters.spaceId, user, SpaceUserPermissionConstant.PICTURE_VIEW)
         }
         // const cacheKey = `picture_page_${current}_${pageSize}`
         // const cacheData = await this.redisCacheService.get<ShowPictureModelVo[]>(cacheKey)
@@ -544,15 +538,11 @@ export class PictureService {
         if (!user) {
             throw new BusinessException('用户未登录', BusinessStatus.NOT_LOGIN_ERROR.code)
         }
-        const userId = user.id
         const oldPicture = await this.getById(id)
         if (!oldPicture) {
             throw new BusinessException('图片不存在', BusinessStatus.OPERATION_ERROR.code)
         }
-        this.checkPictureAuth(user, oldPicture)
-        if (oldPicture.user.id !== userId && user.userRole !== UserRole.ADMIN) {
-            throw new BusinessException('仅自己或管理员可以删除', BusinessStatus.OPERATION_ERROR.code)
-        }
+        await this.checkPictureAuth(user, oldPicture, SpaceUserPermissionConstant.PICTURE_DELETE)
         const result = await this.prismaService.picture.delete({
             where: { id }
         })
@@ -799,7 +789,7 @@ export class PictureService {
         const user = req.session.user
         const oldPicture = await this.getById(id)
         this.validPicture(oldPicture)
-        this.checkPictureAuth(user, oldPicture)
+        await this.checkPictureAuth(user, oldPicture, SpaceUserPermissionConstant.PICTURE_EDIT)
         const result = await this.prismaService.picture.update({
             where: { id },
             data: {
@@ -978,16 +968,12 @@ export class PictureService {
         if (!user) {
             throw new BusinessException('用户未登录', BusinessStatus.NOT_LOGIN_ERROR.code)
         }
-        const userId = user.id
         const oldPicture = await this.getByIds(deleteBatchPictureDto.ids)
         if (!oldPicture) {
             throw new BusinessException('图片不存在', BusinessStatus.OPERATION_ERROR.code)
         }
         for (const picture of oldPicture) {
-            this.checkPictureAuth(user, picture)
-            if (picture.user.id !== userId && user.userRole !== UserRole.ADMIN) {
-                throw new BusinessException('仅自己或管理员可以删除', BusinessStatus.OPERATION_ERROR.code)
-            }
+            await this.checkPictureAuth(user, picture, SpaceUserPermissionConstant.PICTURE_DELETE)
         }
         const result = await this.prismaService.picture.deleteMany({
             where: {
@@ -1022,18 +1008,27 @@ export class PictureService {
     /**
      * 校验权限
      */
-    checkPictureAuth(user: LoginVoModel, picture: GetPictureVoModel) {
+    async checkPictureAuth(user: LoginVoModel, picture: GetPictureVoModel, needPermission: string) {
         const spaceId = picture.spaceId
         if (!spaceId) {
             // 公共图库
             if (picture.user.id !== user.id && user.userRole !== UserRole.ADMIN) {
                 throw new BusinessException('仅限本人或管理员使用', BusinessStatus.NOT_AUTH_ERROR.code)
             }
-        } else {
-            // 空间图片
-            if (picture.user.id !== user.id) {
-                throw new BusinessException('无权限', BusinessStatus.NOT_AUTH_ERROR.code)
-            }
+            return
+        }
+
+        await this.ensureSpacePermission(spaceId, user, needPermission)
+    }
+
+    private async ensureSpacePermission(spaceId: string, user: LoginVoModel, needPermission: string) {
+        const space = await this.spaceService.getById(spaceId)
+        if (!space) {
+            throw new BusinessException('空间不存在', BusinessStatus.PARAMS_ERROR.code)
+        }
+        const permissionList = await this.spaceUserAuthManager.getPermissionList(space, user)
+        if (!permissionList.includes(needPermission)) {
+            throw new BusinessException('无权限', BusinessStatus.NOT_AUTH_ERROR.code)
         }
     }
 
@@ -1087,13 +1082,7 @@ export class PictureService {
         if (!spaceId || !color) {
             throw new BusinessException('参数错误', BusinessStatus.PARAMS_ERROR.code)
         }
-        const space = await this.spaceService.getById(spaceId)
-        if (!space) {
-            throw new BusinessException('空间不存在', BusinessStatus.PARAMS_ERROR.code)
-        }
-        if (user.id !== space.userId) {
-            throw new BusinessException('没有空间访问权限', BusinessStatus.NOT_AUTH_ERROR.code)
-        }
+        await this.ensureSpacePermission(spaceId, user, SpaceUserPermissionConstant.PICTURE_VIEW)
         const pictureList = await this.prismaService.picture.findMany({
             where: {
                 spaceId,
@@ -1126,19 +1115,13 @@ export class PictureService {
     async editPictureBatch(editPictureByBatchDto: EditPictureByBatchDto, req: Request) {
         const user = req.session.user
         const { idList, spaceId, category, tags, nameRule } = editPictureByBatchDto
-        const space = await this.spaceService.getById(spaceId)
         if (!user || !user.id) {
             throw new BusinessException('未登录', BusinessStatus.NOT_LOGIN_ERROR.code)
         }
         if (!spaceId || !idList || idList.length === 0) {
             throw new BusinessException('参数错误', BusinessStatus.PARAMS_ERROR.code)
         }
-        if (!space) {
-            throw new BusinessException('空间不存在', BusinessStatus.PARAMS_ERROR.code)
-        }
-        if (user.id !== space.userId) {
-            throw new BusinessException('没有空间访问权限', BusinessStatus.NOT_AUTH_ERROR.code)
-        }
+        await this.ensureSpacePermission(spaceId, user, SpaceUserPermissionConstant.PICTURE_EDIT)
         return await this.prismaService.$transaction(async prisma => {
             let count = 1
             // Update pictures one by one to increment count
@@ -1179,7 +1162,7 @@ export class PictureService {
         if (!picture) {
             throw new BusinessException('图片不存在', BusinessStatus.PARAMS_ERROR.code)
         }
-        this.checkPictureAuth(user, picture)
+        await this.checkPictureAuth(user, picture, SpaceUserPermissionConstant.PICTURE_EDIT)
         return await this.aiService.createOutPaintingTask(aiExpandPictureCreateDto)
     }
 

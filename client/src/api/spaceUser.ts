@@ -29,7 +29,7 @@ export async function spaceUserControllerDeleteSpaceUserV1(
     })
 }
 
-/** 修改空间成员权限 POST /api/v1/space-user/edit */
+/** 修改空间成员角色 POST /api/v1/space-user/edit */
 export async function spaceUserControllerEditSpaceUserAuthV1(
     body: API.EditSpaceUserDto,
     options?: { [key: string]: any }
@@ -65,6 +65,24 @@ export async function spaceUserControllerGetSpaceUserListV1(
     options?: { [key: string]: any }
 ) {
     return ryRequest.request<API.SpaceUserListVo>('/api/v1/space-user/list', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        data: body,
+        ...(options || {})
+    })
+}
+
+/** 退出团队空间 POST /api/v1/space-user/quit */
+export async function spaceUserControllerQuitSpaceV1(body: { spaceId: string }, options?: { [key: string]: any }) {
+    return ryRequest.request<{
+        code: number
+        message: string
+        data: boolean
+        timestamp: string
+        path: string
+    }>('/api/v1/space-user/quit', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'

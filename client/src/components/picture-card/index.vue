@@ -1,8 +1,14 @@
 <script setup lang="ts">
 import { EditOutlined, DeleteOutlined, EyeOutlined } from '@ant-design/icons-vue'
+import { computed } from 'vue'
 import { PictureCardEmits, PictureCardProps } from './types'
-defineProps<PictureCardProps>()
+
+const props = withDefaults(defineProps<PictureCardProps>(), {
+    showEditAction: true,
+    showDeleteAction: true
+})
 const emit = defineEmits<PictureCardEmits>()
+const showActionBar = computed(() => props.showEditAction || props.showDeleteAction)
 
 const handlePreviewPicture = (id: string, e?: MouseEvent) => {
     e?.stopPropagation()
@@ -38,20 +44,24 @@ const handleEditPicture = (id: string, e: MouseEvent) => {
                                 >
                                     <EyeOutlined />
                                 </a-button>
-                                <a-button
-                                    type="text"
-                                    class="overlay-btn"
-                                    @click="(e: MouseEvent) => handleEditPicture(picture.id, e)"
-                                >
-                                    <EditOutlined />
-                                </a-button>
-                                <a-button
-                                    type="text"
-                                    class="overlay-btn overlay-btn--danger"
-                                    @click="(e: MouseEvent) => handleDeletePrivatePicture(picture.id, e)"
-                                >
-                                    <DeleteOutlined />
-                                </a-button>
+                                <template v-if="showActionBar">
+                                    <a-button
+                                        v-if="showEditAction"
+                                        type="text"
+                                        class="overlay-btn"
+                                        @click="(e: MouseEvent) => handleEditPicture(picture.id, e)"
+                                    >
+                                        <EditOutlined />
+                                    </a-button>
+                                    <a-button
+                                        v-if="showDeleteAction"
+                                        type="text"
+                                        class="overlay-btn overlay-btn--danger"
+                                        @click="(e: MouseEvent) => handleDeletePrivatePicture(picture.id, e)"
+                                    >
+                                        <DeleteOutlined />
+                                    </a-button>
+                                </template>
                             </div>
                         </div>
                         <div class="pic-card__body">

@@ -36,10 +36,6 @@ export class PermissionKit {
     static getSpaceUserAuthManager() {
         return PermissionKit.spaceUserAuthManager
     }
-
-    getId() {
-        return this.redisService.get('id')
-    }
 }
 
 @Injectable()
@@ -60,11 +56,8 @@ export class PermissionGuard implements CanActivate {
             return true
         }
         const request = context.switchToHttp().getRequest()
-        const id = await this.permissionKit.getId()
-        const permissions = await this.getPermissionList(id, PERMISSION_KEY, request)
-        if (permissions.length === 0) {
-            return true
-        }
+        const loginId = request.session?.user?.id ?? ''
+        const permissions = await this.getPermissionList(loginId, PERMISSION_KEY, request)
         return requiredPermissions.every(permission => permissions.includes(permission))
     }
 
@@ -77,16 +70,17 @@ export class PermissionGuard implements CanActivate {
         if (this.isAllFieldsNull(authContext)) {
             return ADMIN_PERMISSIONS
         }
-        const user = (await this.permissionKit.getSession(loginId)) as LoginVoModel
+        const user = await this.getLoginUser(loginId, request)
         if (!user) {
             throw new BusinessException('用户未登录', BusinessStatus.NOT_LOGIN_ERROR.code)
         }
         const userId = user.id
-        // 优先从上下文获取空间用户信息
+
         let spaceUser = authContext.getSpaceUser()
         if (spaceUser) {
             return PermissionKit.getSpaceUserAuthManager().getPermissionsByRole(spaceUser.spaceRole)
         }
+
         const spaceUserId = authContext.getSpaceUserId()
         if (spaceUserId) {
             spaceUser = await this.prisma.space_user.findUnique({
@@ -108,6 +102,7 @@ export class PermissionGuard implements CanActivate {
             }
             return PermissionKit.getSpaceUserAuthManager().getPermissionsByRole(loginSpaceUser.spaceRole)
         }
+
         let spaceId = authContext.getSpaceId()
         if (!spaceId) {
             const pictureId = authContext.getPictureId()
@@ -128,16 +123,14 @@ export class PermissionGuard implements CanActivate {
                 throw new BusinessException('未找到图片信息', BusinessStatus.PARAMS_ERROR.code)
             }
             spaceId = picture.spaceId
-            // 公共图库，仅本人或管理员可操作
             if (!spaceId) {
                 if (picture.userId === userId || user.userRole === SpaceRoleMap.admin.value) {
                     return ADMIN_PERMISSIONS
-                } else {
-                    return [SpaceUserPermissionConstant.PICTURE_VIEW]
                 }
+                return [SpaceUserPermissionConstant.PICTURE_VIEW]
             }
         }
-        // 获取Space对象
+
         const space = await this.prisma.space.findUnique({
             where: {
                 id: spaceId
@@ -146,26 +139,23 @@ export class PermissionGuard implements CanActivate {
         if (!space) {
             throw new BusinessException('未找到空间信息', BusinessStatus.PARAMS_ERROR.code)
         }
-        // 根据空间类型判断权限
         if (space.spaceType === SpaceTypeMap[SpaceTypeEnum.PRIVATE].value) {
-            // 私有空间，仅本人或管理员有权限
             if (space.userId === userId || user.userRole === SpaceRoleMap.admin.value) {
                 return ADMIN_PERMISSIONS
             }
             return []
-        } else {
-            // 团队空间，查询SpaceUser并获取角色和权限
-            spaceUser = await this.prisma.space_user.findFirst({
-                where: {
-                    spaceId,
-                    userId
-                }
-            })
-            if (!spaceUser) {
-                return []
-            }
-            return PermissionKit.getSpaceUserAuthManager().getPermissionsByRole(spaceUser.spaceRole)
         }
+
+        spaceUser = await this.prisma.space_user.findFirst({
+            where: {
+                spaceId,
+                userId
+            }
+        })
+        if (!spaceUser) {
+            return []
+        }
+        return PermissionKit.getSpaceUserAuthManager().getPermissionsByRole(spaceUser.spaceRole)
     }
 
     isAllFieldsNull(obj: SpaceUserAuthContext) {
@@ -173,8 +163,18 @@ export class PermissionGuard implements CanActivate {
     }
 
     async hasPermission(loginId: string, loginType: string, request: any, needPermission: string[]) {
-        // 获取当前用户的权限列表
         const permissions = await this.getPermissionList(loginId, loginType, request)
         return needPermission.every(permission => permissions.includes(permission))
+    }
+
+    private async getLoginUser(loginId: string, request: any) {
+        const sessionUser = request.session?.user as LoginVoModel | undefined
+        if (sessionUser) {
+            return sessionUser
+        }
+        if (!loginId) {
+            return null
+        }
+        return (await this.permissionKit.getSession(loginId)) as LoginVoModel
     }
 }

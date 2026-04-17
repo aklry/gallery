@@ -1,6 +1,16 @@
 {
     "permissions": [
         {
+            "key": "space:view",
+            "name": "查看空间",
+            "description": "查看空间详情和空间内资源"
+        },
+        {
+            "key": "space:analyze",
+            "name": "空间分析",
+            "description": "查看空间分析数据"
+        },
+        {
             "key": "spaceUser:manage",
             "name": "成员管理",
             "description": "管理空间成员，添加或移除成员"
@@ -31,32 +41,36 @@
             "key": "viewer",
             "name": "浏览者",
             "permissions": [
+                "space:view",
                 "picture:view"
             ],
-            "description": "查看图片"
+            "description": "查看空间和图片"
         },
         {
             "key": "editor",
             "name": "编辑者",
             "permissions": [
+                "space:view",
                 "picture:view",
                 "picture:upload",
                 "picture:edit",
                 "picture:delete"
             ],
-            "description": "查看图片、上传图片、修改图片、删除图片"
+            "description": "查看空间、查看图片、上传图片、修改图片、删除图片"
         },
         {
             "key": "admin",
             "name": "管理员",
             "permissions": [
+                "space:view",
+                "space:analyze",
                 "spaceUser:manage",
                 "picture:view",
                 "picture:upload",
                 "picture:edit",
                 "picture:delete"
             ],
-            "description": "成员管理、查看图片、上传图片、修改图片、删除图片"
+            "description": "空间查看、空间分析、成员管理、查看图片、上传图片、修改图片、删除图片"
         }
     ]
 }
