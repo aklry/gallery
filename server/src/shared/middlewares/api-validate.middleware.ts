@@ -9,7 +9,7 @@ import { BusinessStatus } from '@core/config'
 export class ApiValidateMiddleware implements NestMiddleware {
     use(req: Request, _res: Response, next: NextFunction) {
         const { headers, originalUrl } = req
-        const filterPath: string[] = ['message/stream', 'swagger', 'swagger-json', 'sitemap.xml', 'picture']
+        const filterPath: string[] = ['message/stream', 'docs', 'swagger-json', 'sitemap.xml', 'picture']
         if (filterPath.some(path => originalUrl.includes(path))) {
             next()
             return
