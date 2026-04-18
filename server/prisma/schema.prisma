@@ -74,10 +74,19 @@ model message {
   isDelete   Int           @default(0) @db.TinyInt
   hasRead    MessageStatus @default(UNREAD)
   title      String?       @db.VarChar(128)
-  pictureId  String        @db.VarChar(256)
+  pictureId  String?       @db.VarChar(256)
+  messageType String       @default("PICTURE_REVIEW") @db.VarChar(64)
+  result     Int?          @db.Int
+  bizId      String?       @db.VarChar(256)
+  spaceId    String?       @db.VarChar(256)
+  actionUrl  String?       @db.VarChar(512)
+  extra      String?       @db.VarChar(1024)
 
   @@index([userId], map: "idx_userId")
   @@index([content], map: "idx_content")
+  @@index([messageType], map: "idx_messageType")
+  @@index([spaceId], map: "idx_spaceId")
+  @@index([bizId], map: "idx_bizId")
 }
 
 enum MessageStatus {
@@ -124,6 +133,24 @@ model space_user {
   @@unique([spaceId, userId], map: "uk_spaceId_userId")
   @@index([spaceId], map: "idx_spaceId")
   @@index([userId], map: "idx_userId")
+}
+
+model space_invite_code {
+  id            String   @id @default(cuid())
+  spaceId       String   @db.VarChar(256)
+  code          String   @db.VarChar(6)
+  status        Int      @default(0) @db.TinyInt
+  creatorUserId String   @db.VarChar(256)
+  expireTime    DateTime @db.DateTime(0)
+  usedByUserId  String?  @db.VarChar(256)
+  usedTime      DateTime? @db.DateTime(0)
+  createTime    DateTime @default(now()) @db.DateTime(0)
+  updateTime    DateTime @default(now()) @db.DateTime(0)
+  isDelete      Int      @default(0) @db.TinyInt
+
+  @@index([code, status, expireTime], map: "idx_code_status_expireTime")
+  @@index([spaceId, status], map: "idx_spaceId_status")
+  @@index([creatorUserId, createTime], map: "idx_creatorUserId_createTime")
 }
 
 enum UserActionStatus {

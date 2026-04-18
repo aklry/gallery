@@ -1,14 +1,28 @@
-import { Injectable } from '@nestjs/common'
+import { Injectable, MessageEvent } from '@nestjs/common'
 import { MessageStatus } from '@prisma/client'
 import { Request } from 'express'
-import { BusinessStatus } from '@core/config'
-import { BusinessException } from '@shared/custom-exception'
-import { PrismaService } from '@core/prisma/prisma.service'
-import { ReadMessageDto } from './dto/read-message.dto'
-import { MessageVoModel } from './vo/message.vo'
-import { SseService } from '@infra/sse/sse.service'
-import { MessageEvent } from '@nestjs/common'
 import { map } from 'rxjs'
+import { BusinessStatus } from '@core/config'
+import { PrismaService } from '@core/prisma/prisma.service'
+import { SseService } from '@infra/sse/sse.service'
+import { BusinessException } from '@shared/custom-exception'
+import { ReadMessageDto } from './dto/read-message.dto'
+import { MessageType } from './enum'
+import { MessageVoModel } from './vo/message.vo'
+
+export interface CreateMessageInput {
+    userId: string
+    title: string
+    content: string
+    messageType: MessageType
+    result?: number
+    pictureId?: string
+    bizId?: string
+    spaceId?: string
+    actionUrl?: string
+    extra?: Record<string, unknown> | string
+    hasRead?: MessageStatus
+}
 
 @Injectable()
 export class MessageService {
@@ -36,33 +50,9 @@ export class MessageService {
             })
         ])
 
-        if (data.length > 0) {
-            const pictureIds = data.map(item => item.pictureId).filter(id => id !== null) as string[]
-            const pictures = await this.prisma.picture.findMany({
-                where: {
-                    id: { in: pictureIds }
-                }
-            })
-            const pictureMap = new Map(pictures.map(picture => [picture.id, picture.reviewStatus]))
-            return {
-                list: data.map(
-                    item =>
-                        ({
-                            id: item.id,
-                            content: item.content,
-                            userId: item.userId,
-                            hasRead: item.hasRead,
-                            title: item.title,
-                            createTime: item.createTime,
-                            result: pictureMap.get(item.pictureId) || 0
-                        }) as MessageVoModel
-                ),
-                total
-            }
-        }
         return {
-            list: [],
-            total: 0
+            list: data.map(item => this.toMessageVo(item)),
+            total
         }
     }
 
@@ -83,34 +73,52 @@ export class MessageService {
                 where: whereCondition
             })
         ])
-        if (data.length > 0) {
-            const pictureIds = data.map(item => item.pictureId).filter(id => id !== null) as string[]
-            const pictures = await this.prisma.picture.findMany({
-                where: {
-                    id: { in: pictureIds }
-                }
-            })
-            const pictureMap = new Map(pictures.map(picture => [picture.id, picture.reviewStatus]))
-            return {
-                list: data.map(
-                    item =>
-                        ({
-                            id: item.id,
-                            content: item.content,
-                            userId: item.userId,
-                            hasRead: item.hasRead,
-                            title: item.title,
-                            createTime: item.createTime,
-                            result: pictureMap.get(item.pictureId) || 0
-                        }) as MessageVoModel
-                ),
-                total
-            }
-        }
+
         return {
-            list: [],
-            total: 0
+            list: data.map(item => this.toMessageVo(item)),
+            total
         }
+    }
+
+    async pushMessage(input: CreateMessageInput) {
+        const message = await this.prisma.message.create({
+            data: {
+                userId: input.userId,
+                title: input.title,
+                content: input.content,
+                hasRead: input.hasRead ?? MessageStatus.UNREAD,
+                messageType: input.messageType,
+                result: input.result,
+                pictureId: input.pictureId,
+                bizId: input.bizId,
+                spaceId: input.spaceId,
+                actionUrl: input.actionUrl,
+                extra: this.serializeExtra(input.extra)
+            }
+        })
+
+        this.sseService.emit({
+            userId: input.userId,
+            data: {
+                id: message.id,
+                title: message.title ?? '',
+                content: message.content,
+                messageType: message.messageType,
+                result: message.result ?? undefined,
+                spaceId: message.spaceId ?? undefined,
+                actionUrl: message.actionUrl ?? undefined
+            }
+        })
+
+        return message
+    }
+
+    async pushMessages(inputs: CreateMessageInput[]) {
+        const result = []
+        for (const input of inputs) {
+            result.push(await this.pushMessage(input))
+        }
+        return result
     }
 
     async readMessage(readMessageDto: ReadMessageDto) {
@@ -162,9 +170,33 @@ export class MessageService {
                 event =>
                     ({
                         data: event.data,
-                        type: 'message' // 事件类型
+                        type: 'message'
                     }) as MessageEvent
             )
         )
+    }
+
+    private toMessageVo(item: any) {
+        return {
+            id: item.id,
+            content: item.content,
+            userId: item.userId,
+            hasRead: item.hasRead,
+            title: item.title ?? '',
+            createTime: item.createTime,
+            messageType: item.messageType,
+            result: item.result ?? undefined,
+            bizId: item.bizId ?? undefined,
+            spaceId: item.spaceId ?? undefined,
+            actionUrl: item.actionUrl ?? undefined,
+            extra: item.extra ?? undefined
+        } as MessageVoModel
+    }
+
+    private serializeExtra(extra?: Record<string, unknown> | string) {
+        if (!extra) {
+            return undefined
+        }
+        return typeof extra === 'string' ? extra : JSON.stringify(extra)
     }
 }

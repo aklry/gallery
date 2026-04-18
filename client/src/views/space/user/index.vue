@@ -13,6 +13,7 @@ import {
     CloudOutlined
 } from '@ant-design/icons-vue'
 import { spaceControllerListSpaceV1 } from '@/api/space'
+import { spaceInviteControllerJoinV1 } from '@/api/spaceInvite'
 import { spaceUserControllerGetMyAddTeamV1 } from '@/api/spaceUser'
 import { useUserStore } from '@/store/modules/user'
 import { formatSize } from '@/utils'
@@ -34,6 +35,8 @@ const router = useRouter()
 const userStore = useUserStore()
 const { loginUser } = storeToRefs(userStore)
 const loading = ref(false)
+const joinSubmitting = ref(false)
+const joinCode = ref('')
 const createdSpaces = ref<API.SpaceModelVo[]>([])
 const joinedSpaces = ref<JoinedSpaceRecord[]>([])
 
@@ -50,6 +53,12 @@ const roleColorMap: Record<SpaceRole, string> = {
 }
 
 const hasAnySpace = computed(() => createdSpaces.value.length > 0 || joinedSpaces.value.length > 0)
+const shouldShowJoinCard = computed(() => {
+    if (loading.value) {
+        return false
+    }
+    return createdSpaces.value.length === 0 && !joinedSpaces.value.some(item => item.spaceRole === 'admin')
+})
 
 const goToSpace = (spaceId?: string) => {
     if (!spaceId) {
@@ -84,6 +93,30 @@ const fetchJoinedSpaces = async () => {
         return
     }
     throw new Error(res.message)
+}
+
+const handleJoinSpaceByCode = async () => {
+    const code = joinCode.value.trim()
+    if (!/^\d{6}$/.test(code)) {
+        message.warning('请输入 6 位邀请码')
+        return
+    }
+    joinSubmitting.value = true
+    try {
+        const res = await spaceInviteControllerJoinV1({ code })
+        if (res.code === 1) {
+            message.success('加入空间成功')
+            joinCode.value = ''
+            await Promise.all([fetchCreatedSpaces(), fetchJoinedSpaces()])
+            await router.push(`/space/${res.data.spaceId}`)
+            return
+        }
+        message.error(res.message)
+    } catch (error) {
+        message.error('加入空间失败')
+    } finally {
+        joinSubmitting.value = false
+    }
 }
 
 onMounted(async () => {
@@ -138,6 +171,36 @@ onMounted(async () => {
                 <UsergroupAddOutlined />
                 创建新空间
             </a-button>
+        </div>
+
+        <div
+            v-if="shouldShowJoinCard"
+            class="join-card rounded-2xl border border-slate-200 bg-white/90 px-6 py-5 flex flex-col gap-4 shadow-sm"
+        >
+            <div class="flex flex-col gap-1">
+                <div class="text-base font-semibold text-slate-800">通过邀请码加入团队空间</div>
+                <div class="text-sm text-slate-500">
+                    输入团队成员分享的 6 位邀请码，在有效期内可直接加入团队空间，默认加入角色为浏览者。
+                </div>
+            </div>
+            <div class="flex flex-col sm:flex-row gap-3">
+                <a-input
+                    v-model:value="joinCode"
+                    :maxlength="6"
+                    allow-clear
+                    placeholder="输入 6 位邀请码"
+                    class="!rounded-xl !h-11 sm:max-w-xs"
+                    @pressEnter="handleJoinSpaceByCode"
+                />
+                <a-button
+                    type="primary"
+                    :loading="joinSubmitting"
+                    class="!rounded-xl !h-11 !px-5 self-start"
+                    @click="handleJoinSpaceByCode"
+                >
+                    立即加入
+                </a-button>
+            </div>
         </div>
 
         <a-spin :spinning="loading">

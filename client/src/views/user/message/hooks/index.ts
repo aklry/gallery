@@ -1,18 +1,28 @@
-import { computed, ref, watchEffect } from 'vue'
+import { computed, ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
+import { message } from 'ant-design-vue'
 import {
     messageControllerFindAllHistoryMessageV1,
     messageControllerFindAllNewMessageV1,
-    messageControllerReadMessageV1,
-    messageControllerReadAllMessageV1
+    messageControllerReadAllMessageV1,
+    messageControllerReadMessageV1
 } from '@/api/message'
 import { MessageStatus } from '@/constants'
-import { message } from 'ant-design-vue'
+
+export type MessageItem = API.MessageVoModel & {
+    messageType?: string
+    result?: number
+    bizId?: string
+    spaceId?: string
+    actionUrl?: string
+    extra?: string
+}
+
 const useMessage = () => {
-    const newMessageList = ref<API.MessageVoModel[]>()
-    const newMessageTotal = ref<number>(0)
-    const historyMessageList = ref<API.MessageVoModel[]>()
-    const historyMessageTotal = ref<number>(0)
-    const currentKey = ref<string>('1')
+    const router = useRouter()
+    const newMessageList = ref<MessageItem[]>([])
+    const historyMessageList = ref<MessageItem[]>([])
+    const currentKey = ref('1')
     const loading = ref(false)
     const readAllLoading = ref(false)
 
@@ -20,8 +30,9 @@ const useMessage = () => {
         loading.value = true
         try {
             const res = await messageControllerFindAllNewMessageV1({})
-            newMessageList.value = res.data.list
-            newMessageTotal.value = res.data.total
+            newMessageList.value = (res.data?.list ?? []) as MessageItem[]
+        } catch (error) {
+            message.error('获取最新消息失败')
         } finally {
             loading.value = false
         }
@@ -31,47 +42,60 @@ const useMessage = () => {
         loading.value = true
         try {
             const res = await messageControllerFindAllHistoryMessageV1({})
-            historyMessageList.value = res.data.list
-            historyMessageTotal.value = res.data.total
+            historyMessageList.value = (res.data?.list ?? []) as MessageItem[]
+        } catch (error) {
+            message.error('获取历史消息失败')
         } finally {
             loading.value = false
         }
     }
 
+    const refreshCurrentList = async () => {
+        if (currentKey.value === '1') {
+            await getNewMessageList()
+            return
+        }
+        await getHistoryMessageList()
+    }
+
+    const refreshAllList = async () => {
+        await Promise.all([getNewMessageList(), getHistoryMessageList()])
+    }
+
     const newUnreadCount = computed(
-        () => newMessageList.value?.filter(item => item.hasRead === MessageStatus.UNREAD).length ?? 0
+        () => newMessageList.value.filter(item => item.hasRead === MessageStatus.UNREAD).length
     )
 
     const historyUnreadCount = computed(
-        () => historyMessageList.value?.filter(item => item.hasRead === MessageStatus.UNREAD).length ?? 0
+        () => historyMessageList.value.filter(item => item.hasRead === MessageStatus.UNREAD).length
     )
 
     const hasUnread = computed(() => {
-        if (currentKey.value === '1') {
-            return newUnreadCount.value > 0
-        }
-        return historyUnreadCount.value > 0
+        const currentList = currentKey.value === '1' ? newMessageList.value : historyMessageList.value
+        return currentList.some(item => item.hasRead === MessageStatus.UNREAD)
     })
 
     const currentMessageList = computed(() => {
-        if (currentKey.value === '1') {
-            return newMessageList.value
-        } else {
-            return historyMessageList.value
-        }
+        return currentKey.value === '1' ? newMessageList.value : historyMessageList.value
     })
 
-    const handleMessageClick = async (item: API.MessageVoModel) => {
-        if (item.hasRead === MessageStatus.READ) {
-            return
+    const jumpByMessage = async (item: MessageItem) => {
+        if (item.actionUrl) {
+            await router.push(item.actionUrl)
         }
-        await messageControllerReadMessageV1({
-            id: item.id
-        })
-        if (currentKey.value === '1') {
-            getNewMessageList()
-        } else {
-            getHistoryMessageList()
+    }
+
+    const handleMessageClick = async (item: MessageItem) => {
+        try {
+            if (item.hasRead === MessageStatus.UNREAD) {
+                await messageControllerReadMessageV1({
+                    id: item.id
+                })
+                await refreshAllList()
+            }
+            await jumpByMessage(item)
+        } catch (error) {
+            message.error('处理消息失败')
         }
     }
 
@@ -80,11 +104,7 @@ const useMessage = () => {
         try {
             await messageControllerReadAllMessageV1()
             message.success('已全部标记为已读')
-            if (currentKey.value === '1') {
-                getNewMessageList()
-            } else {
-                getHistoryMessageList()
-            }
+            await refreshAllList()
         } catch (error) {
             message.error('全部已读失败')
         } finally {
@@ -92,25 +112,24 @@ const useMessage = () => {
         }
     }
 
-    watchEffect(() => {
-        if (currentKey.value === '1') {
-            getNewMessageList()
-        } else {
-            getHistoryMessageList()
+    watch(
+        currentKey,
+        async () => {
+            await refreshCurrentList()
+        },
+        {
+            immediate: true
         }
-    })
+    )
+
     return {
-        newMessageList,
-        newMessageTotal,
-        historyMessageList,
-        historyMessageTotal,
-        newUnreadCount,
-        historyUnreadCount,
-        hasUnread,
-        loading,
-        readAllLoading,
         currentKey,
         currentMessageList,
+        loading,
+        readAllLoading,
+        hasUnread,
+        newUnreadCount,
+        historyUnreadCount,
         handleMessageClick,
         handleReadAllMessage
     }

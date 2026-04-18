@@ -20,6 +20,18 @@ export enum MessageStatus {
     READ = 'READ'
 }
 
+export enum MessageType {
+    PICTURE_REVIEW = 'PICTURE_REVIEW',
+    SPACE_JOIN_SUCCESS = 'SPACE_JOIN_SUCCESS',
+    SPACE_NEW_MEMBER = 'SPACE_NEW_MEMBER'
+}
+
+export const MessageTypeTextMap: Record<MessageType, string> = {
+    [MessageType.PICTURE_REVIEW]: '图片审核',
+    [MessageType.SPACE_JOIN_SUCCESS]: '加入成功',
+    [MessageType.SPACE_NEW_MEMBER]: '新成员加入'
+}
+
 export enum SpaceLevelEnum {
     FREE = 0,
     BASIC = 1,

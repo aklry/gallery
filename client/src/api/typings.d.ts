@@ -260,6 +260,19 @@ declare namespace API {
         path: string
     }
 
+    type DisableSpaceInviteVo = {
+        /** 状态码 */
+        code: number
+        /** 消息 */
+        message: string
+        /** 是否已失效当前邀请码 */
+        data: Record<string, any>
+        /** 时间戳 */
+        timestamp: string
+        /** 路径 */
+        path: string
+    }
+
     type EditPictureBatchVo = {
         /** 状态码 */
         code: number
@@ -378,6 +391,13 @@ declare namespace API {
         userProfile?: string
     }
 
+    type GenerateSpaceInviteDto = {
+        /** 空间 id */
+        spaceId: string
+        /** 有效时长，单位分钟，默认 15，最大 30 */
+        expireMinutes?: number
+    }
+
     type GetPictureVo = {
         /** 状态码 */
         code: number
@@ -436,6 +456,29 @@ declare namespace API {
         isCollect?: boolean
     }
 
+    type JoinSpaceInviteDto = {
+        /** 6 位数字邀请码 */
+        code: string
+    }
+
+    type JoinSpaceInviteModelVo = {
+        /** 加入成功后的空间 id */
+        spaceId: string
+    }
+
+    type JoinSpaceInviteVo = {
+        /** 状态码 */
+        code: number
+        /** 消息 */
+        message: string
+        /** 加入空间结果 */
+        data: JoinSpaceInviteModelVo
+        /** 时间戳 */
+        timestamp: string
+        /** 路径 */
+        path: string
+    }
+
     type LoginCaptchaVo = {
         /** 状态码 */
         code: number
@@ -466,6 +509,11 @@ declare namespace API {
         userRole: string
     }
 
+    type ManageSpaceInviteDto = {
+        /** 空间 id */
+        spaceId: string
+    }
+
     type MessageVo = {
         /** 状态码 */
         code: number
@@ -492,8 +540,18 @@ declare namespace API {
         userId: string
         /** 创建时间 */
         createTime: string
-        /** 审核结果 */
-        result: number
+        /** 消息类型 */
+        messageType: 'PICTURE_REVIEW' | 'SPACE_JOIN_SUCCESS' | 'SPACE_NEW_MEMBER'
+        /** 处理结果 */
+        result?: number
+        /** 业务主键 */
+        bizId?: string
+        /** 空间id */
+        spaceId?: string
+        /** 点击跳转地址 */
+        actionUrl?: string
+        /** 扩展信息 */
+        extra?: string
     }
 
     type MessageVoType = {
@@ -748,6 +806,24 @@ declare namespace API {
         spaceRole?: 'viewer' | 'editor' | 'admin'
     }
 
+    type QuitSpaceUserDto = {
+        /** 空间 id */
+        spaceId: string
+    }
+
+    type QuitSpaceUserVo = {
+        /** 状态码 */
+        code: number
+        /** 消息 */
+        message: string
+        /** 数据 */
+        data: Record<string, any>
+        /** 时间戳 */
+        timestamp: string
+        /** 路径 */
+        path: string
+    }
+
     type ReadAllMessageVo = {
         /** 状态码 */
         code: number
@@ -883,6 +959,45 @@ declare namespace API {
     }
 
     type SpaceControllerGetSpaceVoV1Params = {
+        spaceId: string
+    }
+
+    type SpaceInviteCodeModelVo = {
+        /** 邀请码记录 id */
+        id: string
+        /** 空间 id */
+        spaceId: string
+        /** 6 位邀请码 */
+        code: string
+        /** 状态 */
+        status: 0 | 1 | 2 | 3
+        /** 创建人 id */
+        creatorUserId: string
+        /** 过期时间 */
+        expireTime: string
+        /** 剩余秒数 */
+        remainingSeconds: number
+        /** 创建时间 */
+        createTime: string
+        /** 更新时间 */
+        updateTime: string
+    }
+
+    type SpaceInviteCodeVo = {
+        /** 状态码 */
+        code: number
+        /** 消息 */
+        message: string
+        /** 当前有效邀请码信息，可能为空 */
+        data?: SpaceInviteCodeModelVo
+        /** 时间戳 */
+        timestamp: string
+        /** 路径 */
+        path: string
+    }
+
+    type SpaceInviteControllerCurrentV1Params = {
+        /** 空间 id */
         spaceId: string
     }
 

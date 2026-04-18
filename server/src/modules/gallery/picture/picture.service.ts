@@ -9,7 +9,7 @@ import { LoginVoModel } from '@identity/user/vo'
 import { UserRole } from '@identity/user/enum/user'
 import { Picture } from './entities/picture.entity'
 import { ReviewStatus } from './enum'
-import { MessageStatus, Prisma, UserActionStatus } from '@prisma/client'
+import { Prisma, UserActionStatus } from '@prisma/client'
 import { ShowPictureModelVo, PictureVoModel, GetPictureVoModel, UploadPictureVoModel } from './vo'
 import { RedisCacheService } from '@core/cache/cache.service'
 import { SpaceService } from '@space/core/space.service'
@@ -35,9 +35,10 @@ import { Space } from '@space/core/entities/space.entity'
 import { PermissionGuard } from '@identity/permission/permission.guard'
 import { PERMISSION_KEY } from '@identity/permission/permission.decorator'
 import { AiGeneratePictureDto } from '@infra/ai/dto'
-import { SseService } from '@infra/sse/sse.service'
 import { RedisService } from '@core/redis/redis.service'
 import { TagService } from '@gallery/tag/tag.service'
+import { MessageService } from '@tools/message/message.service'
+import { MessageType } from '@tools/message/enum'
 import 'multer'
 
 const PICTURE_VIEW_DEDUP_TTL_SECONDS = 30 * 60
@@ -52,9 +53,9 @@ export class PictureService {
         private readonly aiService: AiService,
         private readonly spaceUserAuthManager: SpaceUserAuthManager,
         private readonly permissionGuard: PermissionGuard,
-        private readonly sseService: SseService,
         private readonly redisService: RedisService,
-        private readonly tagService: TagService
+        private readonly tagService: TagService,
+        private readonly messageService: MessageService
     ) {}
 
     private async getAccessiblePictureOrThrow(id: string, req: Request) {
@@ -895,7 +896,19 @@ export class PictureService {
         })
         if (!result) {
             throw new BusinessException('图片审核失败', BusinessStatus.OPERATION_ERROR.code)
-        } else {
+        }
+        await this.messageService.pushMessage({
+            userId: picture.userId,
+            title: '鍥剧墖瀹℃牳缁撴灉',
+            content: reviewMessage,
+            messageType: MessageType.PICTURE_REVIEW,
+            pictureId: id,
+            bizId: id,
+            result: reviewStatus,
+            spaceId: picture.spaceId ?? undefined,
+            actionUrl: picture.spaceId ? `/picture/${id}?spaceId=${picture.spaceId}` : `/picture/${id}`
+        })
+        /*
             const msg = await this.prismaService.message.create({
                 data: {
                     userId: picture.userId,
@@ -913,7 +926,7 @@ export class PictureService {
                     title: '图片审核结果'
                 }
             })
-        }
+        */
         return true
     }
 

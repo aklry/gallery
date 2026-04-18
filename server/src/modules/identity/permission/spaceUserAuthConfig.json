@@ -13,7 +13,12 @@
         {
             "key": "spaceUser:manage",
             "name": "成员管理",
-            "description": "管理空间成员，添加或移除成员"
+            "description": "管理空间成员，添加、移除或调整角色"
+        },
+        {
+            "key": "space:invite",
+            "name": "邀请码管理",
+            "description": "生成、查看和失效空间邀请码"
         },
         {
             "key": "picture:view",
@@ -27,8 +32,8 @@
         },
         {
             "key": "picture:edit",
-            "name": "修改图片",
-            "description": "编辑已上传的图片信息"
+            "name": "编辑图片",
+            "description": "修改已上传图片的信息"
         },
         {
             "key": "picture:delete",
@@ -40,23 +45,21 @@
         {
             "key": "viewer",
             "name": "浏览者",
-            "permissions": [
-                "space:view",
-                "picture:view"
-            ],
-            "description": "查看空间和图片"
+            "permissions": ["space:view", "space:invite", "picture:view"],
+            "description": "查看空间、查看图片并生成邀请码"
         },
         {
             "key": "editor",
             "name": "编辑者",
             "permissions": [
                 "space:view",
+                "space:invite",
                 "picture:view",
                 "picture:upload",
                 "picture:edit",
                 "picture:delete"
             ],
-            "description": "查看空间、查看图片、上传图片、修改图片、删除图片"
+            "description": "查看空间、管理图片并生成邀请码"
         },
         {
             "key": "admin",
@@ -65,12 +68,13 @@
                 "space:view",
                 "space:analyze",
                 "spaceUser:manage",
+                "space:invite",
                 "picture:view",
                 "picture:upload",
                 "picture:edit",
                 "picture:delete"
             ],
-            "description": "空间查看、空间分析、成员管理、查看图片、上传图片、修改图片、删除图片"
+            "description": "查看空间、分析数据、管理成员、管理邀请码并管理图片"
         }
     ]
 }

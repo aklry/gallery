@@ -1,30 +1,45 @@
-// client/src/hooks/useMessageStream.ts
 import { onMounted, onUnmounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { notification } from 'ant-design-vue'
-import { messageControllerReadMessageV1 } from '@/api/message'
+import { MessageType, MessageTypeTextMap } from '@/constants'
+
+type StreamMessagePayload = {
+    id: string
+    title: string
+    content: string
+    messageType?: string
+    result?: number
+    spaceId?: string
+    actionUrl?: string
+}
 
 export function useMessageStream() {
+    const router = useRouter()
     let eventSource: EventSource | null = null
 
     onMounted(() => {
         eventSource = new EventSource(
             `${import.meta.env.VITE_APP_BASE_URL}${import.meta.env.VITE_APP_API_BASE_URL}/message/stream`,
             {
-                withCredentials: true // 携带 session cookie
+                withCredentials: true
             }
         )
 
-        eventSource.addEventListener('message', async e => {
-            const data = JSON.parse(e.data)
-            // 弹出通知
+        eventSource.addEventListener('message', e => {
+            const data = JSON.parse(e.data) as StreamMessagePayload
+            const messageType = data.messageType as MessageType | undefined
+
             notification.info({
-                message: data.title,
+                message: messageType ? MessageTypeTextMap[messageType] : data.title || '新消息',
                 description: data.content,
-                placement: 'topRight'
-            })
-            // 更新消息状态为已读
-            await messageControllerReadMessageV1({
-                id: data.id
+                placement: 'topRight',
+                onClick: async () => {
+                    if (data.actionUrl) {
+                        await router.push(data.actionUrl)
+                        return
+                    }
+                    await router.push('/user/message')
+                }
             })
         })
     })

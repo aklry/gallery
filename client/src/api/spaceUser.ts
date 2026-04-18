@@ -74,28 +74,22 @@ export async function spaceUserControllerGetSpaceUserListV1(
     })
 }
 
+/** 获取我加入的空间 POST /api/v1/space-user/list/my */
+export async function spaceUserControllerGetMyAddTeamV1(options?: { [key: string]: any }) {
+    return ryRequest.request<API.SpaceUserListVo>('/api/v1/space-user/list/my', {
+        method: 'POST',
+        ...(options || {})
+    })
+}
+
 /** 退出团队空间 POST /api/v1/space-user/quit */
-export async function spaceUserControllerQuitSpaceV1(body: { spaceId: string }, options?: { [key: string]: any }) {
-    return ryRequest.request<{
-        code: number
-        message: string
-        data: boolean
-        timestamp: string
-        path: string
-    }>('/api/v1/space-user/quit', {
+export async function spaceUserControllerQuitSpaceV1(body: API.QuitSpaceUserDto, options?: { [key: string]: any }) {
+    return ryRequest.request<API.QuitSpaceUserVo>('/api/v1/space-user/quit', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
         data: body,
-        ...(options || {})
-    })
-}
-
-/** 获取我加入的空间 POST /api/v1/space-user/list/my */
-export async function spaceUserControllerGetMyAddTeamV1(options?: { [key: string]: any }) {
-    return ryRequest.request<API.SpaceUserListVo>('/api/v1/space-user/list/my', {
-        method: 'POST',
         ...(options || {})
     })
 }

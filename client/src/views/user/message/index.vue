@@ -58,7 +58,7 @@
                         @click="handleMessageClick(item)"
                     >
                         <div class="message-item__indicator">
-                            <span v-if="item.hasRead === MessageStatus.UNREAD" class="unread-dot hidden" />
+                            <span v-if="item.hasRead === MessageStatus.UNREAD" class="unread-dot" />
                             <div
                                 class="icon-wrapper"
                                 :class="
@@ -74,15 +74,18 @@
                         <div class="message-item__content flex-1 overflow-hidden">
                             <div class="message-item__header-row flex justify-between items-center mb-1">
                                 <h3 class="message-item__title text-base font-medium text-gray-800 truncate m-0">
-                                    {{ item.title }}
+                                    {{ getDisplayTitle(item) }}
                                 </h3>
                                 <time class="message-item__time text-xs text-gray-400 shrink-0">{{
                                     formatTime(item.createTime)
                                 }}</time>
                             </div>
                             <div class="message-item__desc text-sm text-gray-600 flex items-start gap-2 mt-1">
+                                <a-tag :color="getMessageTypeColor(item.messageType)" :bordered="false">
+                                    {{ getMessageTypeText(item.messageType) }}
+                                </a-tag>
                                 <a-tag
-                                    v-if="item.result !== undefined"
+                                    v-if="shouldShowReviewResult(item)"
                                     :color="item.result === ReviewStatus.REJECT ? 'error' : 'success'"
                                     :bordered="false"
                                 >
@@ -92,9 +95,9 @@
                             </div>
                         </div>
                         <div class="message-item__action">
-                            <a-tag v-if="item.hasRead === MessageStatus.UNREAD" color="blue" class="rounded-full px-3"
-                                >未读</a-tag
-                            >
+                            <a-tag v-if="item.hasRead === MessageStatus.UNREAD" color="blue" class="rounded-full px-3">
+                                未读
+                            </a-tag>
                             <a-tag v-else color="default" class="rounded-full px-3">已读</a-tag>
                         </div>
                     </div>
@@ -110,10 +113,10 @@
 
 <script setup lang="ts">
 import { Empty } from 'ant-design-vue'
-import { BellOutlined, HistoryOutlined, CheckOutlined } from '@ant-design/icons-vue'
-import useMessage from './hooks'
-import { MessageStatus, ReviewMessage, ReviewStatus } from '@/constants'
+import { BellOutlined, CheckOutlined, HistoryOutlined } from '@ant-design/icons-vue'
+import useMessage, { type MessageItem } from './hooks'
 import { formatTime } from '@/utils'
+import { MessageStatus, MessageType, MessageTypeTextMap, ReviewMessage, ReviewStatus } from '@/constants'
 
 const {
     currentKey,
@@ -126,6 +129,37 @@ const {
     handleMessageClick,
     handleReadAllMessage
 } = useMessage()
+
+const getMessageTypeText = (messageType?: string) => {
+    if (!messageType) {
+        return '消息通知'
+    }
+    return MessageTypeTextMap[messageType as MessageType] || '消息通知'
+}
+
+const getDisplayTitle = (item: MessageItem) => {
+    if (item.messageType) {
+        return getMessageTypeText(item.messageType)
+    }
+    return item.title || '消息通知'
+}
+
+const getMessageTypeColor = (messageType?: string) => {
+    switch (messageType as MessageType | undefined) {
+        case MessageType.PICTURE_REVIEW:
+            return 'processing'
+        case MessageType.SPACE_JOIN_SUCCESS:
+            return 'success'
+        case MessageType.SPACE_NEW_MEMBER:
+            return 'blue'
+        default:
+            return 'default'
+    }
+}
+
+const shouldShowReviewResult = (item: MessageItem) => {
+    return item.messageType === MessageType.PICTURE_REVIEW && item.result !== undefined
+}
 </script>
 
 <style scoped lang="scss">

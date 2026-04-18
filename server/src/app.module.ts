@@ -33,6 +33,7 @@ import { PictureLikeModule } from '@gallery/like/picture-like.module'
 import { PictureDownloadModule } from '@gallery/download/picture-download.module'
 import { TagModule } from '@gallery/tag/tag.module'
 import { AiModule } from '@infra/ai/ai.module'
+import { SpaceInviteModule } from '@space/invite/space-invite.module'
 
 @Module({
     imports: [
@@ -63,7 +64,8 @@ import { AiModule } from '@infra/ai/ai.module'
         PictureLikeModule,
         PictureDownloadModule,
         TagModule,
-        AiModule
+        AiModule,
+        SpaceInviteModule
     ],
     controllers: [AppController],
     providers: [AppService]

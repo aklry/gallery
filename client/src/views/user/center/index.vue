@@ -38,22 +38,38 @@
                                     <div
                                         class="rounded-[28px] border border-white/30 bg-white/15 p-2 shadow-2xl backdrop-blur-md"
                                     >
+                                        <a-avatar v-if="userInfo.userAvatar" :size="40" :src="userInfo.userAvatar" />
                                         <a-avatar
-                                            :src="userInfo.userAvatar || '/logo.svg'"
-                                            :size="96"
-                                            class="border-4 border-white/70 shadow-lg"
-                                        />
+                                            v-else
+                                            :size="40"
+                                            class="!bg-indigo-50/50 flex items-center justify-center border border-indigo-100/50"
+                                        >
+                                            <svg
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                class="w-[24px] h-[24px] text-indigo-400/70"
+                                            >
+                                                <path
+                                                    d="M12 12C14.2091 12 16 10.2091 16 8C16 5.79086 14.2091 4 12 4C9.79086 4 8 5.79086 8 8C8 10.2091 9.79086 12 12 12Z"
+                                                    stroke="currentColor"
+                                                    stroke-width="1.5"
+                                                    stroke-linecap="round"
+                                                    stroke-linejoin="round"
+                                                />
+                                                <path
+                                                    d="M6 21C6 18.2386 8.68629 16 12 16C15.3137 16 18 18.2386 18 21"
+                                                    stroke="currentColor"
+                                                    stroke-width="1.5"
+                                                    stroke-linecap="round"
+                                                    stroke-linejoin="round"
+                                                />
+                                            </svg>
+                                        </a-avatar>
                                     </div>
                                     <div class="text-white">
                                         <h1 class="text-3xl font-semibold tracking-tight">
                                             {{ userInfo.userName || '佚名创作者' }}
                                         </h1>
-                                        <p class="mt-3 text-sm leading-7 text-white/85">
-                                            {{
-                                                userInfo.userProfile ||
-                                                '在这里管理资料、整理点赞与收藏，让高频浏览内容沉淀成你自己的灵感库。'
-                                            }}
-                                        </p>
                                     </div>
                                 </div>
 

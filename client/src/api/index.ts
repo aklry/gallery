@@ -13,6 +13,7 @@ import * as spaceUser from './spaceUser'
 import * as pictureCollection from './pictureCollection'
 import * as pictureLike from './pictureLike'
 import * as pictureDownload from './pictureDownload'
+import * as spaceInvite from './spaceInvite'
 export default {
     app,
     user,
@@ -24,5 +25,6 @@ export default {
     spaceUser,
     pictureCollection,
     pictureLike,
-    pictureDownload
+    pictureDownload,
+    spaceInvite
 }

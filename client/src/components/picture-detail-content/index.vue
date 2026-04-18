@@ -113,7 +113,29 @@ const handleCollect = () => {
                 <div class="info-item author-item">
                     <span class="label">作者</span>
                     <a-space class="value">
-                        <a-avatar :size="24" :src="picture?.user?.userAvatar" />
+                        <a-avatar v-if="picture?.user?.userAvatar" :size="24" :src="picture?.user?.userAvatar" />
+                        <a-avatar
+                            v-else
+                            :size="24"
+                            class="!bg-indigo-50/50 flex items-center justify-center border border-indigo-100/50"
+                        >
+                            <svg viewBox="0 0 24 24" fill="none" class="w-[24px] h-[24px] text-indigo-400/70">
+                                <path
+                                    d="M12 12C14.2091 12 16 10.2091 16 8C16 5.79086 14.2091 4 12 4C9.79086 4 8 5.79086 8 8C8 10.2091 9.79086 12 12 12Z"
+                                    stroke="currentColor"
+                                    stroke-width="1.5"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                />
+                                <path
+                                    d="M6 21C6 18.2386 8.68629 16 12 16C15.3137 16 18 18.2386 18 21"
+                                    stroke="currentColor"
+                                    stroke-width="1.5"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                />
+                            </svg>
+                        </a-avatar>
                         <span>{{ picture?.user?.userName ?? '佚名' }}</span>
                     </a-space>
                 </div>

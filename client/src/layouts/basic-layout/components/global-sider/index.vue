@@ -105,7 +105,29 @@ const menuList = computed(() => {
             <template v-if="loginUser?.id">
                 <a-tooltip :title="loginUser.userName || '个人中心'" placement="right">
                     <div class="sider-avatar">
-                        <a-avatar :size="40" :src="loginUser.userAvatar" />
+                        <a-avatar v-if="loginUser.userAvatar" :size="40" :src="loginUser.userAvatar" />
+                        <a-avatar
+                            v-else
+                            :size="40"
+                            class="!bg-indigo-50/50 flex items-center justify-center border border-indigo-100/50"
+                        >
+                            <svg viewBox="0 0 24 24" fill="none" class="w-[24px] h-[24px] text-indigo-400/70">
+                                <path
+                                    d="M12 12C14.2091 12 16 10.2091 16 8C16 5.79086 14.2091 4 12 4C9.79086 4 8 5.79086 8 8C8 10.2091 9.79086 12 12 12Z"
+                                    stroke="currentColor"
+                                    stroke-width="1.5"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                />
+                                <path
+                                    d="M6 21C6 18.2386 8.68629 16 12 16C15.3137 16 18 18.2386 18 21"
+                                    stroke="currentColor"
+                                    stroke-width="1.5"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                />
+                            </svg>
+                        </a-avatar>
                         <div class="avatar-status is-online"></div>
                     </div>
                 </a-tooltip>
