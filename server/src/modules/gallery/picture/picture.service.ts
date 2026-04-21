@@ -19,6 +19,7 @@ import {
     EditPictureByBatchDto,
     PartialQueryPictureDto,
     QueryPictureDto,
+    RecommendPictureDto,
     UploadBatchPictureDto,
     UpdatePictureDto,
     UploadPictureDto,
@@ -42,6 +43,26 @@ import { MessageType } from '@tools/message/enum'
 import 'multer'
 
 const PICTURE_VIEW_DEDUP_TTL_SECONDS = 30 * 60
+const MAX_RECOMMEND_PAGE_SIZE = 20
+const RECOMMEND_CACHE_TTL_SECONDS = 5 * 60
+const RECOMMEND_CANDIDATE_POOL_SIZE = 500
+const BEHAVIOR_WEIGHTS = {
+    like: 3,
+    favorite: 5,
+    download: 6
+} as const
+
+type WeightMap = Record<string, number>
+
+type UserInterestProfile = {
+    categoryWeights: WeightMap
+    tagWeights: WeightMap
+    colorWeights: WeightMap
+    formatWeights: WeightMap
+    scaleWeights: WeightMap
+    keywordWeights: WeightMap
+    consumedPictureIds: Set<string>
+}
 
 @Injectable()
 export class PictureService {
@@ -80,6 +101,478 @@ export class PictureService {
         }
 
         return picture
+    }
+
+    private buildShowPictureVo(item: any): ShowPictureModelVo {
+        return {
+            id: item.id,
+            url: item.url,
+            introduction: item.introduction,
+            category: item.category,
+            tags: this.parsePictureTags(item.tags),
+            format: item.picFormat,
+            fileSize: item.picSize,
+            width: item.picWidth,
+            height: item.picHeight,
+            filename: item.name,
+            picScale: item.picScale,
+            thumbnailUrl: item.thumbnailUrl,
+            color: item.picColor,
+            viewNumber: item.viewNumber ?? 0,
+            likeNumber: item.likeNumber ?? 0,
+            downloadNumber: item.downloadNumber ?? 0,
+            collectionNumber: item.collectionNumber ?? 0
+        }
+    }
+
+    private parsePictureTags(tags: string | null | undefined): string[] {
+        if (!tags) {
+            return []
+        }
+        try {
+            return JSON.parse(tags) || []
+        } catch (error) {
+            return []
+        }
+    }
+
+    private getScaleBucket(picScale: number): string {
+        if (picScale < 0.9) {
+            return 'portrait'
+        }
+        if (picScale > 1.1) {
+            return 'landscape'
+        }
+        return 'square'
+    }
+
+    private addWeight(map: WeightMap, key: string | null | undefined, weight: number) {
+        const normalizedKey = key?.trim()
+        if (!normalizedKey) {
+            return
+        }
+        map[normalizedKey] = (map[normalizedKey] ?? 0) + weight
+    }
+
+    private extractKeywords(...texts: (string | null | undefined)[]): string[] {
+        const tokens = texts
+            .filter((item): item is string => !!item)
+            .flatMap(text => text.split(/[\s,，.。!！?？;；/|_\-]+/))
+            .map(item => item.trim().toLowerCase())
+            .filter(item => item.length >= 2)
+
+        return Array.from(new Set(tokens)).slice(0, 12)
+    }
+
+    private getTopKeys(weightMap: WeightMap, limit: number): string[] {
+        return Object.entries(weightMap)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, limit)
+            .map(([key]) => key)
+    }
+
+    private getNormalizedWeight(weightMap: WeightMap, key: string): number {
+        const current = weightMap[key] ?? 0
+        const max = Math.max(...Object.values(weightMap), 0)
+        if (current <= 0 || max <= 0) {
+            return 0
+        }
+        return Math.min(current / max, 1)
+    }
+
+    private calculateColorPreferenceScore(colorWeights: WeightMap, candidateColor: string): number {
+        if (!candidateColor || !candidateColor.startsWith('#') || Object.keys(colorWeights).length === 0) {
+            return 0
+        }
+
+        const candidateRgb = hexToRgb(candidateColor)
+
+        return Object.entries(colorWeights)
+            .filter(([color]) => color.startsWith('#'))
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 5)
+            .reduce((maxScore, [color, weight]) => {
+                const preferenceRgb = hexToRgb(color)
+                const similarity = normalizeDistance(euclideanDistance(candidateRgb, preferenceRgb))
+                const normalizedWeight = this.getNormalizedWeight(colorWeights, color)
+                return Math.max(maxScore, similarity * normalizedWeight * (weight > 0 ? 1 : 0))
+            }, 0)
+    }
+
+    private normalizeScores(values: number[]): number[] {
+        if (values.length === 0) {
+            return []
+        }
+        const min = Math.min(...values)
+        const max = Math.max(...values)
+        if (min === max) {
+            return values.map(() => (max > 0 ? 1 : 0))
+        }
+        return values.map(value => (value - min) / (max - min))
+    }
+
+    private calculateTimeDecay(createTime: Date) {
+        const daysAgo = Math.max(0, (Date.now() - new Date(createTime).getTime()) / (1000 * 60 * 60 * 24))
+        return 1 / (1 + daysAgo / 7)
+    }
+
+    private async buildUserInterestProfile(userId: string): Promise<UserInterestProfile | null> {
+        const [likes, favorites, downloads] = await Promise.all([
+            this.prismaService.picture_like.findMany({
+                where: {
+                    userId,
+                    status: UserActionStatus.ACTIVE,
+                    isDelete: 0
+                },
+                orderBy: { createTime: 'desc' },
+                take: 60,
+                select: { pictureId: true, createTime: true }
+            }),
+            this.prismaService.picture_favorite.findMany({
+                where: {
+                    userId,
+                    status: UserActionStatus.ACTIVE,
+                    isDelete: 0
+                },
+                orderBy: { createTime: 'desc' },
+                take: 60,
+                select: { pictureId: true, createTime: true }
+            }),
+            this.prismaService.picture_download.findMany({
+                where: {
+                    userId,
+                    isDelete: 0
+                },
+                orderBy: { createTime: 'desc' },
+                take: 60,
+                select: { pictureId: true, createTime: true }
+            })
+        ])
+
+        const actionWeights = new Map<string, number>()
+        const consumedPictureIds = new Set<string>()
+        const accumulateAction = (
+            records: Array<{
+                pictureId: string
+                createTime: Date
+            }>,
+            baseWeight: number
+        ) => {
+            records.forEach(record => {
+                consumedPictureIds.add(record.pictureId)
+                const weight = baseWeight * this.calculateTimeDecay(record.createTime)
+                actionWeights.set(record.pictureId, (actionWeights.get(record.pictureId) ?? 0) + weight)
+            })
+        }
+
+        accumulateAction(likes, BEHAVIOR_WEIGHTS.like)
+        accumulateAction(favorites, BEHAVIOR_WEIGHTS.favorite)
+        accumulateAction(downloads, BEHAVIOR_WEIGHTS.download)
+
+        if (actionWeights.size === 0) {
+            return null
+        }
+
+        const sourcePictures = await this.prismaService.picture.findMany({
+            where: {
+                id: {
+                    in: Array.from(actionWeights.keys())
+                },
+                reviewStatus: ReviewStatus.PASS,
+                spaceId: null,
+                isDelete: 0
+            }
+        })
+
+        if (sourcePictures.length === 0) {
+            return null
+        }
+
+        const profile: UserInterestProfile = {
+            categoryWeights: {},
+            tagWeights: {},
+            colorWeights: {},
+            formatWeights: {},
+            scaleWeights: {},
+            keywordWeights: {},
+            consumedPictureIds
+        }
+
+        sourcePictures.forEach(picture => {
+            const weight = actionWeights.get(picture.id) ?? 0
+            if (weight <= 0) {
+                return
+            }
+
+            this.addWeight(profile.categoryWeights, picture.category, weight)
+            this.parsePictureTags(picture.tags).forEach(tag => this.addWeight(profile.tagWeights, tag, weight))
+            this.addWeight(profile.colorWeights, picture.picColor, weight)
+            this.addWeight(profile.formatWeights, picture.picFormat, weight)
+            this.addWeight(profile.scaleWeights, this.getScaleBucket(picture.picScale), weight)
+            this.extractKeywords(picture.name, picture.introduction).forEach(keyword =>
+                this.addWeight(profile.keywordWeights, keyword, weight * 0.5)
+            )
+        })
+
+        return profile
+    }
+
+    private getRecommendCacheKey(userId?: string): string {
+        return `recommend:ranked_ids:${userId || 'guest'}`
+    }
+
+    private async loadPicturesByIds(ids: string[]): Promise<ShowPictureModelVo[]> {
+        if (ids.length === 0) {
+            return []
+        }
+        const pictures = await this.prismaService.picture.findMany({
+            where: { id: { in: ids }, isDelete: 0 }
+        })
+        const pictureMap = new Map(pictures.map(p => [p.id, p]))
+        return ids
+            .map(id => pictureMap.get(id))
+            .filter((p): p is NonNullable<typeof p> => !!p)
+            .map(p => this.buildShowPictureVo(p))
+    }
+
+    private buildRecommendBaseWhere(excludedIds: string[] = []): Prisma.pictureWhereInput {
+        return {
+            reviewStatus: ReviewStatus.PASS,
+            spaceId: null,
+            isDelete: 0,
+            ...(excludedIds.length > 0
+                ? {
+                      id: {
+                          notIn: excludedIds
+                      }
+                  }
+                : {})
+        }
+    }
+
+    private async loadGuestRecommendCandidates() {
+        const baseWhere = this.buildRecommendBaseWhere()
+        const [recentPictures, popularPictures] = await Promise.all([
+            this.prismaService.picture.findMany({
+                where: baseWhere,
+                orderBy: {
+                    createTime: 'desc'
+                },
+                take: RECOMMEND_CANDIDATE_POOL_SIZE
+            }),
+            this.prismaService.picture.findMany({
+                where: baseWhere,
+                orderBy: [
+                    { downloadNumber: 'desc' },
+                    { collectionNumber: 'desc' },
+                    { likeNumber: 'desc' },
+                    { viewNumber: 'desc' },
+                    { createTime: 'desc' }
+                ],
+                take: RECOMMEND_CANDIDATE_POOL_SIZE
+            })
+        ])
+
+        const candidateMap = new Map<string, any>()
+        ;[...recentPictures, ...popularPictures].forEach(item => {
+            if (!candidateMap.has(item.id)) {
+                candidateMap.set(item.id, item)
+            }
+        })
+
+        return Array.from(candidateMap.values())
+    }
+
+    private async loadPersonalizedRecommendCandidates(profile: UserInterestProfile) {
+        const excludedIds = Array.from(profile.consumedPictureIds)
+        const baseWhere = this.buildRecommendBaseWhere(excludedIds)
+        const topCategories = this.getTopKeys(profile.categoryWeights, 3)
+        const topTags = this.getTopKeys(profile.tagWeights, 5)
+        const profileOrConditions: Prisma.pictureWhereInput[] = [
+            ...topCategories.map(category => ({ category })),
+            ...topTags.map(tag => ({
+                tags: {
+                    contains: `"${tag}"`
+                }
+            }))
+        ]
+
+        const [profilePictures, recentPictures, popularPictures] = await Promise.all([
+            profileOrConditions.length > 0
+                ? this.prismaService.picture.findMany({
+                      where: {
+                          ...baseWhere,
+                          OR: profileOrConditions
+                      },
+                      orderBy: {
+                          createTime: 'desc'
+                      },
+                      take: RECOMMEND_CANDIDATE_POOL_SIZE
+                  })
+                : Promise.resolve([]),
+            this.prismaService.picture.findMany({
+                where: baseWhere,
+                orderBy: {
+                    createTime: 'desc'
+                },
+                take: RECOMMEND_CANDIDATE_POOL_SIZE
+            }),
+            this.prismaService.picture.findMany({
+                where: baseWhere,
+                orderBy: [
+                    { downloadNumber: 'desc' },
+                    { collectionNumber: 'desc' },
+                    { likeNumber: 'desc' },
+                    { viewNumber: 'desc' },
+                    { createTime: 'desc' }
+                ],
+                take: RECOMMEND_CANDIDATE_POOL_SIZE
+            })
+        ])
+
+        const candidateMap = new Map<string, any>()
+        ;[...profilePictures, ...recentPictures, ...popularPictures].forEach(item => {
+            if (!candidateMap.has(item.id)) {
+                candidateMap.set(item.id, item)
+            }
+        })
+
+        return Array.from(candidateMap.values())
+    }
+
+    private calculateContentScore(profile: UserInterestProfile, picture: any) {
+        const categoryMatch = this.getNormalizedWeight(profile.categoryWeights, picture.category)
+        const formatScore = this.getNormalizedWeight(profile.formatWeights, picture.picFormat)
+        const scaleScore = this.getNormalizedWeight(profile.scaleWeights, this.getScaleBucket(picture.picScale))
+        const colorScore = this.calculateColorPreferenceScore(profile.colorWeights, picture.picColor)
+        const pictureTags = this.parsePictureTags(picture.tags)
+        const commonTagScore = Math.min(
+            pictureTags.reduce((sum, tag) => sum + this.getNormalizedWeight(profile.tagWeights, tag), 0),
+            1
+        )
+        const keywords = this.extractKeywords(picture.name, picture.introduction)
+        const keywordScore = Math.min(
+            keywords.reduce((sum, keyword) => sum + this.getNormalizedWeight(profile.keywordWeights, keyword), 0),
+            1
+        )
+
+        return (
+            (5 * categoryMatch + 3 * commonTagScore + 2 * colorScore + formatScore + scaleScore + 2 * keywordScore) / 14
+        )
+    }
+
+    private calculatePopularityValue(picture: any) {
+        return (
+            (picture.viewNumber ?? 0) +
+            3 * (picture.likeNumber ?? 0) +
+            4 * (picture.collectionNumber ?? 0) +
+            5 * (picture.downloadNumber ?? 0)
+        )
+    }
+
+    private calculateFreshnessValue(picture: any) {
+        const createdAt = new Date(picture.createTime).getTime()
+        const daysAgo = Math.max(0, (Date.now() - createdAt) / (1000 * 60 * 60 * 24))
+        return Math.max(0, 1 - daysAgo / 30)
+    }
+
+    private scoreCandidatesForProfile(candidates: any[], profile: UserInterestProfile) {
+        if (candidates.length === 0) {
+            return []
+        }
+
+        const contentScores = candidates.map(item => this.calculateContentScore(profile, item))
+        const popularityScores = this.normalizeScores(candidates.map(item => this.calculatePopularityValue(item)))
+        const freshnessScores = candidates.map(item => this.calculateFreshnessValue(item))
+
+        return candidates
+            .map((item, index) => {
+                const baseScore =
+                    0.65 * contentScores[index] + 0.2 * popularityScores[index] + 0.15 * freshnessScores[index]
+                // 添加 ±5% 的随机扰动，避免每次结果完全相同
+                const jitter = (Math.random() - 0.5) * 0.1
+                return {
+                    item,
+                    score: baseScore + jitter
+                }
+            })
+            .sort((a, b) => b.score - a.score || b.item.createTime.getTime() - a.item.createTime.getTime())
+            .map(({ item }) => item)
+    }
+
+    private scoreGuestCandidates(candidates: any[]) {
+        if (candidates.length === 0) {
+            return []
+        }
+
+        const popularityScores = this.normalizeScores(candidates.map(item => this.calculatePopularityValue(item)))
+        const freshnessScores = candidates.map(item => this.calculateFreshnessValue(item))
+
+        return candidates
+            .map((item, index) => {
+                const baseScore = 0.65 * popularityScores[index] + 0.35 * freshnessScores[index]
+                const jitter = (Math.random() - 0.5) * 0.1
+                return {
+                    item,
+                    score: baseScore + jitter
+                }
+            })
+            .sort((a, b) => b.score - a.score || b.item.createTime.getTime() - a.item.createTime.getTime())
+            .map(({ item }) => item)
+    }
+
+    async recommendPictures(recommendPictureDto: RecommendPictureDto, req: Request) {
+        const { current, pageSize } = recommendPictureDto
+        const currentPage = Number(current)
+        const pageSizeNumber = Number(pageSize)
+
+        if (
+            !Number.isFinite(currentPage) ||
+            currentPage <= 0 ||
+            !Number.isFinite(pageSizeNumber) ||
+            pageSizeNumber <= 0
+        ) {
+            throw new BusinessException(BusinessStatus.PARAMS_ERROR.message, BusinessStatus.PARAMS_ERROR.code)
+        }
+
+        if (pageSizeNumber > MAX_RECOMMEND_PAGE_SIZE) {
+            throw new BusinessException(BusinessStatus.OPERATION_ERROR.message, BusinessStatus.OPERATION_ERROR.code)
+        }
+
+        const loginUser = req.session?.user
+        const cacheKey = this.getRecommendCacheKey(loginUser?.id)
+        const skip = (currentPage - 1) * pageSizeNumber
+
+        // 翻页请求：尝试从 Redis 读取已缓存的排序 ID 列表
+        if (currentPage > 1) {
+            const cachedIds: string[] | null = await this.redisService.get(cacheKey)
+            if (cachedIds && Array.isArray(cachedIds)) {
+                const pageIds = cachedIds.slice(skip, skip + pageSizeNumber)
+                const list = await this.loadPicturesByIds(pageIds)
+                return { list, total: cachedIds.length }
+            }
+            // 缓存未命中，降级走全量计算
+        }
+
+        // 首次请求或缓存未命中：执行完整的召回 → 打分 → 排序流程
+        const profile = loginUser?.id ? await this.buildUserInterestProfile(loginUser.id) : null
+        const candidates = profile
+            ? await this.loadPersonalizedRecommendCandidates(profile)
+            : await this.loadGuestRecommendCandidates()
+        const rankedPictures = profile
+            ? this.scoreCandidatesForProfile(candidates, profile)
+            : this.scoreGuestCandidates(candidates)
+
+        // 缓存排好序的 ID 列表到 Redis
+        const rankedIds = rankedPictures.map(item => item.id)
+        await this.redisService.set(cacheKey, rankedIds, RECOMMEND_CACHE_TTL_SECONDS)
+
+        const pagePictures = rankedPictures.slice(skip, skip + pageSizeNumber)
+
+        return {
+            list: pagePictures.map(item => this.buildShowPictureVo(item)),
+            total: rankedIds.length
+        }
     }
 
     async getPictureByPage(queryPictureDto: QueryPictureDto) {
@@ -226,26 +719,6 @@ export class PictureService {
               }
             : undefined
 
-        const buildShowPicture = (item: any): ShowPictureModelVo => ({
-            id: item.id,
-            url: item.url,
-            introduction: item.introduction,
-            category: item.category,
-            tags: item.tags === '' ? [] : JSON.parse(item.tags) || [],
-            format: item.picFormat,
-            fileSize: item.picSize,
-            width: item.picWidth,
-            height: item.picHeight,
-            filename: item.name,
-            picScale: item.picScale,
-            thumbnailUrl: item.thumbnailUrl,
-            color: item.picColor,
-            viewNumber: item.viewNumber,
-            likeNumber: item.likeNumber,
-            downloadNumber: item.downloadNumber,
-            collectionNumber: item.collectionNumber
-        })
-
         if (queryMyLike || queryMyCollection) {
             const loginUser = req.session?.user
             if (!loginUser?.id) {
@@ -310,7 +783,7 @@ export class PictureService {
             const result = pagePictureIds
                 .map(id => pictureMap.get(id))
                 .filter((item): item is (typeof pagePictures)[number] => !!item)
-                .map(buildShowPicture)
+                .map(item => this.buildShowPictureVo(item))
 
             return {
                 list: result,
@@ -328,7 +801,7 @@ export class PictureService {
             }),
             this.prismaService.picture.count({ where })
         ])
-        const result: ShowPictureModelVo[] = data.map(buildShowPicture)
+        const result: ShowPictureModelVo[] = data.map(item => this.buildShowPictureVo(item))
         // if (result.length > 0) {
         //     await this.redisCacheService.set(
         //         cacheKey,

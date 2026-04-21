@@ -202,6 +202,20 @@ export async function pictureControllerGetPictureByPageVoV1(
 }
 
 /** 首页查询图片 POST /api/v1/picture/query */
+export async function pictureControllerRecommendPicturesV1(
+    body: API.RecommendPictureDto,
+    options?: { [key: string]: any }
+) {
+    return ryRequest.request<API.ShowPictureVo>('/api/v1/picture/recommend', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        data: body,
+        ...(options || {})
+    })
+}
+
 export async function pictureControllerQueryPictureV1(
     body: {
         searchText?: string

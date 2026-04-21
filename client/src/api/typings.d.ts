@@ -774,6 +774,15 @@ declare namespace API {
         endEditTime?: string
     }
 
+    type RecommendPictureDto = {
+        /** 褰撳墠椤?*/
+        current: string
+        /** 姣忛〉鏉℃暟 */
+        pageSize: string
+        /** 鎺ㄨ崘鍦烘櫙 */
+        scene?: string
+    }
+
     type QuerySpaceDto = {
         /** 当前页 */
         current: string

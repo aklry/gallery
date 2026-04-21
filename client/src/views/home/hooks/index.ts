@@ -1,6 +1,10 @@
 ﻿import { ref, reactive, watch, onMounted, onBeforeUnmount, nextTick, type Ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { pictureControllerGetPictureByPageVoV1, pictureControllerQueryPictureV1 } from '@/api/picture'
+import {
+    pictureControllerGetPictureByPageVoV1,
+    pictureControllerQueryPictureV1,
+    pictureControllerRecommendPicturesV1
+} from '@/api/picture'
 import { message } from 'ant-design-vue'
 
 const useHomeHooks = (containerRef: Ref<HTMLDivElement | null>, sentinelRef: Ref<HTMLDivElement | null>) => {
@@ -28,7 +32,11 @@ const useHomeHooks = (containerRef: Ref<HTMLDivElement | null>, sentinelRef: Ref
             if (current) {
                 searchParams.current = current
             }
-            const res = await pictureControllerGetPictureByPageVoV1(searchParams)
+            const res = await pictureControllerRecommendPicturesV1({
+                current: searchParams.current,
+                pageSize: searchParams.pageSize,
+                scene: 'home'
+            })
             if (res.data.list.length === 0) {
                 noMore.value = true
             } else if (dataList.value.length === 0 || current === '1') {
@@ -105,6 +113,11 @@ const useHomeHooks = (containerRef: Ref<HTMLDivElement | null>, sentinelRef: Ref
     const handleSearchPicture = (value: string) => {
         searchParams.searchText = value || undefined
         hasUserScrolled.value = false
+        if (!value) {
+            resetAndFetch()
+            void fetchData('1')
+            return
+        }
         queryPictureBySearchText({ searchText: value })
     }
 

@@ -44,6 +44,7 @@ import {
     EditPictureByBatchDto,
     PartialQueryPictureDto,
     QueryPictureDto,
+    RecommendPictureDto,
     ReviewPictureDto,
     UpdatePictureDto,
     UploadBatchPictureDto,
@@ -81,6 +82,14 @@ export class PictureController {
     @ApiOperation({ summary: '获取图片列表(非管理员)' })
     async getPictureByPageVo(@Body(new ValidationPipe()) queryPictureDto: QueryPictureDto, @Req() req: Request) {
         const data = await this.pictureService.getPictureByPageVo(queryPictureDto, req)
+        return this.responseService.success(data)
+    }
+
+    @Post('/recommend')
+    @ApiResponse({ type: ShowPictureVo })
+    @ApiOperation({ summary: '首页推荐图片' })
+    async recommendPictures(@Body(new ValidationPipe()) recommendPictureDto: RecommendPictureDto, @Req() req: Request) {
+        const data = await this.pictureService.recommendPictures(recommendPictureDto, req)
         return this.responseService.success(data)
     }
 
