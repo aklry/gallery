@@ -47,7 +47,9 @@
         "reflect-metadata": "^0.2.0",
         "rxjs": "^7.8.1",
         "sharp": "^0.34.5",
-        "svg-captcha": "^1.4.0"
+        "@alicloud/captcha20230305": "^1.1.4",
+        "@alicloud/openapi-client": "^0.4.15",
+        "@alicloud/tea-util": "^1.1.18"
     },
     "devDependencies": {
         "@nestjs/cli": "^10.0.0",

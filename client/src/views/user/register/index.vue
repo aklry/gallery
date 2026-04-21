@@ -176,6 +176,7 @@
                             </a-form>
                         </a-tab-pane>
                     </a-tabs>
+                    <div id="aliyun-captcha-element"></div>
                 </div>
             </div>
         </div>

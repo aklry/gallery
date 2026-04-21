@@ -17,6 +17,10 @@ export class UserRegisterDto {
     @MinLength(6)
     @ApiProperty({ description: '确认密码' })
     checkedPassword: string
+    @IsNotEmpty()
+    @IsString()
+    @ApiProperty({ description: '滑块验证参数' })
+    captchaVerifyParam: string
 }
 
 export class UserRegisterByEmailDto {
@@ -36,4 +40,8 @@ export class UserRegisterByEmailDto {
     @IsString()
     @ApiProperty({ description: '确认密码' })
     checkedPassword: string
+    @IsNotEmpty()
+    @IsString()
+    @ApiProperty({ description: '滑块验证参数' })
+    captchaVerifyParam: string
 }

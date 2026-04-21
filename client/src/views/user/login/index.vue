@@ -53,47 +53,6 @@
                                         </template>
                                     </a-input-password>
                                 </a-form-item>
-
-                                <a-form-item
-                                    name="code"
-                                    :rules="[
-                                        { required: true, message: '请输入验证码!' },
-                                        { len: 4, message: '验证码为 4 位字符' }
-                                    ]"
-                                >
-                                    <div class="captcha-row">
-                                        <a-input
-                                            v-model:value="loginForm.code"
-                                            size="large"
-                                            class="captcha-input"
-                                            :maxlength="4"
-                                            placeholder="请输入图形验证码"
-                                        >
-                                            <template #prefix>
-                                                <SafetyCertificateOutlined />
-                                            </template>
-                                        </a-input>
-                                        <button
-                                            type="button"
-                                            class="captcha-trigger"
-                                            :disabled="captchaLoading"
-                                            @click="refreshCaptcha()"
-                                        >
-                                            <img
-                                                v-if="captchaImageUrl"
-                                                :src="captchaImageUrl"
-                                                class="captcha-image"
-                                                alt="登录验证码"
-                                            />
-                                            <span v-else class="captcha-placeholder">点击加载</span>
-                                            <span class="captcha-refresh">
-                                                <ReloadOutlined :spin="captchaLoading" />
-                                                <span>{{ captchaLoading ? '加载中' : '换一张' }}</span>
-                                            </span>
-                                        </button>
-                                    </div>
-                                </a-form-item>
-
                                 <div class="flex justify-end mb-4">
                                     <router-link
                                         to="/user/register"
@@ -152,46 +111,6 @@
                                     </a-input-password>
                                 </a-form-item>
 
-                                <a-form-item
-                                    name="code"
-                                    :rules="[
-                                        { required: true, message: '请输入验证码!' },
-                                        { len: 4, message: '验证码为 4 位字符' }
-                                    ]"
-                                >
-                                    <div class="captcha-row">
-                                        <a-input
-                                            v-model:value="loginForm.code"
-                                            size="large"
-                                            class="captcha-input"
-                                            :maxlength="4"
-                                            placeholder="请输入图形验证码"
-                                        >
-                                            <template #prefix>
-                                                <SafetyCertificateOutlined />
-                                            </template>
-                                        </a-input>
-                                        <button
-                                            type="button"
-                                            class="captcha-trigger"
-                                            :disabled="captchaLoading"
-                                            @click="refreshCaptcha()"
-                                        >
-                                            <img
-                                                v-if="captchaImageUrl"
-                                                :src="captchaImageUrl"
-                                                class="captcha-image"
-                                                alt="登录验证码"
-                                            />
-                                            <span v-else class="captcha-placeholder">点击加载</span>
-                                            <span class="captcha-refresh">
-                                                <ReloadOutlined :spin="captchaLoading" />
-                                                <span>{{ captchaLoading ? '加载中' : '换一张' }}</span>
-                                            </span>
-                                        </button>
-                                    </div>
-                                </a-form-item>
-
                                 <div class="flex justify-end mb-4">
                                     <router-link
                                         to="/user/register"
@@ -216,6 +135,7 @@
                             </a-form>
                         </a-tab-pane>
                     </a-tabs>
+                    <div id="aliyun-captcha-element"></div>
                 </div>
             </div>
         </div>
@@ -223,10 +143,10 @@
 </template>
 
 <script setup lang="ts">
-import { LockOutlined, ReloadOutlined, SafetyCertificateOutlined, UserOutlined } from '@ant-design/icons-vue'
+import { LockOutlined, UserOutlined } from '@ant-design/icons-vue'
 import useLogin from './hooks'
 
-const { tabKey, loginForm, handleSubmit, loading, captchaLoading, captchaImageUrl, refreshCaptcha } = useLogin()
+const { tabKey, loginForm, handleSubmit, loading } = useLogin()
 </script>
 
 <style lang="scss" scoped>
@@ -257,89 +177,5 @@ const { tabKey, loginForm, handleSubmit, loading, captchaLoading, captchaImageUr
 
 :deep(.ant-tabs-ink-bar) {
     background: #3b82f6;
-}
-
-.captcha-row {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) 132px;
-    gap: 12px;
-    align-items: stretch;
-}
-
-.captcha-input {
-    min-width: 0;
-}
-
-.captcha-trigger {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 4px;
-    padding: 0;
-    border: 1px solid #e2e8f0;
-    border-radius: 14px;
-    background: #fff;
-    overflow: hidden;
-    transition:
-        transform 0.25s ease,
-        border-color 0.25s ease,
-        box-shadow 0.25s ease;
-    cursor: pointer;
-
-    &:hover:not(:disabled) {
-        transform: translateY(-1px);
-        border-color: #3b82f6;
-        box-shadow: 0 4px 12px rgb(59 130 246 / 15%);
-    }
-
-    &:focus-visible {
-        outline: 2px solid #3b82f6;
-        outline-offset: 2px;
-    }
-
-    &:disabled {
-        cursor: wait;
-        opacity: 0.78;
-    }
-}
-
-.captcha-image,
-.captcha-placeholder {
-    display: block;
-    width: 100%;
-    height: 48px;
-}
-
-.captcha-image {
-    object-fit: cover;
-}
-
-.captcha-placeholder {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #94a3b8;
-    font-size: 13px;
-    font-weight: 600;
-}
-
-.captcha-refresh {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    min-height: 28px;
-    padding: 0 10px 8px;
-    color: #64748b;
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 0.04em;
-}
-
-@media (width <= 768px) {
-    .captcha-row {
-        grid-template-columns: 1fr;
-    }
 }
 </style>

@@ -114,14 +114,6 @@ export async function userControllerUserLoginByEmailV1(
     })
 }
 
-/** 获取登录验证码 GET /api/v1/user/login/get/code */
-export async function userControllerGetLoginCaptchaV1(options?: { [key: string]: any }) {
-    return ryRequest.request<API.LoginCaptchaVo>('/api/v1/user/login/get/code', {
-        method: 'GET',
-        ...(options || {})
-    })
-}
-
 /** 退出登录 POST /api/v1/user/logout */
 export async function userControllerUserLogoutV1(options?: { [key: string]: any }) {
     return ryRequest.request<API.UserLogoutVo>('/api/v1/user/logout', {

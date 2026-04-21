@@ -14,8 +14,8 @@ export class UserLoginDto {
     userPassword: string
     @IsNotEmpty()
     @IsString()
-    @ApiProperty({ description: '登录验证码' })
-    code: string
+    @ApiProperty({ description: '滑块验证参数' })
+    captchaVerifyParam: string
 }
 
 export class UserLoginByEmailDto {
@@ -30,6 +30,6 @@ export class UserLoginByEmailDto {
     userPassword: string
     @IsNotEmpty()
     @IsString()
-    @ApiProperty({ description: '登录验证码' })
-    code: string
+    @ApiProperty({ description: '滑块验证参数' })
+    captchaVerifyParam: string
 }

@@ -1,5 +1,8 @@
 import { Injectable } from '@nestjs/common'
 import { PrismaService } from '@core/prisma/prisma.service'
+import { ConfigService } from '@nestjs/config'
+import Captcha20230305, { VerifyIntelligentCaptchaRequest } from '@alicloud/captcha20230305'
+import * as OpenApi from '@alicloud/openapi-client'
 import { BusinessStatus } from '@core/config'
 import { UserRole } from './enum/user'
 import * as bcrypt from 'bcrypt'
@@ -22,21 +25,9 @@ import { EmailService } from '@infra/email/email.service'
 import { RedisService } from '@core/redis/redis.service'
 import { BusinessException } from '@shared/custom-exception'
 import { LOGIN_REDIS_KEY, REGISTER_EMAIL_CODE_REDIS_KEY, USER_RANDOM_PREFIX } from './constant'
-import * as svgCaptcha from 'svg-captcha'
-import * as sharpModule from 'sharp'
-
-const sharp = sharpModule as unknown as (
-    input?: sharpModule.SharpInput | Array<sharpModule.SharpInput>,
-    options?: sharpModule.SharpOptions
-) => sharpModule.Sharp
 
 @Injectable()
 export class UserService {
-    private readonly loginCaptchaExpireSeconds = 5 * 60
-    private readonly captchaIpLimit = 20
-    private readonly captchaIpWindowSeconds = 10 * 60
-    private readonly captchaSessionLimit = 10
-    private readonly captchaSessionWindowSeconds = 5 * 60
     private readonly emailRegisterCodeIpLimit = 10
     private readonly emailRegisterCodeIpWindowSeconds = 10 * 60
     private readonly emailRegisterCodeSessionLimit = 5
@@ -57,11 +48,13 @@ export class UserService {
         private readonly prismaService: PrismaService,
         private readonly ossService: OssService,
         private readonly emailService: EmailService,
-        private readonly redisService: RedisService
+        private readonly redisService: RedisService,
+        private readonly configService: ConfigService
     ) {}
 
     async userRegister(userRegisterDto: UserRegisterDto) {
-        const { userAccount, userPassword, checkedPassword } = userRegisterDto
+        const { userAccount, userPassword, checkedPassword, captchaVerifyParam } = userRegisterDto
+        await this.verifyAliyunCaptcha(captchaVerifyParam)
         if (userPassword !== checkedPassword) {
             throw new BusinessException('两次密码不一致', BusinessStatus.PARAMS_ERROR.code)
         }
@@ -118,11 +111,11 @@ export class UserService {
     }
 
     async userLogin(req: Request, userLoginDto: UserLoginDto) {
-        const { userAccount, userPassword, code } = userLoginDto
+        const { userAccount, userPassword, captchaVerifyParam } = userLoginDto
         const identity = this.normalizeRateLimitValue(userAccount)
 
         return await this.executeLoginAttempt(req, identity, async () => {
-            await this.validateLoginCaptcha(req, code)
+            await this.verifyAliyunCaptcha(captchaVerifyParam)
             const user = await this.prismaService.user.findUnique({
                 where: {
                     userAccount
@@ -292,7 +285,8 @@ export class UserService {
         return true
     }
 
-    async sendEmailValidateCode(req: Request, email: string) {
+    async sendEmailValidateCode(req: Request, email: string, captchaVerifyParam: string) {
+        await this.verifyAliyunCaptcha(captchaVerifyParam)
         await this.assertRegisterEmailCodeRateLimit(req, email)
 
         let code = await this.redisService.get(this.getRegisterEmailCodeKey(email))
@@ -320,7 +314,8 @@ export class UserService {
     }
     // 邮箱注册
     async userRegisterByEmail(userRegisterByEmailDto: UserRegisterByEmailDto) {
-        const { userEmail, code, userPassword, checkedPassword } = userRegisterByEmailDto
+        const { userEmail, code, userPassword, checkedPassword, captchaVerifyParam } = userRegisterByEmailDto
+        await this.verifyAliyunCaptcha(captchaVerifyParam)
         const storedCode = (await this.redisService.get(this.getRegisterEmailCodeKey(userEmail))) as string
         if (storedCode !== code) {
             throw new BusinessException('验证码错误', BusinessStatus.PARAMS_ERROR.code)
@@ -341,11 +336,11 @@ export class UserService {
 
     // 邮箱登录
     async userLoginByEmail(req: Request, userLoginByEmailDto: UserLoginByEmailDto) {
-        const { userEmail, userPassword, code } = userLoginByEmailDto
+        const { userEmail, userPassword, captchaVerifyParam } = userLoginByEmailDto
         const identity = this.normalizeRateLimitValue(userEmail)
 
         return await this.executeLoginAttempt(req, identity, async () => {
-            await this.validateLoginCaptcha(req, code)
+            await this.verifyAliyunCaptcha(captchaVerifyParam)
             const user = await this.prismaService.user.findUnique({
                 where: {
                     userEmail
@@ -370,27 +365,37 @@ export class UserService {
         })
     }
 
-    //生成登录页面的验证码
-    async generateLoginCaptcha(req: Request) {
-        await this.assertCaptchaRateLimit(req)
-
-        const captcha = svgCaptcha.create({
-            size: 4,
-            width: 132,
-            height: 48,
-            fontSize: 40,
-            noise: 4,
-            color: true,
-            background: '#f8fafc',
-            ignoreChars: '0o1ilI',
-            charPreset: 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789'
-        })
-
-        req.session.loginCaptcha = captcha.text
-        req.session.loginCaptchaExpiresAt = Date.now() + this.loginCaptchaExpireSeconds * 1000
-
-        const imageBuffer = await sharp(Buffer.from(captcha.data)).png().toBuffer()
-        return `data:image/png;base64,${imageBuffer.toString('base64')}`
+    private async verifyAliyunCaptcha(captchaVerifyParam: string) {
+        if (!captchaVerifyParam) {
+            throw new BusinessException('请完成滑动验证', BusinessStatus.PARAMS_ERROR.code)
+        }
+        try {
+            const config = this.configService.get('captcha') as {
+                accessKeyId?: string
+                accessKeySecret?: string
+                sceneId?: string
+            }
+            if (!config?.accessKeyId || !config?.accessKeySecret || !config?.sceneId) {
+                throw new Error('captcha config missing')
+            }
+            const openApiConfig = new OpenApi.Config({
+                accessKeyId: config.accessKeyId,
+                accessKeySecret: config.accessKeySecret,
+                endpoint: 'captcha.cn-shanghai.aliyuncs.com'
+            })
+            const client = new Captcha20230305(openApiConfig)
+            const request = new VerifyIntelligentCaptchaRequest({
+                captchaVerifyParam,
+                sceneId: config.sceneId
+            })
+            const response = await client.verifyIntelligentCaptcha(request)
+            if (!response?.body?.result?.verifyResult) {
+                throw new Error(response?.body?.result?.verifyCode || '验证失败')
+            }
+        } catch (error) {
+            console.error('Aliyun Captcha Verify Error:', error)
+            throw new BusinessException('人机验证不通过，请重试', BusinessStatus.PARAMS_ERROR.code)
+        }
     }
 
     // 生成 6位随机数字验证码
@@ -407,13 +412,6 @@ export class UserService {
 
     private getRegisterEmailCodeKey(email: string) {
         return `${REGISTER_EMAIL_CODE_REDIS_KEY}:${this.normalizeRateLimitValue(email)}`
-    }
-
-    private getCaptchaRateLimitKey(req: Request, scope: 'ip' | 'session') {
-        if (scope === 'ip') {
-            return `${LOGIN_REDIS_KEY}:rate:get:ip:${this.normalizeRateLimitValue(this.getRequestIp(req))}`
-        }
-        return `${LOGIN_REDIS_KEY}:rate:get:session:${this.normalizeRateLimitValue(req.sessionID)}`
     }
 
     private getRegisterEmailCodeRateLimitKey(scope: 'ip' | 'session' | 'email', value: string) {
@@ -464,23 +462,6 @@ export class UserService {
             }
             throw error
         }
-    }
-
-    private async assertCaptchaRateLimit(req: Request) {
-        await Promise.all([
-            this.consumeRateLimit(
-                this.getCaptchaRateLimitKey(req, 'ip'),
-                this.captchaIpLimit,
-                this.captchaIpWindowSeconds,
-                '验证码获取过于频繁，请稍后再试'
-            ),
-            this.consumeRateLimit(
-                this.getCaptchaRateLimitKey(req, 'session'),
-                this.captchaSessionLimit,
-                this.captchaSessionWindowSeconds,
-                '验证码获取过于频繁，请稍后再试'
-            )
-        ])
     }
 
     private async assertRegisterEmailCodeRateLimit(req: Request, email: string) {
@@ -600,23 +581,6 @@ export class UserService {
             await this.redisService.expire(key, windowSeconds)
         }
         return count
-    }
-
-    private async validateLoginCaptcha(req: Request, code: string) {
-        const storedCode = req.session.loginCaptcha
-        const expiresAt = req.session.loginCaptchaExpiresAt ?? 0
-        if (!storedCode || Date.now() > expiresAt) {
-            delete req.session.loginCaptcha
-            delete req.session.loginCaptchaExpiresAt
-            throw new BusinessException('验证码已过期，请刷新后重试', BusinessStatus.PARAMS_ERROR.code)
-        }
-
-        delete req.session.loginCaptcha
-        delete req.session.loginCaptchaExpiresAt
-
-        if (code.trim().toLowerCase() !== storedCode.trim().toLowerCase()) {
-            throw new BusinessException('验证码错误', BusinessStatus.PARAMS_ERROR.code)
-        }
     }
 
     private async encryptPassword(password: string) {

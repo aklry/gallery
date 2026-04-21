@@ -7,4 +7,8 @@ export class EmailValidateDto {
     @IsEmail()
     @ApiProperty({ description: '发送验证码的邮箱' })
     userEmail: string
+    @IsNotEmpty()
+    @IsString()
+    @ApiProperty({ description: '滑块验证参数' })
+    captchaVerifyParam: string
 }

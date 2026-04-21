@@ -2,62 +2,67 @@ import { onMounted, reactive, ref, watch } from 'vue'
 import { message } from 'ant-design-vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/store/modules/user'
-import {
-    userControllerGetLoginCaptchaV1,
-    userControllerUserLoginByEmailV1,
-    userControllerUserLoginV1
-} from '@/api/user'
+import { userControllerUserLoginByEmailV1, userControllerUserLoginV1 } from '@/api/user'
 import { MD5 } from 'crypto-js'
+import { aliyunCaptchaPrefix, aliyunCaptchaSceneId, hasConfiguredAliyunCaptcha } from '@/constants/captcha'
+
+declare global {
+    interface Window {
+        initAliyunCaptcha: any
+    }
+}
 
 const useLogin = () => {
     const router = useRouter()
     const userStore = useUserStore()
     const loading = ref(false)
-    const captchaLoading = ref(false)
     const tabKey = ref('account')
-    const captchaImageUrl = ref('')
+
+    let captchaInstance: any = null
 
     const loginForm = reactive({
         userAccount: '',
         userEmail: '',
         userPassword: '',
-        code: ''
+        captchaVerifyParam: ''
     })
 
-    const refreshCaptcha = async (silent = false) => {
-        try {
-            captchaLoading.value = true
-            const response = await userControllerGetLoginCaptchaV1()
-
-            if (response.code !== 1 || !response.data) {
-                throw new Error(response.message || '获取验证码失败')
-            }
-
-            captchaImageUrl.value = response.data
-            loginForm.code = ''
-        } catch (error) {
-            captchaImageUrl.value = ''
-            if (!silent) {
-                message.error('验证码加载失败，请重试')
-            }
-        } finally {
-            captchaLoading.value = false
+    const initCaptcha = () => {
+        if (!window.initAliyunCaptcha) {
+            console.error('Aliyun Captcha SDK not loaded')
+            return
         }
+        if (!hasConfiguredAliyunCaptcha) {
+            message.warning('请先配置 VITE_ALIYUN_CAPTCHA_SCENE_ID')
+            return
+        }
+        window.initAliyunCaptcha({
+            SceneId: aliyunCaptchaSceneId,
+            prefix: aliyunCaptchaPrefix,
+            mode: 'popup',
+            element: '#aliyun-captcha-element',
+            button: '',
+            captchaVerifyCallback: async (captchaVerifyParam: string) => {
+                loginForm.captchaVerifyParam = captchaVerifyParam
+                return {
+                    captchaResult: await doLogin()
+                }
+            },
+            onBizResultCallback: (bizResult: boolean) => {
+                if (bizResult === true) {
+                    message.success('登录成功')
+                    const redirect = router.currentRoute.value.query.redirect as string
+                    router.push(redirect || '/')
+                }
+            },
+            getInstance: (instance: any) => {
+                captchaInstance = instance
+            },
+            upLang: 'cn'
+        })
     }
 
-    const handleSubmit = async () => {
-        const inputCode = loginForm.code.trim()
-
-        if (!captchaImageUrl.value) {
-            message.warning('验证码尚未就绪，请刷新后重试')
-            return
-        }
-
-        if (inputCode.length !== 4) {
-            message.warning('请输入 4 位验证码')
-            return
-        }
-
+    const doLogin = async () => {
         try {
             loading.value = true
             let res
@@ -67,49 +72,53 @@ const useLogin = () => {
                 res = await userControllerUserLoginByEmailV1({
                     userEmail: loginForm.userEmail,
                     userPassword: md5Password,
-                    code: inputCode
-                })
+                    captchaVerifyParam: loginForm.captchaVerifyParam
+                } as any)
             } else {
                 res = await userControllerUserLoginV1({
                     userAccount: loginForm.userAccount,
                     userPassword: md5Password,
-                    code: inputCode
-                })
+                    captchaVerifyParam: loginForm.captchaVerifyParam
+                } as any)
             }
 
             if (res.code === 1) {
                 await userStore.setLoginUser(res.data)
-                message.success('登录成功')
-                const redirect = router.currentRoute.value.query.redirect as string
-                router.push(redirect || '/')
+                return true
             } else {
                 message.error(res.message)
-                await refreshCaptcha(true)
+                return false
             }
         } catch (error) {
             message.error('登录失败，请重试')
-            await refreshCaptcha(true)
+            return false
         } finally {
             loading.value = false
         }
     }
 
+    const handleSubmit = async () => {
+        if (captchaInstance) {
+            captchaInstance.show()
+        } else {
+            message.warning('验证码尚未加载完成，请刷新页面')
+            initCaptcha()
+        }
+    }
+
     watch(tabKey, () => {
-        loginForm.code = ''
+        // Handle tab change if necessary
     })
 
     onMounted(() => {
-        refreshCaptcha(true)
+        initCaptcha()
     })
 
     return {
         tabKey,
         loginForm,
         handleSubmit,
-        loading,
-        captchaLoading,
-        captchaImageUrl,
-        refreshCaptcha
+        loading
     }
 }
 

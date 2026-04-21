@@ -35,8 +35,7 @@ import {
     UserDeleteVo,
     UserCreateVo,
     UserUpdateVo,
-    EmailValidateVo,
-    LoginCaptchaVo
+    EmailValidateVo
 } from './vo'
 import { ApiBody, ApiConsumes, ApiOperation, ApiResponse } from '@nestjs/swagger'
 import { Request } from 'express'
@@ -79,7 +78,11 @@ export class UserController {
     @ApiResponse({ type: EmailValidateVo })
     @ApiOperation({ summary: '发送注册验证码(邮箱)' })
     async userRegisterByEmailCode(@Req() req: Request, @Body(new ValidationPipe()) emailValidateDto: EmailValidateDto) {
-        const isSend = await this.userService.sendEmailValidateCode(req, emailValidateDto.userEmail)
+        const isSend = await this.userService.sendEmailValidateCode(
+            req,
+            emailValidateDto.userEmail,
+            emailValidateDto.captchaVerifyParam
+        )
         return this.responseService.success(isSend)
     }
 
@@ -111,14 +114,6 @@ export class UserController {
         req.session.user = data
         this.permissionKit.setSession(data.id, data)
         this.permissionKit.login(data.id)
-        return this.responseService.success(data)
-    }
-
-    @Get('/login/get/code')
-    @ApiResponse({ type: LoginCaptchaVo })
-    @ApiOperation({ summary: '获取登录验证码' })
-    async getLoginCaptcha(@Req() req: Request) {
-        const data = await this.userService.generateLoginCaptcha(req)
         return this.responseService.success(data)
     }
 
