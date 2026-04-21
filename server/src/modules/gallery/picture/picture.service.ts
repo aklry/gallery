@@ -1372,7 +1372,7 @@ export class PictureService {
         }
         await this.messageService.pushMessage({
             userId: picture.userId,
-            title: '鍥剧墖瀹℃牳缁撴灉',
+            title: '图片审核结果',
             content: reviewMessage,
             messageType: MessageType.PICTURE_REVIEW,
             pictureId: id,
@@ -1381,25 +1381,6 @@ export class PictureService {
             spaceId: picture.spaceId ?? undefined,
             actionUrl: picture.spaceId ? `/picture/${id}?spaceId=${picture.spaceId}` : `/picture/${id}`
         })
-        /*
-            const msg = await this.prismaService.message.create({
-                data: {
-                    userId: picture.userId,
-                    content: reviewMessage,
-                    hasRead: MessageStatus.UNREAD,
-                    title: '图片审核结果',
-                    pictureId: id
-                }
-            })
-            this.sseService.emit({
-                userId: picture.userId,
-                data: {
-                    id: msg.id,
-                    content: reviewMessage,
-                    title: '图片审核结果'
-                }
-            })
-        */
         return true
     }
 
