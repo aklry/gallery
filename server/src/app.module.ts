@@ -4,7 +4,8 @@ import { AppController } from './app.controller'
 import { AppService } from './app.service'
 import { ResponseModule } from '@core/response/response.module'
 import { PrismaModule } from '@core/prisma/prisma.module'
-import * as session from 'express-session'
+import type { RequestHandler } from 'express'
+import * as sessionModule from 'express-session'
 import { RedisStore } from 'connect-redis'
 import { RedisModule } from '@core/redis/redis.module'
 import { SECRET_KEY } from '@core/config'
@@ -21,10 +22,6 @@ import { SpaceModule } from '@space/core/space.module'
 import { AnalyzeModule } from '@tools/analyze/analyze.module'
 import { SpaceUserModule } from '@space/user/space-user.module'
 import { PermissionModule } from '@identity/permission/permission.module'
-import { load } from 'js-yaml'
-import * as fs from 'node:fs'
-import * as path from 'node:path'
-import type { YamlOssConfig } from '@shared/types'
 import { SseModule } from '@infra/sse/sse.module'
 import { EmailModule } from '@infra/email/email.module'
 import { SeoModule } from '@tools/seo/seo.module'
@@ -34,6 +31,10 @@ import { PictureDownloadModule } from '@gallery/download/picture-download.module
 import { TagModule } from '@gallery/tag/tag.module'
 import { AiModule } from '@infra/ai/ai.module'
 import { SpaceInviteModule } from '@space/invite/space-invite.module'
+import { loadYamlConfig } from '@core/config/yaml-config'
+import { envConfigSchema } from '@core/config/env-config'
+
+const session = sessionModule as unknown as (options?: sessionModule.SessionOptions) => RequestHandler
 
 @Module({
     imports: [
@@ -55,7 +56,12 @@ import { SpaceInviteModule } from '@space/invite/space-invite.module'
         ConfigModule.forRoot({
             envFilePath: ['.env', '.env.development', '.env.production'],
             isGlobal: true,
-            load: [() => load(fs.readFileSync(path.resolve(process.cwd(), 'config.yaml'), 'utf8')) as YamlOssConfig]
+            load: [loadYamlConfig],
+            validationSchema: envConfigSchema,
+            validationOptions: {
+                abortEarly: false,
+                allowUnknown: true
+            }
         }),
         SseModule,
         EmailModule,
