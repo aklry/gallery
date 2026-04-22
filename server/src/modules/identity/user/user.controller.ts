@@ -61,16 +61,19 @@ export class UserController {
     @Post('/register')
     @ApiResponse({ type: UserRegisterVo })
     @ApiOperation({ summary: '用户注册' })
-    async userRegister(@Body(new ValidationPipe()) userRegisterDto: UserRegisterDto) {
-        const data = await this.userService.userRegister(userRegisterDto)
+    async userRegister(@Req() req: Request, @Body(new ValidationPipe()) userRegisterDto: UserRegisterDto) {
+        const data = await this.userService.userRegister(req, userRegisterDto)
         return this.responseService.success(data)
     }
 
     @Post('/register/email')
     @ApiResponse({ type: UserRegisterVo })
     @ApiOperation({ summary: '用户注册(邮箱)' })
-    async userRegisterByEmail(@Body(new ValidationPipe()) userRegisterByEmailDto: UserRegisterByEmailDto) {
-        const data = await this.userService.userRegisterByEmail(userRegisterByEmailDto)
+    async userRegisterByEmail(
+        @Req() req: Request,
+        @Body(new ValidationPipe()) userRegisterByEmailDto: UserRegisterByEmailDto
+    ) {
+        const data = await this.userService.userRegisterByEmail(req, userRegisterByEmailDto)
         return this.responseService.success(data)
     }
 

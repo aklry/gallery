@@ -24,7 +24,7 @@ import { OssService } from '@infra/oss/oss.service'
 import { EmailService } from '@infra/email/email.service'
 import { RedisService } from '@core/redis/redis.service'
 import { BusinessException } from '@shared/custom-exception'
-import { LOGIN_REDIS_KEY, REGISTER_EMAIL_CODE_REDIS_KEY, USER_RANDOM_PREFIX } from './constant'
+import { LOGIN_REDIS_KEY, REGISTER_EMAIL_CODE_REDIS_KEY, REGISTER_REDIS_KEY, USER_RANDOM_PREFIX } from './constant'
 
 @Injectable()
 export class UserService {
@@ -34,6 +34,15 @@ export class UserService {
     private readonly emailRegisterCodeSessionWindowSeconds = 10 * 60
     private readonly emailRegisterCodeTargetLimit = 3
     private readonly emailRegisterCodeTargetWindowSeconds = 30 * 60
+    private readonly emailRegisterCodeFailureWindowSeconds = 10 * 60
+    private readonly emailRegisterCodeFailureBlockThreshold = 5
+    private readonly emailRegisterCodeFailureBlockSeconds = 30 * 60
+    private readonly registerIpLimit = 5
+    private readonly registerIpWindowSeconds = 10 * 60
+    private readonly registerSessionLimit = 3
+    private readonly registerSessionWindowSeconds = 10 * 60
+    private readonly registerIdentityLimit = 3
+    private readonly registerIdentityWindowSeconds = 30 * 60
     private readonly loginIpLimit = 15
     private readonly loginIpWindowSeconds = 10 * 60
     private readonly loginSessionLimit = 8
@@ -52,8 +61,11 @@ export class UserService {
         private readonly configService: ConfigService
     ) {}
 
-    async userRegister(userRegisterDto: UserRegisterDto) {
+    async userRegister(req: Request, userRegisterDto: UserRegisterDto) {
         const { userAccount, userPassword, checkedPassword, captchaVerifyParam } = userRegisterDto
+        const identity = this.normalizeRateLimitValue(userAccount)
+
+        await this.assertRegisterRateLimit(req, identity)
         await this.verifyAliyunCaptcha(captchaVerifyParam)
         if (userPassword !== checkedPassword) {
             throw new BusinessException('两次密码不一致', BusinessStatus.PARAMS_ERROR.code)
@@ -286,8 +298,8 @@ export class UserService {
     }
 
     async sendEmailValidateCode(req: Request, email: string, captchaVerifyParam: string) {
-        await this.verifyAliyunCaptcha(captchaVerifyParam)
         await this.assertRegisterEmailCodeRateLimit(req, email)
+        await this.verifyAliyunCaptcha(captchaVerifyParam)
 
         let code = await this.redisService.get(this.getRegisterEmailCodeKey(email))
         if (code) {
@@ -313,11 +325,16 @@ export class UserService {
         return true
     }
     // 邮箱注册
-    async userRegisterByEmail(userRegisterByEmailDto: UserRegisterByEmailDto) {
+    async userRegisterByEmail(req: Request, userRegisterByEmailDto: UserRegisterByEmailDto) {
         const { userEmail, code, userPassword, checkedPassword, captchaVerifyParam } = userRegisterByEmailDto
+        const identity = this.normalizeRateLimitValue(userEmail)
+
+        await this.assertRegisterRateLimit(req, identity)
+        await this.assertRegisterEmailCodeFailureBlock(req, userEmail)
         await this.verifyAliyunCaptcha(captchaVerifyParam)
         const storedCode = (await this.redisService.get(this.getRegisterEmailCodeKey(userEmail))) as string
         if (storedCode !== code) {
+            await this.recordRegisterEmailCodeFailure(req, userEmail)
             throw new BusinessException('验证码错误', BusinessStatus.PARAMS_ERROR.code)
         }
         if (userPassword !== checkedPassword) {
@@ -331,6 +348,10 @@ export class UserService {
                 userName: this.generateUsername()
             }
         })
+        await Promise.all([
+            this.clearRegisterEmailCodeFailureState(req, userEmail),
+            this.redisService.del(this.getRegisterEmailCodeKey(userEmail))
+        ])
         return user.id
     }
 
@@ -418,6 +439,18 @@ export class UserService {
         return `${REGISTER_EMAIL_CODE_REDIS_KEY}:rate:${scope}:${value}`
     }
 
+    private getRegisterEmailCodeFailureCountKey(scope: 'ip' | 'session' | 'email', value: string) {
+        return `${REGISTER_EMAIL_CODE_REDIS_KEY}:fail:${scope}:${value}`
+    }
+
+    private getRegisterEmailCodeFailureBlockKey(scope: 'ip' | 'session' | 'email', value: string) {
+        return `${REGISTER_EMAIL_CODE_REDIS_KEY}:block:${scope}:${value}`
+    }
+
+    private getRegisterAttemptRateLimitKey(scope: 'ip' | 'session' | 'identity', value: string) {
+        return `${REGISTER_REDIS_KEY}:rate:${scope}:${value}`
+    }
+
     private getLoginAttemptRateLimitKey(scope: 'ip' | 'session' | 'identity', value: string) {
         return `${LOGIN_REDIS_KEY}:rate:login:${scope}:${value}`
     }
@@ -431,20 +464,38 @@ export class UserService {
     }
 
     private getRequestIp(req: Request) {
-        const forwardedFor = req.headers['x-forwarded-for']
-        const forwardedIp = Array.isArray(forwardedFor) ? forwardedFor[0] : forwardedFor
-        return forwardedIp?.split(',')[0]?.trim() || req.ip || 'unknown'
+        return req.ip || req.socket?.remoteAddress || 'unknown'
     }
 
-    private normalizeRateLimitValue(value: string) {
-        return encodeURIComponent(value.trim().toLowerCase())
+    private getSessionId(req: Request) {
+        return req.sessionID || 'anonymous'
+    }
+
+    private normalizeRateLimitValue(value?: string) {
+        return encodeURIComponent((value || 'unknown').trim().toLowerCase())
     }
 
     private getLoginRateTargets(req: Request, identity: string) {
         return [
             { scope: 'ip' as const, value: this.normalizeRateLimitValue(this.getRequestIp(req)) },
-            { scope: 'session' as const, value: this.normalizeRateLimitValue(req.sessionID) },
+            { scope: 'session' as const, value: this.normalizeRateLimitValue(this.getSessionId(req)) },
             { scope: 'identity' as const, value: identity }
+        ]
+    }
+
+    private getRegisterRateTargets(req: Request, identity: string) {
+        return [
+            { scope: 'ip' as const, value: this.normalizeRateLimitValue(this.getRequestIp(req)) },
+            { scope: 'session' as const, value: this.normalizeRateLimitValue(this.getSessionId(req)) },
+            { scope: 'identity' as const, value: identity }
+        ]
+    }
+
+    private getRegisterEmailCodeTargets(req: Request, email: string) {
+        return [
+            { scope: 'ip' as const, value: this.normalizeRateLimitValue(this.getRequestIp(req)) },
+            { scope: 'session' as const, value: this.normalizeRateLimitValue(this.getSessionId(req)) },
+            { scope: 'email' as const, value: this.normalizeRateLimitValue(email) }
         ]
     }
 
@@ -465,25 +516,49 @@ export class UserService {
     }
 
     private async assertRegisterEmailCodeRateLimit(req: Request, email: string) {
-        const normalizedEmail = this.normalizeRateLimitValue(email)
+        const targets = this.getRegisterEmailCodeTargets(req, email)
         await Promise.all([
             this.consumeRateLimit(
-                this.getRegisterEmailCodeRateLimitKey('ip', this.normalizeRateLimitValue(this.getRequestIp(req))),
+                this.getRegisterEmailCodeRateLimitKey(targets[0].scope, targets[0].value),
                 this.emailRegisterCodeIpLimit,
                 this.emailRegisterCodeIpWindowSeconds,
                 '注册验证码发送过于频繁，请稍后再试'
             ),
             this.consumeRateLimit(
-                this.getRegisterEmailCodeRateLimitKey('session', this.normalizeRateLimitValue(req.sessionID)),
+                this.getRegisterEmailCodeRateLimitKey(targets[1].scope, targets[1].value),
                 this.emailRegisterCodeSessionLimit,
                 this.emailRegisterCodeSessionWindowSeconds,
                 '注册验证码发送过于频繁，请稍后再试'
             ),
             this.consumeRateLimit(
-                this.getRegisterEmailCodeRateLimitKey('email', normalizedEmail),
+                this.getRegisterEmailCodeRateLimitKey(targets[2].scope, targets[2].value),
                 this.emailRegisterCodeTargetLimit,
                 this.emailRegisterCodeTargetWindowSeconds,
                 '该邮箱验证码发送过于频繁，请稍后再试'
+            )
+        ])
+    }
+
+    private async assertRegisterRateLimit(req: Request, identity: string) {
+        const targets = this.getRegisterRateTargets(req, identity)
+        await Promise.all([
+            this.consumeRateLimit(
+                this.getRegisterAttemptRateLimitKey(targets[0].scope, targets[0].value),
+                this.registerIpLimit,
+                this.registerIpWindowSeconds,
+                '注册请求过于频繁，请稍后再试'
+            ),
+            this.consumeRateLimit(
+                this.getRegisterAttemptRateLimitKey(targets[1].scope, targets[1].value),
+                this.registerSessionLimit,
+                this.registerSessionWindowSeconds,
+                '注册请求过于频繁，请稍后再试'
+            ),
+            this.consumeRateLimit(
+                this.getRegisterAttemptRateLimitKey(targets[2].scope, targets[2].value),
+                this.registerIdentityLimit,
+                this.registerIdentityWindowSeconds,
+                '该账号或邮箱注册请求过于频繁，请稍后再试'
             )
         ])
     }
@@ -549,6 +624,47 @@ export class UserService {
             targets.flatMap(target => [
                 this.redisService.del(this.getLoginFailureCountKey(target.scope, target.value)),
                 this.redisService.del(this.getLoginFailureBlockKey(target.scope, target.value))
+            ])
+        )
+    }
+
+    private async assertRegisterEmailCodeFailureBlock(req: Request, email: string) {
+        const targets = this.getRegisterEmailCodeTargets(req, email)
+        for (const target of targets) {
+            const blockKey = this.getRegisterEmailCodeFailureBlockKey(target.scope, target.value)
+            const blocked = await this.redisService.get(blockKey)
+            if (blocked) {
+                const ttl = await this.redisService.ttl(blockKey)
+                const waitSeconds = ttl > 0 ? ttl : this.emailRegisterCodeFailureBlockSeconds
+                throw new BusinessException(
+                    `验证码错误次数过多，请在 ${waitSeconds} 秒后重试`,
+                    BusinessStatus.TOO_MANY_REQUESTS_ERROR.code
+                )
+            }
+        }
+    }
+
+    private async recordRegisterEmailCodeFailure(req: Request, email: string) {
+        const targets = this.getRegisterEmailCodeTargets(req, email)
+        for (const target of targets) {
+            const failureKey = this.getRegisterEmailCodeFailureCountKey(target.scope, target.value)
+            const count = await this.incrementCounter(failureKey, this.emailRegisterCodeFailureWindowSeconds)
+            if (count >= this.emailRegisterCodeFailureBlockThreshold) {
+                await this.redisService.set(
+                    this.getRegisterEmailCodeFailureBlockKey(target.scope, target.value),
+                    true,
+                    this.emailRegisterCodeFailureBlockSeconds
+                )
+            }
+        }
+    }
+
+    private async clearRegisterEmailCodeFailureState(req: Request, email: string) {
+        const targets = this.getRegisterEmailCodeTargets(req, email)
+        await Promise.all(
+            targets.flatMap(target => [
+                this.redisService.del(this.getRegisterEmailCodeFailureCountKey(target.scope, target.value)),
+                this.redisService.del(this.getRegisterEmailCodeFailureBlockKey(target.scope, target.value))
             ])
         )
     }

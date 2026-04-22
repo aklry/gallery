@@ -8,6 +8,10 @@ import { ApiValidateMiddleware } from '@shared/middlewares/api-validate.middlewa
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule)
+    const trustProxyHops = Number(process.env.TRUST_PROXY_HOPS || 0)
+    if (trustProxyHops > 0) {
+        app.getHttpAdapter().getInstance().set('trust proxy', trustProxyHops)
+    }
     app.setGlobalPrefix('api')
     app.enableVersioning({
         type: VersioningType.URI
