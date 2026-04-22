@@ -1,16 +1,13 @@
-import { onMounted, reactive, ref, watch } from 'vue'
+import { onMounted, reactive, ref } from 'vue'
 import { message } from 'ant-design-vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/store/modules/user'
 import { userControllerUserLoginByEmailV1, userControllerUserLoginV1 } from '@/api/user'
 import { MD5 } from 'crypto-js'
-import { aliyunCaptchaPrefix, aliyunCaptchaSceneId, hasConfiguredAliyunCaptcha } from '@/constants/captcha'
+import { aliyunCaptchaSceneId, hasConfiguredAliyunCaptcha } from '@/constants/captcha'
+import { loadAliyunCaptchaSdk } from '@/utils/aliyunCaptcha'
 
-declare global {
-    interface Window {
-        initAliyunCaptcha: any
-    }
-}
+const CAPTCHA_INIT_TIMEOUT = 3000
 
 const useLogin = () => {
     const router = useRouter()
@@ -19,6 +16,7 @@ const useLogin = () => {
     const tabKey = ref('account')
 
     let captchaInstance: any = null
+    let captchaInitPromise: Promise<any> | null = null
 
     const loginForm = reactive({
         userAccount: '',
@@ -26,41 +24,6 @@ const useLogin = () => {
         userPassword: '',
         captchaVerifyParam: ''
     })
-
-    const initCaptcha = () => {
-        if (!window.initAliyunCaptcha) {
-            console.error('Aliyun Captcha SDK not loaded')
-            return
-        }
-        if (!hasConfiguredAliyunCaptcha) {
-            message.warning('请先配置 VITE_ALIYUN_CAPTCHA_SCENE_ID')
-            return
-        }
-        window.initAliyunCaptcha({
-            SceneId: aliyunCaptchaSceneId,
-            prefix: aliyunCaptchaPrefix,
-            mode: 'popup',
-            element: '#aliyun-captcha-element',
-            button: '',
-            captchaVerifyCallback: async (captchaVerifyParam: string) => {
-                loginForm.captchaVerifyParam = captchaVerifyParam
-                return {
-                    captchaResult: await doLogin()
-                }
-            },
-            onBizResultCallback: (bizResult: boolean) => {
-                if (bizResult === true) {
-                    message.success('登录成功')
-                    const redirect = router.currentRoute.value.query.redirect as string
-                    router.push(redirect || '/')
-                }
-            },
-            getInstance: (instance: any) => {
-                captchaInstance = instance
-            },
-            upLang: 'cn'
-        })
-    }
 
     const doLogin = async () => {
         try {
@@ -85,10 +48,10 @@ const useLogin = () => {
             if (res.code === 1) {
                 await userStore.setLoginUser(res.data)
                 return true
-            } else {
-                message.error(res.message)
-                return false
             }
+
+            message.error(res.message)
+            return false
         } catch (error) {
             message.error('登录失败，请重试')
             return false
@@ -97,21 +60,92 @@ const useLogin = () => {
         }
     }
 
-    const handleSubmit = async () => {
+    const initCaptcha = async () => {
         if (captchaInstance) {
-            captchaInstance.show()
-        } else {
-            message.warning('验证码尚未加载完成，请刷新页面')
-            initCaptcha()
+            return captchaInstance
         }
+
+        if (captchaInitPromise) {
+            return captchaInitPromise
+        }
+
+        if (!hasConfiguredAliyunCaptcha) {
+            message.warning('请先配置阿里云验证码 SceneId 和 Prefix')
+            return null
+        }
+
+        if (!(await loadAliyunCaptchaSdk()) || !window.initAliyunCaptcha) {
+            console.error('Aliyun Captcha SDK not loaded')
+            return null
+        }
+
+        captchaInitPromise = new Promise(resolve => {
+            let resolved = false
+
+            const resolveInstance = (instance: any = null) => {
+                if (resolved) {
+                    return
+                }
+
+                resolved = true
+                captchaInitPromise = null
+                resolve(instance)
+            }
+
+            window.initAliyunCaptcha({
+                SceneId: aliyunCaptchaSceneId,
+                mode: 'popup',
+                element: '#aliyun-captcha-element',
+                button: '#login-captcha-trigger',
+                captchaVerifyCallback: async (captchaVerifyParam: string) => {
+                    loginForm.captchaVerifyParam = captchaVerifyParam
+                    return {
+                        captchaResult: await doLogin()
+                    }
+                },
+                onBizResultCallback: (bizResult: boolean) => {
+                    if (bizResult === true) {
+                        message.success('登录成功')
+                        const redirect = router.currentRoute.value.query.redirect as string
+                        router.push(redirect || '/')
+                    }
+                },
+                getInstance: (instance: any) => {
+                    captchaInstance = instance
+                    resolveInstance(instance)
+                },
+                onError: (error: unknown) => {
+                    console.error('Aliyun Captcha init error', error)
+                    resolveInstance(null)
+                },
+                language: 'cn'
+            })
+
+            window.setTimeout(() => {
+                resolveInstance(captchaInstance)
+            }, CAPTCHA_INIT_TIMEOUT)
+        })
+
+        return captchaInitPromise
     }
 
-    watch(tabKey, () => {
-        // Handle tab change if necessary
-    })
+    const showCaptcha = async () => {
+        const instance = captchaInstance || (await initCaptcha())
+
+        if (instance) {
+            instance.show()
+            return
+        }
+
+        message.warning('验证码尚未加载完成，请稍后重试')
+    }
+
+    const handleSubmit = async () => {
+        await showCaptcha()
+    }
 
     onMounted(() => {
-        initCaptcha()
+        void initCaptcha()
     })
 
     return {

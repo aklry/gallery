@@ -1,8 +1,8 @@
 /// <reference types="vite/client" />
 
 interface ImportMetaEnv {
-    readonly VITE_ALIYUN_CAPTCHA_SCENE_ID?: string
-    readonly VITE_ALIYUN_CAPTCHA_PREFIX?: string
+    readonly VITE_APP_ALIYUN_CAPTCHA_SCENE_ID?: string
+    readonly VITE_APP_ALIYUN_CAPTCHA_PREFIX?: string
 }
 
 interface ImportMeta {

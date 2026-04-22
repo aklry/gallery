@@ -177,6 +177,7 @@
                         </a-tab-pane>
                     </a-tabs>
                     <div id="aliyun-captcha-element"></div>
+                    <button id="register-captcha-trigger" type="button" class="hidden" aria-hidden="true"></button>
                 </div>
             </div>
         </div>
