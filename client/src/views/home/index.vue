@@ -8,7 +8,6 @@ import TagBars from './components/tag-bars/index.vue'
 import { LazyImg, Waterfall } from 'vue-waterfall-plugin-next'
 import 'vue-waterfall-plugin-next/dist/style.css'
 import { ref } from 'vue'
-import { formatSize } from '@/utils'
 
 const pictureStore = usePictureStore()
 const { tag_category } = storeToRefs(pictureStore)
@@ -86,16 +85,10 @@ const handleMouseLeave = (e: MouseEvent) => {
                                 <LazyImg :url="item.thumbnailUrl" />
                                 <!-- 遮罩层 -->
                                 <div class="picture-card__overlay">
-                                    <!-- 顶部信息：格式 & 分辨率 -->
-                                    <div class="overlay-top">
-                                        <span class="tag">{{ (item.format || '未知').toUpperCase() }}</span>
-                                        <span class="tag">{{ item.width || 0 }} x {{ item.height || 0 }}</span>
-                                    </div>
                                     <!-- 底部信息：信息 & 统计 -->
                                     <div class="overlay-bottom">
                                         <div class="main-info">
-                                            <span class="category">{{ item.category ?? '默认分类' }}</span>
-                                            <div class="size-info">{{ formatSize(item.fileSize) }}</div>
+                                            <span class="category">{{ item.category || '默认' }}</span>
                                         </div>
                                         <div class="stats-row">
                                             <div class="stat-item" title="点赞">

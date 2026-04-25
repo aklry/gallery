@@ -2,7 +2,8 @@
 import usePictureStore from '@/store/modules/picture'
 
 const pictureStore = usePictureStore()
-pictureStore.getTagCategory()
+
+void pictureStore.getTagCategory()
 </script>
 
 <template>

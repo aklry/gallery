@@ -134,7 +134,7 @@
 
     // Interactive Hover Overlay
     &__overlay {
-        @apply absolute inset-0 opacity-0 transition-opacity duration-300 flex flex-col justify-between p-3;
+        @apply absolute inset-0 opacity-0 transition-opacity duration-300 flex flex-col justify-end p-3;
 
         /* Force border-radius to match parent to prevent WebKit "square to round" transition bug */
         border-radius: inherit;
