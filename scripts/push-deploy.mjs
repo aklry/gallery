@@ -37,14 +37,14 @@ function printHelp() {
             "",
             "Single target mode:",
             "  DEPLOY_PORT=22",
-            '  DEPLOY_BUILD_COMMAND="pnpm -C client build"',
+            '  DEPLOY_BUILD_COMMAND="pnpm -F @cloud-gallery/web build"',
             '  DEPLOY_LOCAL_DIR="client/dist"',
             '  DEPLOY_REMOTE_DIR="/var/www/gallery"',
             "  DEPLOY_CLEAN_REMOTE=false",
             "",
             "Parallel client/server mode:",
             "  DEPLOY_TARGETS=client,server",
-            '  DEPLOY_CLIENT_BUILD_COMMAND="pnpm -C client build"',
+            '  DEPLOY_CLIENT_BUILD_COMMAND="pnpm -F @cloud-gallery/web build"',
             '  DEPLOY_CLIENT_LOCAL_DIR="client/dist"',
             '  DEPLOY_CLIENT_REMOTE_DIR="/var/www/gallery/client"',
             "  DEPLOY_CLIENT_CLEAN_REMOTE=false",
@@ -265,7 +265,8 @@ function runShellCommand(command) {
 function createLegacyTarget(config) {
     return {
         name: "deploy",
-        buildCommand: config.DEPLOY_BUILD_COMMAND || "pnpm -C client build",
+        buildCommand:
+            config.DEPLOY_BUILD_COMMAND || "pnpm -F @cloud-gallery/web build",
         localDir: resolveLocalPath(config.DEPLOY_LOCAL_DIR || "client/dist"),
         remoteDir: normalizeRemoteDir(
             requireValue(config, "DEPLOY_REMOTE_DIR"),
