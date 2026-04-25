@@ -51,11 +51,3 @@ export async function messageControllerReadMessageV1(body: API.ReadMessageDto, o
         ...(options || {})
     })
 }
-
-/** 此处后端没有提供注释 GET /api/v1/message/stream */
-export async function messageControllerStreamMessagesV1(options?: { [key: string]: any }) {
-    return ryRequest.request<any>('/api/v1/message/stream', {
-        method: 'GET',
-        ...(options || {})
-    })
-}

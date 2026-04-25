@@ -34,6 +34,7 @@ const useAddPicture = () => {
     const { handleGenerateImageTaskByAi, text, loading: generateLoading } = useGenerateImageByAi(setUrl)
     const openCropperModal = ref(false)
     const openExpandModal = ref(false)
+    const openAiEditModal = ref(false)
     // 把后端 AI 生成的新标签合并进表单和全局 store
     const mergeTags = (tags?: string[]) => {
         if (!tags || tags.length === 0) return
@@ -151,6 +152,11 @@ const useAddPicture = () => {
         await handleUploadPictureByUrl()
         openExpandModal.value = false
     }
+    const handleAiEditSuccess = async (editPictureUrl: string) => {
+        url.value = editPictureUrl
+        await handleUploadPictureByUrl()
+        openAiEditModal.value = false
+    }
 
     onMounted(async () => {
         if (id) {
@@ -230,7 +236,9 @@ const useAddPicture = () => {
         text,
         generateLoading,
         handleGenerateTags,
-        generateTagsLoading
+        generateTagsLoading,
+        openAiEditModal,
+        handleAiEditSuccess
     }
 }
 

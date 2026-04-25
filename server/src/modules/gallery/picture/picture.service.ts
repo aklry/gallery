@@ -35,7 +35,7 @@ import { SpaceUserPermissionConstant } from '@identity/permission/SpaceUserPermi
 import { Space } from '@space/core/entities/space.entity'
 import { PermissionGuard } from '@identity/permission/permission.guard'
 import { PERMISSION_KEY } from '@identity/permission/permission.decorator'
-import { AiGeneratePictureDto } from '@infra/ai/dto'
+import { AiEditPictureDto, AiGeneratePictureDto } from '@infra/ai/dto'
 import { RedisService } from '@core/redis/redis.service'
 import { TagService } from '@gallery/tag/tag.service'
 import { MessageService } from '@tools/message/message.service'
@@ -1645,5 +1645,15 @@ export class PictureService {
 
     async genGenerateImage(taskId: string) {
         return await this.aiService.generateImage(taskId)
+    }
+
+    async aiEditPicture(aiEditPictureDto: AiEditPictureDto, req: Request) {
+        const user = req.session.user
+        if (!user || !user.id) {
+            throw new BusinessException('未登录', BusinessStatus.NOT_LOGIN_ERROR.code)
+        }
+        const pictures = await this.aiService.editPicture(aiEditPictureDto)
+
+        return pictures.images
     }
 }

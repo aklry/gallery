@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { BusinessException } from '@shared/custom-exception'
-import { AI_MODEL, AI_MODEL_GENERATION, BusinessStatus } from '@core/config'
-import { AiExpandPictureCreateTaskDto, AiGeneratePictureDto } from './dto'
+import { AI_MODEL, AI_MODEL_EDIT, AI_MODEL_GENERATION, BusinessStatus } from '@core/config'
+import { AiEditPictureDto, AiExpandPictureCreateTaskDto, AiGeneratePictureDto } from './dto'
 import OpenAI from 'openai'
 import {
     AiExpandPictureCreatePictureVo,
@@ -10,6 +10,7 @@ import {
     AiGeneratePictureVo,
     AiGeneratePictureSuccessVo
 } from './vo'
+import { AiEditPictureResponse, AiEditPictureResult } from './type'
 
 @Injectable()
 export class AiService {
@@ -25,6 +26,9 @@ export class AiService {
         'https://dashscope.aliyuncs.com/api/v1/services/aigc/text2image/image-synthesis'
     private static readonly GENERATION_IMAGE_URL = (taskId: string) =>
         `https://dashscope.aliyuncs.com/api/v1/tasks/${taskId}`
+
+    private static readonly EDIT_IMAGE_URL =
+        'https://dashscope.aliyuncs.com/api/v1/services/aigc/multimodal-generation/generation'
 
     constructor(private readonly configService: ConfigService) {
         this.apiKey = this.configService.get<string>('bailian.apiKey')
@@ -191,5 +195,61 @@ export class AiService {
             console.log(error)
             throw new BusinessException(error.message || 'AI 分析图片失败', BusinessStatus.OPERATION_ERROR.code)
         }
+    }
+
+    // ==========================================
+    // AI 编辑图片
+    // ==========================================
+    async editPicture(input: AiEditPictureDto): Promise<AiEditPictureResult> {
+        const { url, prompt } = input
+        try {
+            const response = await fetch(AiService.EDIT_IMAGE_URL, {
+                method: 'POST',
+                body: JSON.stringify({
+                    model: AI_MODEL_EDIT,
+                    input: {
+                        messages: [
+                            {
+                                role: 'user',
+                                content: [{ image: url }, { text: prompt }]
+                            }
+                        ]
+                    },
+                    parameters: {
+                        n: 1,
+                        negative_prompt: ' ',
+                        prompt_extend: true,
+                        watermark: false
+                    }
+                }),
+                headers: {
+                    Authorization: `Bearer ${this.apiKey}`,
+                    'Content-Type': 'application/json'
+                }
+            })
+            const data: AiEditPictureResponse = await response.json()
+            if (!response.ok || data.code) {
+                throw new BusinessException(data.message || 'AI 编辑图片失败', BusinessStatus.OPERATION_ERROR.code)
+            }
+            const images = this.extractEditPictureImages(data)
+            if (!images.length) {
+                throw new BusinessException('AI 编辑图片失败，未返回图片结果', BusinessStatus.OPERATION_ERROR.code)
+            }
+            return { images }
+        } catch (error: any) {
+            if (error instanceof BusinessException) {
+                throw error
+            }
+            console.log(error)
+            throw new BusinessException(error.message || 'AI 编辑图片失败', BusinessStatus.OPERATION_ERROR.code)
+        }
+    }
+
+    private extractEditPictureImages(data: AiEditPictureResponse): string[] {
+        return (
+            data.output?.choices?.flatMap(choice => {
+                return choice.message?.content?.map(item => item.image).filter(Boolean) ?? []
+            }) ?? []
+        )
     }
 }

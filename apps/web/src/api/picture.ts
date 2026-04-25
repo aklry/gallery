@@ -16,6 +16,18 @@ export async function pictureControllerGetPictureV1(
     })
 }
 
+/** ai编辑图片 POST /api/v1/picture/ai/edit/image */
+export async function pictureControllerAiEditPictureV1(body: API.AiEditPictureDto, options?: { [key: string]: any }) {
+    return ryRequest.request<API.AiEditPictureVo>('/api/v1/picture/ai/edit/image', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        data: body,
+        ...(options || {})
+    })
+}
+
 /** 创建扩图任务 POST /api/v1/picture/ai/expand/create_task */
 export async function pictureControllerCreateAiExpandPictureTaskV1(
     body: API.AiExpandPictureDto,
@@ -202,11 +214,13 @@ export async function pictureControllerGetPictureByPageVoV1(
 }
 
 /** 首页查询图片 POST /api/v1/picture/query */
-export async function pictureControllerRecommendPicturesV1(
-    body: API.RecommendPictureDto,
+export async function pictureControllerQueryPictureV1(
+    body: {
+        searchText?: string
+    },
     options?: { [key: string]: any }
 ) {
-    return ryRequest.request<API.ShowPictureVo>('/api/v1/picture/recommend', {
+    return ryRequest.request<API.ShowPictureVo>('/api/v1/picture/query', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -216,13 +230,12 @@ export async function pictureControllerRecommendPicturesV1(
     })
 }
 
-export async function pictureControllerQueryPictureV1(
-    body: {
-        searchText?: string
-    },
+/** 首页推荐图片 POST /api/v1/picture/recommend */
+export async function pictureControllerRecommendPicturesV1(
+    body: API.RecommendPictureDto,
     options?: { [key: string]: any }
 ) {
-    return ryRequest.request<API.ShowPictureVo>('/api/v1/picture/query', {
+    return ryRequest.request<API.ShowPictureVo>('/api/v1/picture/recommend', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -287,7 +300,7 @@ export async function pictureControllerUploadFileV1(
                 if (item instanceof Array) {
                     item.forEach(f => formData.append(ele, f || ''))
                 } else {
-                    formData.append(ele, new Blob([JSON.stringify(item)], { type: 'application/json' }))
+                    formData.append(ele, JSON.stringify(item))
                 }
             } else {
                 formData.append(ele, item)

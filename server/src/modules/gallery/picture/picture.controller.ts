@@ -54,8 +54,9 @@ import {
 import { ValidationPipe } from '@shared/pipe/validation.pipe'
 import { SpaceUserPermissionConstant } from '@identity/permission/SpaceUserPermissionConstant'
 import { PermissionGuard } from '@identity/permission/permission.guard'
-import { AiGeneratePictureDto } from '@infra/ai/dto'
+import { AiEditPictureDto, AiGeneratePictureDto } from '@infra/ai/dto'
 import { RawResponse } from '@shared/interceptors'
+import { AiEditPictureVo } from '@infra/ai/vo'
 
 @Controller({
     path: 'picture',
@@ -325,5 +326,15 @@ export class PictureController {
     @RawResponse()
     getPicture(@Param('picId') picId: string) {
         return this.pictureService.getById(picId, false)
+    }
+
+    @Post('/ai/edit/image')
+    @Permission(SpaceUserPermissionConstant.PICTURE_EDIT)
+    @UseGuards(AuthGuard, PermissionGuard)
+    @ApiResponse({ type: AiEditPictureVo })
+    @ApiOperation({ summary: 'ai编辑图片' })
+    async aiEditPicture(@Body(new ValidationPipe()) aiEditPictureDto: AiEditPictureDto, @Req() req: Request) {
+        const result = await this.pictureService.aiEditPicture(aiEditPictureDto, req)
+        return this.responseService.success(result)
     }
 }

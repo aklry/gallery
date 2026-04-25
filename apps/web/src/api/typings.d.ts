@@ -54,6 +54,26 @@ declare namespace API {
         path: string
     }
 
+    type AiEditPictureDto = {
+        /** 描述 */
+        prompt: string
+        /** 图片url */
+        url: string
+    }
+
+    type AiEditPictureVo = {
+        /** 状态码 */
+        code: number
+        /** 消息 */
+        message: string
+        /** 图片列表 */
+        data: string[]
+        /** 时间戳 */
+        timestamp: string
+        /** 路径 */
+        path: string
+    }
+
     type AiExpandCreatePictureVo = {
         /** 状态码 */
         code: number
@@ -355,6 +375,8 @@ declare namespace API {
     type EmailValidateDto = {
         /** 发送验证码的邮箱 */
         userEmail: string
+        /** 滑块验证参数 */
+        captchaVerifyParam: string
     }
 
     type EmailValidateVo = {
@@ -473,19 +495,6 @@ declare namespace API {
         message: string
         /** 加入空间结果 */
         data: JoinSpaceInviteModelVo
-        /** 时间戳 */
-        timestamp: string
-        /** 路径 */
-        path: string
-    }
-
-    type LoginCaptchaVo = {
-        /** 状态码 */
-        code: number
-        /** 消息 */
-        message: string
-        /** 登录验证码图片 data URL */
-        data: string
         /** 时间戳 */
         timestamp: string
         /** 路径 */
@@ -774,15 +783,6 @@ declare namespace API {
         endEditTime?: string
     }
 
-    type RecommendPictureDto = {
-        /** 褰撳墠椤?*/
-        current: string
-        /** 姣忛〉鏉℃暟 */
-        pageSize: string
-        /** 鎺ㄨ崘鍦烘櫙 */
-        scene?: string
-    }
-
     type QuerySpaceDto = {
         /** 当前页 */
         current: string
@@ -862,6 +862,19 @@ declare namespace API {
         timestamp: string
         /** 路径 */
         path: string
+    }
+
+    type RecommendPictureDto = {
+        /** 当前页 */
+        current: string
+        /** 每页条数 */
+        pageSize: string
+        /** 排序字段 */
+        sortField?: string
+        /** 排序方式 */
+        sortOrder?: string
+        /** 推荐场景 */
+        scene?: string
     }
 
     type Result = {
@@ -1534,8 +1547,8 @@ declare namespace API {
         userEmail: string
         /** 用户密码 */
         userPassword: string
-        /** 登录验证码 */
-        code: string
+        /** 滑块验证参数 */
+        captchaVerifyParam: string
     }
 
     type UserLoginDto = {
@@ -1543,8 +1556,8 @@ declare namespace API {
         userAccount: string
         /** 用户密码 */
         userPassword: string
-        /** 登录验证码 */
-        code: string
+        /** 滑块验证参数 */
+        captchaVerifyParam: string
     }
 
     type UserLoginVo = {
@@ -1582,6 +1595,8 @@ declare namespace API {
         userPassword: string
         /** 确认密码 */
         checkedPassword: string
+        /** 滑块验证参数 */
+        captchaVerifyParam: string
     }
 
     type UserRegisterDto = {
@@ -1591,6 +1606,8 @@ declare namespace API {
         userPassword: string
         /** 确认密码 */
         checkedPassword: string
+        /** 滑块验证参数 */
+        captchaVerifyParam: string
     }
 
     type UserRegisterVo = {

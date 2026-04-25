@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Body, UseGuards, Req, Sse, MessageEvent, Query } from '@nestjs/common'
 import { MessageService } from './message.service'
-import { ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swagger'
+import { ApiExcludeEndpoint, ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swagger'
 import { MessageVo } from './vo/message.vo'
 import { ResponseService } from '@core/response/response.service'
 import { AuthGuard } from '@identity/auth/auth.guard'
@@ -70,6 +70,7 @@ export class MessageController {
 
     @Sse('/stream')
     @UseGuards(AuthGuard)
+    @ApiExcludeEndpoint()
     streamMessages(@Req() req: Request): Observable<MessageEvent> {
         return this.messageService.streamMessages(req.session.user.id)
     }

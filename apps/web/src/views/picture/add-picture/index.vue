@@ -3,13 +3,15 @@ import PictureUpload from '@/components/picture-upload/index.vue'
 import useAddPicture from './hooks'
 import ImageCropper from '@/components/image-cropper/index.vue'
 import ImageExpand from '@/components/image-expand/index.vue'
+import ImageAiEdit from '@/components/image-ai-edit/index.vue'
 import {
     UploadOutlined,
     LinkOutlined,
     RobotOutlined,
     EditOutlined,
     ExpandOutlined,
-    SaveOutlined
+    SaveOutlined,
+    BulbOutlined
 } from '@ant-design/icons-vue'
 
 const {
@@ -28,6 +30,8 @@ const {
     handleCropSuccess,
     handleExpandSuccess,
     openExpandModal,
+    openAiEditModal,
+    handleAiEditSuccess,
     text,
     handleGenerateImageTaskByAi,
     generateLoading,
@@ -310,6 +314,14 @@ const {
                                             <ExpandOutlined />AI扩图
                                         </span>
                                     </a-button>
+                                    <a-button
+                                        class="flex-1 border-blue-200 text-blue-600 hover:text-blue-700 hover:border-blue-500"
+                                        @click="openAiEditModal = true"
+                                    >
+                                        <span class="flex items-center justify-center gap-1.5">
+                                            <BulbOutlined />AI编辑
+                                        </span>
+                                    </a-button>
                                 </div>
                             </div>
                         </a-form>
@@ -331,6 +343,12 @@ const {
         v-model:visible="openExpandModal"
         :picture="picture"
         :onSuccess="handleExpandSuccess"
+    />
+    <image-ai-edit
+        ref="imageAiEditRef"
+        v-model:visible="openAiEditModal"
+        :picture="picture"
+        :onSuccess="handleAiEditSuccess"
     />
 </template>
 
