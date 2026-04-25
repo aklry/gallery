@@ -38,14 +38,14 @@ function printHelp() {
             "Single target mode:",
             "  DEPLOY_PORT=22",
             '  DEPLOY_BUILD_COMMAND="pnpm -F @cloud-gallery/web build"',
-            '  DEPLOY_LOCAL_DIR="client/dist"',
+            '  DEPLOY_LOCAL_DIR="apps/web/dist"',
             '  DEPLOY_REMOTE_DIR="/var/www/gallery"',
             "  DEPLOY_CLEAN_REMOTE=false",
             "",
             "Parallel client/server mode:",
             "  DEPLOY_TARGETS=client,server",
             '  DEPLOY_CLIENT_BUILD_COMMAND="pnpm -F @cloud-gallery/web build"',
-            '  DEPLOY_CLIENT_LOCAL_DIR="client/dist"',
+            '  DEPLOY_CLIENT_LOCAL_DIR="apps/web/dist"',
             '  DEPLOY_CLIENT_REMOTE_DIR="/var/www/gallery/client"',
             "  DEPLOY_CLIENT_CLEAN_REMOTE=false",
             '  DEPLOY_SERVER_BUILD_COMMAND="pnpm -C server build"',
@@ -267,7 +267,7 @@ function createLegacyTarget(config) {
         name: "deploy",
         buildCommand:
             config.DEPLOY_BUILD_COMMAND || "pnpm -F @cloud-gallery/web build",
-        localDir: resolveLocalPath(config.DEPLOY_LOCAL_DIR || "client/dist"),
+        localDir: resolveLocalPath(config.DEPLOY_LOCAL_DIR || "apps/web/dist"),
         remoteDir: normalizeRemoteDir(
             requireValue(config, "DEPLOY_REMOTE_DIR"),
             "DEPLOY_REMOTE_DIR",
@@ -287,13 +287,16 @@ function createNamedTarget(config, targetName, requireRemoteDir = false) {
         return null;
     }
 
+    const isClient = targetName === "client";
+    const defaultBuildCommand = isClient
+        ? "pnpm -F @cloud-gallery/web build"
+        : `pnpm -C ${targetName} build`;
+    const defaultLocalDir = isClient ? "apps/web/dist" : `${targetName}/dist`;
+
     return {
         name: targetName,
-        buildCommand:
-            config[`${prefix}BUILD_COMMAND`] || `pnpm -C ${targetName} build`,
-        localDir: resolveLocalPath(
-            config[`${prefix}LOCAL_DIR`] || `${targetName}/dist`,
-        ),
+        buildCommand: config[`${prefix}BUILD_COMMAND`] || defaultBuildCommand,
+        localDir: resolveLocalPath(config[`${prefix}LOCAL_DIR`] || defaultLocalDir),
         remoteDir: normalizeRemoteDir(remoteDirValue, `${prefix}REMOTE_DIR`),
         cleanRemote: readBoolean(config[`${prefix}CLEAN_REMOTE`], false),
     };
