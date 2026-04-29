@@ -1,9 +1,12 @@
 <script setup lang="ts">
-import usePictureStore from '@/store/modules/picture'
+import { onMounted } from 'vue'
+import { useUserStore } from '@/store/modules/user'
 
-const pictureStore = usePictureStore()
+const userStore = useUserStore()
 
-void pictureStore.getTagCategory()
+onMounted(() => {
+    void userStore.fetchLoginUser().catch(() => undefined)
+})
 </script>
 
 <template>

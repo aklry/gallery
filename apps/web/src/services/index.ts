@@ -1,7 +1,8 @@
-import RYRequest from './request'
-import { URL, TIME_OUT } from './config'
-import { message } from 'ant-design-vue'
 import md5 from 'md5'
+import { showAppMessage } from '@/utils/app-message'
+import { URL, TIME_OUT } from './config'
+import RYRequest from './request'
+
 const ryRequest = new RYRequest({
     baseURL: URL,
     timeout: TIME_OUT,
@@ -13,7 +14,7 @@ const ryRequest = new RYRequest({
                     !res.request.responseURL.includes('user/get/login') &&
                     !window.location.pathname.includes('/user/login')
                 ) {
-                    message.error('请先登录')
+                    showAppMessage('error', '请先登录')
                     window.location.replace(`/user/login?redirect=${window.location.pathname}`)
                 }
             }

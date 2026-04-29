@@ -1,4 +1,4 @@
-import { ref, useTemplateRef } from 'vue'
+import { onMounted, ref, useTemplateRef } from 'vue'
 import usePictureStore from '@/store/modules/picture'
 import { storeToRefs } from 'pinia'
 import { FormInstance, message } from 'ant-design-vue'
@@ -68,6 +68,13 @@ export const useQueryFormHooks = (props: QueryFormPropsType) => {
     const toggleFilter = () => {
         filterVisible.value = !filterVisible.value
     }
+
+    onMounted(() => {
+        if (!pictureStore.tag_category_loaded) {
+            void pictureStore.getTagCategory()
+        }
+    })
+
     return {
         searchParams,
         tag_category,

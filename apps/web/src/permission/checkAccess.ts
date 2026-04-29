@@ -1,6 +1,10 @@
-import AccessEnum from './accessEnum'
+import AccessEnum from './accessEnum.ts'
 
-const checkAccess = (loginUser: API.LoginVoModel, needAccess: AccessEnum = AccessEnum.NOT_LOGIN) => {
+export interface AccessUserLike {
+    userRole?: string
+}
+
+const checkAccess = (loginUser: AccessUserLike, needAccess: AccessEnum = AccessEnum.NOT_LOGIN) => {
     const loginUserAccess = loginUser?.userRole ?? AccessEnum.NOT_LOGIN
     if (needAccess === AccessEnum.NOT_LOGIN) {
         return true

@@ -159,6 +159,10 @@ const useAddPicture = () => {
     }
 
     onMounted(async () => {
+        if (!pictureStore.tag_category_loaded) {
+            void pictureStore.getTagCategory()
+        }
+
         if (id) {
             try {
                 const res = await pictureControllerGetByIdVoV1({ id })

@@ -65,43 +65,63 @@ export default defineConfig(({ mode }) => {
                     assetFileNames: 'assets/[ext]/[name]-[hash].[ext]',
                     entryFileNames: 'js/entry-[hash].js',
                     manualChunks: (id: string) => {
-                        if (!id.includes('node_modules')) {
+                        const normalizedId = id.replace(/\\/g, '/')
+
+                        if (!normalizedId.includes('node_modules')) {
                             return
                         }
 
-                        if (isPackage(id, 'vue') || isPackage(id, 'vue-router') || isPackage(id, 'pinia')) {
+                        // Keep third-party CSS out of JS manual chunks, otherwise
+                        // a tiny reset.css import can pull an entire UI library into
+                        // the entry preload graph.
+                        if (normalizedId.endsWith('.css')) {
+                            return
+                        }
+
+                        if (
+                            isPackage(normalizedId, 'vue') ||
+                            isPackage(normalizedId, 'vue-router') ||
+                            isPackage(normalizedId, 'pinia')
+                        ) {
                             return 'vue-core'
                         }
 
-                        if (isPackage(id, 'pinia-plugin-persistedstate')) {
+                        if (isPackage(normalizedId, 'pinia-plugin-persistedstate')) {
                             return 'state-libs'
                         }
 
                         if (
-                            isPackage(id, 'echarts') ||
-                            isPackage(id, 'echarts-wordcloud') ||
-                            isPackage(id, 'vue-echarts')
+                            isPackage(normalizedId, 'echarts') ||
+                            isPackage(normalizedId, 'echarts-wordcloud') ||
+                            isPackage(normalizedId, 'vue-echarts')
                         ) {
                             return 'echarts'
                         }
 
-                        if (isPackage(id, 'vue-cropper')) {
+                        if (isPackage(normalizedId, 'vue-cropper')) {
                             return 'image-tools'
                         }
 
-                        if (isPackage(id, 'vue-waterfall-plugin-next')) {
+                        if (isPackage(normalizedId, 'vue-waterfall-plugin-next')) {
                             return 'waterfall'
                         }
 
-                        if (isPackage(id, 'vue3-colorpicker')) {
+                        if (isPackage(normalizedId, 'vue3-colorpicker')) {
                             return 'colorpicker'
                         }
 
-                        if (isPackage(id, 'axios') || isPackage(id, 'lodash') || isPackage(id, 'dayjs')) {
+                        if (
+                            isPackage(normalizedId, 'axios') ||
+                            isPackage(normalizedId, 'lodash') ||
+                            isPackage(normalizedId, 'dayjs')
+                        ) {
                             return 'common-libs'
                         }
 
-                        if (isPackage(id, 'ant-design-vue') || isPackage(id, '@ant-design/icons-vue')) {
+                        if (
+                            isPackage(normalizedId, 'ant-design-vue') ||
+                            isPackage(normalizedId, '@ant-design/icons-vue')
+                        ) {
                             return 'ant-design'
                         }
 

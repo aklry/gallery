@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="zh-CN">
     <head>
         <meta charset="UTF-8" />
         <link rel="icon" type="image/svg+xml" href="<%- favicon %>" />
@@ -13,10 +13,58 @@
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="映刻" />
         <meta name="twitter:description" content="在线图片管理与分享平台，轻松上传、整理和分享你的图片" />
+        <style>
+            html,
+            body,
+            #app {
+                min-height: 100%;
+            }
+
+            body {
+                margin: 0;
+                background:
+                    radial-gradient(circle at top left, rgba(59, 130, 246, 0.12), transparent 32%),
+                    radial-gradient(circle at top right, rgba(34, 211, 238, 0.1), transparent 30%),
+                    linear-gradient(180deg, #f8fbff 0%, #f4f7fb 100%);
+            }
+
+            .app-startup-backdrop {
+                position: relative;
+                min-height: 100vh;
+                overflow: hidden;
+            }
+
+            .app-startup-backdrop::before,
+            .app-startup-backdrop::after {
+                content: '';
+                position: absolute;
+                border-radius: 999px;
+                filter: blur(52px);
+                pointer-events: none;
+            }
+
+            .app-startup-backdrop::before {
+                top: 12%;
+                left: 10%;
+                width: 220px;
+                height: 220px;
+                background: rgba(125, 211, 252, 0.28);
+            }
+
+            .app-startup-backdrop::after {
+                right: 12%;
+                bottom: 14%;
+                width: 200px;
+                height: 200px;
+                background: rgba(96, 165, 250, 0.18);
+            }
+        </style>
         <title><%- title %></title>
     </head>
     <body>
-        <div id="app"></div>
+        <div id="app">
+            <div class="app-startup-backdrop"></div>
+        </div>
         <script type="module" src="/src/main.ts"></script>
     </body>
 </html>

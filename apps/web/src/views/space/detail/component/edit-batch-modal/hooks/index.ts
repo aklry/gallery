@@ -1,4 +1,4 @@
-import { computed, reactive, toRefs, useTemplateRef } from 'vue'
+import { computed, onMounted, reactive, toRefs, useTemplateRef } from 'vue'
 import usePictureStore from '@/store/modules/picture'
 import { EditBatchProps } from '../types'
 import { type FormInstance } from 'ant-design-vue'
@@ -22,6 +22,12 @@ export const useEditBatchModal = (props: EditBatchProps) => {
     })
     const categoryList = computed(() => pictureStore.tag_category.categoryList)
     const tagList = computed(() => pictureStore.tag_category.tagList)
+
+    onMounted(() => {
+        if (!pictureStore.tag_category_loaded) {
+            void pictureStore.getTagCategory()
+        }
+    })
 
     const handleOk = () => {
         props.onOk(editBatchParams, () => {

@@ -54,6 +54,11 @@ const useHomeHooks = (containerRef: Ref<HTMLDivElement | null>, sentinelRef: Ref
         }
     }
 
+    const initializeHomeFeed = async () => {
+        resetAndFetch()
+        await fetchData('1')
+    }
+
     const fetchDataByClassify = async (category?: string, tags?: string[]) => {
         loading.value = true
         try {
@@ -159,7 +164,6 @@ const useHomeHooks = (containerRef: Ref<HTMLDivElement | null>, sentinelRef: Ref
     }
 
     onMounted(async () => {
-        await fetchData()
         await nextTick()
         containerRef.value?.addEventListener('scroll', handleContainerScroll)
         setupObserver()
@@ -203,6 +207,7 @@ const useHomeHooks = (containerRef: Ref<HTMLDivElement | null>, sentinelRef: Ref
         changeTabs,
         changeTags,
         clickPicture,
+        initializeHomeFeed,
         fetchData,
         handleSearchPicture
     }

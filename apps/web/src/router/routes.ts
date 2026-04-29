@@ -43,6 +43,7 @@ export const routes: RouteRecordRaw[] = [
                 beforeEnter: async (to, _from, next) => {
                     const { useUserStore } = await import('@/store/modules/user')
                     const userStore = useUserStore()
+                    await userStore.fetchLoginUser().catch(() => undefined)
                     const loginUser = userStore.loginUser
                     if (loginUser && loginUser.id) {
                         next()
@@ -114,6 +115,7 @@ export const routes: RouteRecordRaw[] = [
                 beforeEnter: async (to, _from, next) => {
                     const { useUserStore } = await import('@/store/modules/user')
                     const userStore = useUserStore()
+                    await userStore.fetchLoginUser().catch(() => undefined)
                     if (userStore.loginUser?.id) {
                         next()
                     } else {
